@@ -117,13 +117,6 @@ binding_manager = get_binding_manager()
 - Documentation is in the `docs/` directory
 - Backup files are automatically stored in `backups/`
 
-## Notes
-
-- The CubeMainWorking.txt file is always considered the authoritative version
-- CubeMain.txt must be kept identical to CubeMainWorking.txt
-- Binary files (.exe, .zip, .pdf) are excluded from version control
-- Large generated text files are also excluded
-
 ## Contributing
 
 1. Run tests before committing: `python -m pytest tests/`
