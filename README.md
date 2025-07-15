@@ -56,6 +56,11 @@ Diablo2TextEditor/
    ```bash
    pip install -r requirements.txt
    ```
+   #If you want only the PDF part use this.
+   ```bash
+   pip install -r requirements_pdf.txt
+   ```
+
 3. Run the application:
    ```bash
    python main.py
