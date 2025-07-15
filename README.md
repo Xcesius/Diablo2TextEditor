@@ -36,20 +36,11 @@ Diablo2TextEditor/
 │   └── *.bak                 # Timestamped backup files
 │
 ├── specs/                     # JSON metadata files and specifications  
-├── excel/                     # Binary game data files (.bin)
 ├── extracted_data/            # Extracted PDF data
 ├── data/                      # Additional data files
 ├── *.txt                      # Game data files (CubeMain.txt, Levels.txt, etc.)
 └── *.json                     # Large fingerprint databases
 ```
-
-## Core Files
-
-- **CubeMain.txt** - Main cube recipe data file
-- **CubeMainWorking.txt** - Verified working version (reference)
-- **CubeMainNotWorking.txt** - Known problematic version
-- **Levels.txt** - Level configuration data
-
 ## Features
 
 - **File Binding System**: Automatic mapping between JSON metadata and text data files
@@ -63,8 +54,13 @@ Diablo2TextEditor/
 1. Clone the repository
 2. Install dependencies:
    ```bash
+   pip install -r requirements.txt
+   ```
+   #If you want only the PDF part use this.
+   ```bash
    pip install -r requirements_pdf.txt
    ```
+
 3. Run the application:
    ```bash
    python main.py
@@ -116,13 +112,6 @@ binding_manager = get_binding_manager()
 - Analysis tools are in the `analysis/` directory  
 - Documentation is in the `docs/` directory
 - Backup files are automatically stored in `backups/`
-
-## Notes
-
-- The CubeMainWorking.txt file is always considered the authoritative version
-- CubeMain.txt must be kept identical to CubeMainWorking.txt
-- Binary files (.exe, .zip, .pdf) are excluded from version control
-- Large generated text files are also excluded
 
 ## Contributing
 
