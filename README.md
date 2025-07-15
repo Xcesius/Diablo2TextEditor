@@ -36,7 +36,6 @@ Diablo2TextEditor/
 │   └── *.bak                 # Timestamped backup files
 │
 ├── specs/                     # JSON metadata files and specifications  
-├── excel/                     # Binary game data files (.bin)
 ├── extracted_data/            # Extracted PDF data
 ├── data/                      # Additional data files
 ├── *.txt                      # Game data files (CubeMain.txt, Levels.txt, etc.)
