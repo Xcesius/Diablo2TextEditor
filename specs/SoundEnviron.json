@@ -1,0 +1,138 @@
+{
+  "overview": "This file controls the music and ambient sounds that are played while the player is in the area level  The order of each Sound Environment defined in this file will convey what ID value it has  This file relies on sounds from sounds.txt  This file is used by levels.txt  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "Handle",
+      "description": "A reference field to define the name of the Sound Environment"
+    },
+    {
+      "name": "Song",
+      "description": "Play this sound as the background music while the player is in an area level. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "Day Ambience",
+      "description": "Play this sound as an ambient sound while it is currently daytime in the game. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "HD Day Ambience",
+      "description": "Play this sound as an ambient sound while it is currently daytime in the game while playing in the new graphics mode. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "Night Ambience",
+      "description": "Play this sound as an ambient sound while it is currently nighttime in the game. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "HD Night Ambience",
+      "description": "Play this sound as an ambient sound while it is currently nighttime in the game while playing in the new graphics mode. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "Day Event",
+      "description": "Play this sound at a random range and variance in the background when it is currently daytime in the game. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "HD Day Event",
+      "description": "Play this sound at a random range and variance in the background when it is currently daytime in the game while playing in the new graphics mode. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "Night Event",
+      "description": "Play this sound at a random range and variance in the background when it is currently nighttime in the game. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "HD Night Event",
+      "description": "Play this sound at a random range and variance in the background when it is currently nighttime in the game while playing in the new graphics mode. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "Event Delay",
+      "description": "Controls the baseline number of frames to wait before playing the “Day Event” or “Night Event” sound, depending on the time of day. This only applies when the game is being played in SD mode. This value is used in the following calculation to get a random time to play the next event sound: [“Event Delay”] - [“Event Delay”] / 3 + RANDOM(0, ([“Event Delay”] / 3 * 2 + 1))"
+    },
+    {
+      "name": "HD Event Delay",
+      "description": "Controls the baseline number of frames to wait before playing the “Day Event” or “Night Event” sound, depending on the time of day. This only applies when the game is being played in the new graphics mode. This value is used in the following calculation to get a random time to play the next event sound: [“Event Delay”] - [“Event Delay”] / 3 + RANDOM(0, ([“Event Delay”] / 3 * 2 + 1))"
+    },
+    {
+      "name": "Indoors",
+      "description": "Boolean Field. If equals 1 then, if the current sound being played in the area level with this Sound Environment is “event_thunder_1”, then the sound will be obstructed. If equals 0, then ignore this."
+    },
+    {
+      "name": "Material 1 & Material 2",
+      "description": "Controls the material of the Sound Environment, which affects which footstep sounds are played. Uses a code to define a specific material. Code 0 1 2 3 4 5 6 Description None Dirt Indoor Stone Outdoor Stone Sand Snow Wood"
+    },
+    {
+      "name": "HD Material 1 & HD Material 2",
+      "description": "Controls the material of the Sound Environment, which affects which footstep sounds are played. Uses a code to define a specific material. This only applies when the game is being played in the new graphics mode. See “Material 1 & Material 2” for the code descriptions. The following are sound reverberation settings for special effects sounds"
+    },
+    {
+      "name": "SFX EAX Environ",
+      "description": "Determines an environment preset for default sound reverberation settings. Code 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 Description Generic Padded Cell Room Bathroom Livingroom Stone Room Auditorium Concert Hall Cave Arena Hanger Carpeted Hallway Hallway Stone Corridor Alley Forest City Mountains Quarry Plain Parking Lot Sewer Pipe Underwater Drugged Dizzy Psychotic Programmer Test (A long distant echo)"
+    },
+    {
+      "name": "SFX EAX Room Vol",
+      "description": "Room effect level at mid frequencies."
+    },
+    {
+      "name": "SFX EAX Room HF",
+      "description": "Relative room effect level at high frequencies."
+    },
+    {
+      "name": "SFX EAX Decay Time",
+      "description": "Reverberation decay time at mid frequencies."
+    },
+    {
+      "name": "SFX EAX Decay HF",
+      "description": "High-frequency to mid-frequency decay time ratio."
+    },
+    {
+      "name": "SFX EAX Reflect",
+      "description": "Early reflections level relative to room effect."
+    },
+    {
+      "name": "SFX EAX Reflect Delay",
+      "description": "Initial reflection delay time."
+    },
+    {
+      "name": "SFX EAX Reverb",
+      "description": "Late reverberation level relative to room effect."
+    },
+    {
+      "name": "SFX EAX Rev Delay",
+      "description": "Late reverberation delay time relative to initial reflection. The following are sound reverberation settings for Voice sounds."
+    },
+    {
+      "name": "VOX EAX Environ",
+      "description": "Determines an environment preset for default sound reverberation settings. Code 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 Description Generic Padded Cell Room Bathroom Livingroom Stone Room Auditorium Concert Hall Cave Arena Hanger Carpeted Hallway Hallway Stone Corridor Alley Forest City Mountains Quarry Plain Parking Lot Sewer Pipe Underwater Drugged Dizzy Psychotic Programmer Test (A long distant echo)"
+    },
+    {
+      "name": "VOX EAX Room Vol",
+      "description": "Room effect level at mid frequencies."
+    },
+    {
+      "name": "VOX EAX Room HF",
+      "description": "Relative room effect level at high frequencies."
+    },
+    {
+      "name": "VOX EAX Decay Time",
+      "description": "Reverberation decay time at mid frequencies."
+    },
+    {
+      "name": "VOX EAX Decay HF",
+      "description": "High-frequency to mid-frequency decay time ratio."
+    },
+    {
+      "name": "VOX EAX Reflect",
+      "description": "Early reflections level relative to room effect."
+    },
+    {
+      "name": "VOX EAX Reflect Delay",
+      "description": "Initial reflection delay time."
+    },
+    {
+      "name": "VOX EAX Reverb",
+      "description": "Late reverberation level relative to room effect."
+    },
+    {
+      "name": "VOX EAX Rev Delay",
+      "description": "Late reverberation delay time relative to initial reflection. InheritEnvironment – Boolean field. If equals 1, then this sound environment will inherit certain values from the existing environment and overwrite other values with its own. Overwritten values Song Day Ambience HD Day Ambience Night Ambience HD Night Ambience Day Event HD Day Event Night Event HD Night Event Event Delay HD Event Delay"
+    }
+  ],
+  "filename": "SoundEnviron.txt"
+}

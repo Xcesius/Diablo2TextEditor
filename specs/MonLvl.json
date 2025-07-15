@@ -1,0 +1,50 @@
+{
+  "overview": "This file controls how monster statistics increase per level based on the current game type and difficulty  The “(N)” text in field names signifies to use that specific value for games in Nightmare difficulty The “(H)” text in field names signifies to use that specific value for games in Hell difficulty  This file is used by monstats.txt",
+  "data_fields": [
+    {
+      "name": "Level",
+      "description": "An integer value to determine how to scale the monster’s statistics when at a specific level The following are used for the following game type: Non-Ladder Battle.net / Singleplayer / Open Battle.net / TCP"
+    },
+    {
+      "name": "AC & AC(N) & AC(H)",
+      "description": "Percentage multiplier for increasing the Monster’s Defense (multiplies with the “AC” field in monstats.txt)"
+    },
+    {
+      "name": "TH & TH(N) & TH(H)",
+      "description": "Percentage multiplier for increasing the Monster’s Attack Rating (multiplies with the “A1TH” and “A2TH” fields in monstats.txt)"
+    },
+    {
+      "name": "HP & HP(N) & HP(H)",
+      "description": "Percentage multiplier for increasing the Monster’s Life (multiplies with the “MinHP” and “MaxHP” fields in monstats.txt)"
+    },
+    {
+      "name": "DM & DM(N) & DM(H)",
+      "description": "Percentage multiplier for increasing the Monster’s Damage (multiplies with the “A1MinD”, “A1MaxD”, “A2MinD”, “A2MaxD”, “El1MinD”, “El1MaxD”, “El2MinD”, “El2MaxD”, “El3MinD”, and “El3MaxD” fields in monstats.txt)"
+    },
+    {
+      "name": "XP & XP(N) & XP(H)",
+      "description": "Percentage multiplier for increasing the Experience provided to the player when killing the Monster (multiplies with the “Exp” fields in monstats.txt) The following are used only for the Ladder Battle.net game type"
+    },
+    {
+      "name": "L",
+      "description": "AC & L-AC(N) & L-AC(H) - Percentage multiplier for increasing the Monster’s Defense (multiplies with the “AC” field in monstats.txt)"
+    },
+    {
+      "name": "L",
+      "description": "TH & L-TH(N) & L-TH(H) - Percentage multiplier for increasing the Monster’s Life (multiplies with the “A1TH” and “A2TH” fields in monstats.txt)"
+    },
+    {
+      "name": "L",
+      "description": "HP & L-HP(N) & L-HP(H) - Percentage multiplier for increasing the Monster’s Life (multiplies with the “MinHP” and “MaxHP” fields in monstats.txt)"
+    },
+    {
+      "name": "L",
+      "description": "DM & L-DM(N) & L-DM(H) - Percentage multiplier for increasing the Monster’s Damage (multiplies with the “A1MinD”, “A1MaxD”, “A2MinD”, “A2MaxD”, “El1MinD”, “El1MaxD”, “El2MinD”, “El2MaxD”, “El3MinD”, and “El3MaxD” fields in monstats.txt)"
+    },
+    {
+      "name": "L",
+      "description": "XP & L-XP(N) & L-XP(H) - Percentage multiplier for increasing the Experience provided to the player when killing the Monster (multiplies with the “Exp” fields in monstats.txt)"
+    }
+  ],
+  "filename": "MonLvl.txt"
+}

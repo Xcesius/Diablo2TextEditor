@@ -1,0 +1,76 @@
+{
+  "overview": "This file defines how item modifiers work. It takes a stat defined from ItemStatCost.txt and uses a function to handle the stat’s “min”, “max” and “parameter” values.  Used by the following data files: UniqueItems.txt, SetItems.txt, QualityItems.txt, Sets.txt, Runes.txt  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "code",
+      "description": "Defines the property ID. Used as a reference in other data files (this should not be changed)"
+    },
+    {
+      "name": "func1 (to func7)",
+      "table": [
+        {
+          "·": "·",
+          "Requires the stat’s “parameter” value for the skill ID": "Used for modifying the levels of skills from a skill tab"
+        }
+      ],
+      "description": "Code function used to define the Property. Uses numeric ID values to define what function to use. Function ID 0 Function Name ItemModsSetValueRegular 1 2 3 4 5 6 7 8 9 ItemModsSetValueBaseToMax ItemModsSetValueRegular2 ItemModsSetValueBaseToMax2 ItemModsSetMinDamage ItemModsSetMaxDamage ItemModsSetDamagePct ItemModsSetSpeed ItemModsSetSingleSkill 10 ItemModsSetTabSkills Parameters Description null stat set stat set stat set stat set set set set stat set stat set stat set ·         Modify the stat to be randomly calculated between its “min” and “max” values ·         Sets the stat value to its “max” value if the item is High Quality (Superior) Modify the stat to always be set to its “max” value Same as function 1, but consecutive calls of this function will use the same stat value as the previous call Same as function 2, but consecutive calls of this function will use the same stat value as the previous call Sets the minimum damage value for an item Sets the maximum damage value for an item (dependent on its minimum value) Sets the damage percent of the item based on its percentage damage “min” and “max” values Modify the stat to be randomly calculated between its “min” and “max” values level modification ItemModsSetSkillOnAttack ItemModsSetRandomParam ItemModsSetMaxDurability ItemModsSetSockets ItemModsSetMin ItemModsSetMax ItemModsSetParam ItemModsSetByTime stat set stat set stat set stat set stat set stat set stat ItemModsSetChargedSkill stat 11 12 13 14 15 16 17 18 19 ·         The skill tab level modification is defined through the stat’s value ·         The skill tab ID is defined through the stat’s “parameter” value. The stat’s “parameter” value is defined as the class ID and the number of tabs that the class has:"
+    },
+    {
+      "name": "o   0",
+      "description": "2 = Amazon (Bow and Crossbow Skills / Javelin and Spear Skills / Passive and Magic Skills)"
+    },
+    {
+      "name": "o   3",
+      "description": "5 = Sorceress (Fire Spells / Lightning Spells / Cold Spells)"
+    },
+    {
+      "name": "o   6",
+      "description": "8 = Necromancer (Summoning Spells / Poison and Bone Spels / Curses)"
+    },
+    {
+      "name": "o   9",
+      "description": "11 = Paladin (Combat Skills / Defensive Auras / Offensive Auras)"
+    },
+    {
+      "name": "o   12",
+      "description": "14 = Barbarian (Warcries / Combat Masteries / Combat Skills)"
+    },
+    {
+      "name": "o   15",
+      "description": "17 = Druid (Shape Shifting / Elemental / Summoning)"
+    },
+    {
+      "name": "o   18",
+      "table": [
+        {
+          "·": "·",
+          "Requires the stat’s “max” value as the skill’s level": "The spawned number of charges is calculated as the"
+        }
+      ],
+      "description": "20 = Assassin (Traps / Martial Arts / Shadow Disciplines) cast the skill (if 0, then default to 5) selection of the stat’s “parameter” value ·         Modify the stat to be randomly calculated between its “min” and “max” values ·         Sets the stat value to its “max” value if the item is High Quality (Superior) ·         Always sets the current durability to its maximum durability after the calculation of the stat value item’s maximum damage to the stat’s value. Otherwise, simply set the stat’s value to its “max” value. ·         If the stat is physical maximum damage, then set the item’s maximum damage to the stat’s value ·         Requires the stat’s “parameter” value as the time period. The allowed time periods are: MaxCharges (maximum number of charges) calculation: MaxCharges = |MaxCharges| + |MaxCharges| * [CURRENT ITEM LEVEL] / 8 o   MaxCharges cannot exceed 255 following:"
+    },
+    {
+      "name": "o   Random(0 and (MaxCharges",
+      "table": [
+        {
+          "·": "·",
+          "The Property “val” value is used as the stat value": "The stat’s value (based on its “min” and “max” values) is"
+        }
+      ],
+      "description": "MaxCharges / 8)) + MaxCharges / 8 + 1 20 21 22 23 24 25 to 35 36 ItemModsSetIndestructible ItemModsSetValueRegPropValParam ItemModsSetValueRegParam ItemModsSetEthereal ItemModsSetParamAndValue null ItemModsSetValueRegPropValParamSwapped stat set val stat set stat set stat set val Adds the Indestructible stat to an item Modify the stat to be randomly calculated between its “min” and “max” values and use the Property “val” value to offset the stat ID Modify the stat to be randomly calculated between its “min” and “max” values and use the stat’s “parameter” value to offset the stat ID Used to add the Ethereal stat to an item, only if the item has Durability ·         Consecutive calls of this function will use the same stat value as the previous call null ·         Switches the usage of the Property “val” value with the stat’s value used at the Property “val” value"
+    },
+    {
+      "name": "stat1 (to stat7)",
+      "description": "Stat applied by the property. Used by the “func” field as a possible parameter (uses “Stat” value from ItemStatCost.txt). A stat is comprised of a “min” and “max” value which it uses to calculate the actual numeric value. Stats also can have a “parameter” value, depending on its function."
+    },
+    {
+      "name": "set1 (to set7)",
+      "description": "Boolean field. Used by the “func” field as a possible parameter. If equals 1, then set the stat value regardless of its current value. If equals 0, then add to the stat value."
+    },
+    {
+      "name": "val1 (to val7)",
+      "description": "Integer field. sed by the “func” field as a possible input parameter for additional function calculations"
+    }
+  ],
+  "filename": "Properties.txt"
+}

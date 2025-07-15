@@ -1,0 +1,170 @@
+{
+  "overview": "This file controls the starting stats for each of the classes       Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "class",
+      "description": "The name of the character class (this cannot be changed)"
+    },
+    {
+      "name": "str",
+      "description": "Starting amount of the Strength attribute"
+    },
+    {
+      "name": "dex",
+      "description": "Starting amount of the Dexterity attribute"
+    },
+    {
+      "name": "int",
+      "description": "Starting amount of the Energy attribute"
+    },
+    {
+      "name": "vit",
+      "description": "Starting amount of the Vitality attribute"
+    },
+    {
+      "name": "stamina",
+      "description": "Starting amount of Stamina"
+    },
+    {
+      "name": "hpadd",
+      "description": "Bonus starting Life value (This value gets added with the \"vit\" field value to determine the overall starting amount of Life)"
+    },
+    {
+      "name": "ManaRegen",
+      "description": "Number of seconds to regain max Mana. (If this equals 0 then it will default to 300 seconds)"
+    },
+    {
+      "name": "ToHitFactor",
+      "description": "Starting amount of Attack Rating"
+    },
+    {
+      "name": "WalkVelocity",
+      "description": "Base Walk movement speed"
+    },
+    {
+      "name": "RunVelocity",
+      "description": "Base Run movement speed"
+    },
+    {
+      "name": "RunDrain",
+      "description": "Rate at which Stamina is lost while running"
+    },
+    {
+      "name": "LifePerLevel",
+      "description": "Amount of Life added for each level gained (Calculated in fourths and is divided by 256)"
+    },
+    {
+      "name": "StaminaPerLevel",
+      "description": "Amount of Stamina added for each level gained (Calculated in fourths and is divided by 256)"
+    },
+    {
+      "name": "ManaPerLevel",
+      "description": "Amount of Mana added for each level gained (Calculated in fourths and is divided by 256)"
+    },
+    {
+      "name": "LifePerVitality",
+      "description": "Amount of Life added for each point in Vitality (Calculated in fourths and is divided by 256)"
+    },
+    {
+      "name": "StaminaPerVitality",
+      "description": "Amount of Stamina added for each point in Vitality (Calculated in fourths and is divided by 256)"
+    },
+    {
+      "name": "ManaPerMagic",
+      "description": "Amount of Mana added for each point in Energy (Calculated in fourths and is divided by 256)"
+    },
+    {
+      "name": "StatPerLevel",
+      "description": "Amount of Attribute stat points earned for each level gained"
+    },
+    {
+      "name": "SkillsPerLevel",
+      "description": "Amount of Skill points earned for each level gained"
+    },
+    {
+      "name": "LightRadius",
+      "description": "Baseline radius size of the character's Light Radius"
+    },
+    {
+      "name": "BlockFactor",
+      "description": "Baseline percent chance for Blocking"
+    },
+    {
+      "name": "MinimumCastingDelay",
+      "description": "Global delay on all Skills after using a Skill with a Casting Delay (Calculated in Frames, where 25 Frames = 1 Second)"
+    },
+    {
+      "name": "StartSkill",
+      "description": "Controls what skill will be added by default to the character's starting weapon and will be slotted in the Right Skill selection (Uses the \"skill\" field from skills.txt)"
+    },
+    {
+      "name": "Skill 1 (to Skill 10)",
+      "description": "Skill that the character starts with and will always have available (Uses the \"skill\" field from skills.txt)"
+    },
+    {
+      "name": "StrAllSkills",
+      "description": "String key for displaying the item modifier bonus to all skills for the class (Ex: \"+1 to Barbarian Skill Levels\")"
+    },
+    {
+      "name": "StrSkillTab1",
+      "description": "String key for displaying the item modifier bonus to all skills for the class's first skill tab (Ex: \"+1 to Warcries\")"
+    },
+    {
+      "name": "StrSkillTab2",
+      "description": "String key for displaying the item modifier bonus to all skills for the class's second skill tab (Ex: \"+1 to Combat Skills\")"
+    },
+    {
+      "name": "StrSkillTab3",
+      "description": "String key for displaying the item modifier bonus to all skills for the class's third skill tab (Ex: \"+1 to Masteries\")"
+    },
+    {
+      "name": "StrClassOnly",
+      "description": "String key for displaying on item modifier exclusive to the class or for class specific items (Ex: \"Barbarian only\")"
+    },
+    {
+      "name": "HealthPotionPercent",
+      "description": "This scales the amount of Life that a Healing potion will restore based on the class"
+    },
+    {
+      "name": "ManaPotionPercent",
+      "description": "This scales the amount of Mana that a Mana potion will restore based on the class"
+    },
+    {
+      "name": "baseWClass",
+      "description": "Base weapon class that the character will use by default when no weapon is equipped Code hth 1hs 1ht bow 2hs 2ht 1js 1jt 1ss 1st stf xbw ht1 ht2 Description Hand to Hand (Default value if the value is empty) One Handed Swing One Handed Thrust Bow Two Handed Swing Two Handed Thrust"
+    },
+    {
+      "name": "Dual Wielding",
+      "description": "Left Jab Right Swing"
+    },
+    {
+      "name": "Dual Wielding",
+      "description": "Left Jab Right Thrust"
+    },
+    {
+      "name": "Dual Wielding",
+      "description": "Left Swing Right Swing"
+    },
+    {
+      "name": "Dual Wielding",
+      "description": "Left Swing Right Thrust Staff Crossbow One Hand to Hand Two Hand to Hand"
+    },
+    {
+      "name": "item1 (to item10)",
+      "description": "Item that the character starts with (Uses ID pointer from Weapons.txt, Armor.txt or Misc.txt)"
+    },
+    {
+      "name": "item1loc (to item10loc)",
+      "description": "Location where the related item will be placed in the character's inventory Code (empty) head neck tors rarm Description Inventory grid (Default Value) Head Neck Torso Right Arm larm rrin lrin belt feet glov Left Arm Right Ring Left Ring Belt Feet Gloves"
+    },
+    {
+      "name": "item1count (to item10count)",
+      "description": "The amount of the related item that the character starts with"
+    },
+    {
+      "name": "item1quality (to item10quality)",
+      "description": "Controls the quality level of the related item Item Quality Code 0 1 2 3 4 5 6 7 8 9 Description Any Quality (Used for a random quality) Low Quality (Ex: \"Crude\") Normal Quality (Default value if the value is empty) High Quality (Superior) Magic Quality (Uses Magic Prefixes and Suffixes) Set Item Rare Quality Unique (Predetermined stats) Crafted Tempered"
+    }
+  ],
+  "filename": "charstats.txt"
+}

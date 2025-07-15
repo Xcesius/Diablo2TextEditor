@@ -1,0 +1,242 @@
+{
+  "overview": "This file controls how the game controls the area levels, including how the level is built, what rules are allowed on the level, and what monsters/objects can spawn on the level.  This file uses the following files: AutoMap.txt, LevelGroups.txt, LvlMaze.txt, LvlPrest.txt, LvlSub.txt, LvlTypes.txt, LvlWarp.txt, monstats.txt, Objgroup.txt",
+  "data_fields": [
+    {
+      "name": "Name",
+      "description": "Defines the unique name pointer for the area level, which is used in other files"
+    },
+    {
+      "name": "Id",
+      "description": "Defines the unique numeric ID for the area level, which is used in other files"
+    },
+    {
+      "name": "Pal",
+      "description": "Defines which palette file to use for the area level. This uses index values from 0 to 4 to convey Act 1 to Act 5."
+    },
+    {
+      "name": "Act",
+      "description": "Defines the Act number that the area level is a part of. This uses index values from 0 to 4 to convey Act 1 to Act 5."
+    },
+    {
+      "name": "QuestFlag",
+      "description": "Controls what quest record that the player needs to have completed before being allowed to enter this area level, while playing in Classic Mode. Each quest can have multiple quest records, and this field is looking for a specific quest record from a quest."
+    },
+    {
+      "name": "QuestFlagEx",
+      "description": "Controls what quest record that the player needs to have completed before being allowed to enter this area level, while playing in Expansion Mode. Each quest can have multiple quest records, and this field is looking for a specific quest record from a quest. Code 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 Description Act 1 Prologue Seen Den of Evil Complete Sisters’ Burial Grounds Complete Tools of the Trade Complete The Search for Cain Complete The Forgotten Tower Complete Sisters to the Slaughter Complete Act 1 Traversed Act 2 Prologue Seen Radament’s Lair Complete The Horadric Staff Complete The Tainted Sun Complete The Arcane Sanctuary Complete The Summoner Complete The Seven Tombs Complete Act 2 Traversed Act 3 Prologue Seen Lam Esen’s Tome Complete Khalim’s Will Complete Blade of the Old Religion Complete The Golden Bird Complete The Blackened Temple Complete The Guardian Complete Act 3 Traversed Act 4 Prologue Seen The Fallen Angel Complete Terror’s End Complete The Hellforge Complete Act 4 Traversed Rogue Warning Complete Guard in Town Warning Complete Guard in Desert Warning Complete Dark Wanderer Seen Angel Warning Complete Act 5 Prologue Seen Siege on Harrogath Complete Rescue on Mount Arreat Complete Prison of Ice Complete Betrayal of Harrogath Complete Rite of Passage Complete Eve of Destruction Complete Respec from Akara Complete"
+    },
+    {
+      "name": "Layer",
+      "description": "Defines a unique numeric ID that is used to identify which Automap data belongs to which area level when saving and loading data from the character save."
+    },
+    {
+      "name": "SizeX & SizeX(N) & SizeX(H)",
+      "description": "Specifies the Length tile size values of an entire area level, which are used for determining how to build the level, for Normal, Nightmare, and Hell Difficulty, respectively."
+    },
+    {
+      "name": "SizeY & SizeY(N) & SizeY(H)",
+      "description": "Specifies the Width tile size values of an entire area level, which are used for determining how to build the level, for Normal, Nightmare, and Hell Difficulty, respectively."
+    },
+    {
+      "name": "OffsetX & OffsetY",
+      "description": "Specifies the location offset coordinates (measured in tile size) for the origin point of the area level in the world."
+    },
+    {
+      "name": "Depend",
+      "description": "Assigns another level to be this area level’s depended level, which controls this area level’s position and how it starts building its tiles. Uses the level “Id” field. If this equals 0, then ignore this."
+    },
+    {
+      "name": "Teleport",
+      "description": "Controls the functionality of the Sorceress Teleport skill and the Assassin Dragon Flight skill on the area level Code 0 1 2 Description Teleport is disabled on the area level Teleport is enabled on the area level Teleport is enabled on the area level but adheres to the collision of the rooms"
+    },
+    {
+      "name": "Rain",
+      "description": "Boolean Field. If equals 1, then allow rain to play its effects on the area level. If the level is part of Act 5, then it will snow on the area level, instead of rain. If equals 0, then it will never rain on the area level."
+    },
+    {
+      "name": "Mud",
+      "description": "Boolean Field. If equals 1, then random bubbles will animate on the tiles that are flagged as water tiles. If equals 0, then ignore this."
+    },
+    {
+      "name": "NoPer",
+      "description": "Boolean Field. If equals 1, then allow the use of display option of Perspective Mode while the player is in the level. If equals 0, then disable the option of Perspective Mode and force the player to use Orthographic Mode while the player is in the level."
+    },
+    {
+      "name": "LOSDraw",
+      "description": "Boolean field. If equals 1, then the level will check the player’s line of sight before drawing monsters. If equals 0, then ignore this."
+    },
+    {
+      "name": "FloorFilter",
+      "description": "Boolean field. If equals 1 and if the floor’s layer in the area level equals 1, then draw the floor tiles with a linear texture sampler. If equals 0, then draw the floor tiles with a nearest texture sampler."
+    },
+    {
+      "name": "BlankScreen",
+      "description": "Boolean field. If equals 1, then draw the area level screen. If equals 0, then do not draw the area level screen, meaning that the level will be a blank screen."
+    },
+    {
+      "name": "DrawEdges",
+      "description": "Boolean field. If equals 1, then draw the areas in levels that are not covered by floor tiles. If equals 0, then ignore this."
+    },
+    {
+      "name": "DrlgType",
+      "description": "Determines the type of Dynamic Random Level Generation used for building and handling different elements of the area level. Uses a numeric code to handle which type of DRLG is used. Description Code 0 1 2 3 None Maze Preset Outdoor"
+    },
+    {
+      "name": "LevelType",
+      "description": "Defines the Level Type used for this area level. Uses the Level Type’s ID, which is determined by what order it is defined in the LvlType.txt file."
+    },
+    {
+      "name": "SubType",
+      "description": "Controls the group of tile substitutions for the area level (see LvlSub.txt). There are defined sub types to choose from. Code -1 0 1 2 3 4 5 6 7 8 9 10 11 12 13 Description None Border Cliffs Border Middle Border Corner Border General Border Wild Waypoint Border Wild Shrine Border Wild Themes Border Desert Waypoint Border Desert Shrine Border Desert Themes Siege Dirt Siege Snow Barricade Broken Barricade"
+    },
+    {
+      "name": "SubTheme",
+      "description": "Controls which theme number to use in a Level Substitution (See LvlSub.txt). The allowed values are 0 to 4, which convey which “Prob#”, “Trials#”, and “Max#” field to use from the LvlSub.txt file. If this equals -1, then there is no sub theme for the area level."
+    },
+    {
+      "name": "SubWaypoint",
+      "description": "Controls the level substitutions for adding waypoints in the area level (see LvlSub.txt). This uses a defined sub type to choose from (See “SubType”). This will depend on the room having a waypoint tile."
+    },
+    {
+      "name": "SubShrine",
+      "description": "Controls the level substitutions for adding shrines in the area level (see LvlSub.txt). This uses a defined sub type to choose from (See “SubType”). This will depend on the room allowing for a shrine to spawn."
+    },
+    {
+      "name": "Vis0 (to Vis7)",
+      "description": "Defines the visibility of other area levels involved with this area level, allowing for travel functionalities between levels. This uses the “Id” field of another defined area level to link with this area level. If this equals 0, then no area level is specified."
+    },
+    {
+      "name": "Warp0 (to Warp7)",
+      "description": "Uses the “Id” field from LevelWarp.txt, which defines which Level Warp to use when exiting the area level. This is connected with the definition of the related “Vis#” field. If this equals -1, then no Level Warp is specified which should also mean that the related “Vis#” field is not defined."
+    },
+    {
+      "name": "Intensity",
+      "description": "Controls the intensity value of the area level’s ambient colors. This affects brightness of the room’s RGB colors. Uses a value between 0 and 128. If all these related fields equal 0, then the game ignores setting the area level’s ambient colors."
+    },
+    {
+      "name": "Red",
+      "description": "Controls the red value of the area level’s ambient colors. Uses a value between 0 and 255."
+    },
+    {
+      "name": "Green",
+      "description": "Controls the green value of the area level’s ambient colors. Uses a value between 0 and 255."
+    },
+    {
+      "name": "Blue",
+      "description": "Controls the blue value of the area level’s ambient colors. Uses a value between 0 and 255."
+    },
+    {
+      "name": "Portal",
+      "description": "Boolean Field. If equals 1, then this area level will be flagged as a portal level, which is saved in the player’s information and can be used for keeping track of the player’s portal functionalities. If equals 0, then ignore this."
+    },
+    {
+      "name": "Position",
+      "description": "Boolean Field. If equals 1, then enable special casing for positioning the player on the area level. This can mean that the player could spawn on a different location on the area level, depending on the level room’s position type. An example can be when the player spawns in a town when loading the game, or using a waypoint, or using a town portal. If equals 0, then ignore this."
+    },
+    {
+      "name": "SaveMonsters",
+      "description": "Boolean Field. If equals 1, then the game will save the monsters in the area level, such as when all players leave the area level. If equals 0, then monsters will not be saved and will be removed. This is usually disabled for areas where monsters do not spawn."
+    },
+    {
+      "name": "Quest",
+      "description": "Controls what quest record is attached to monsters that spawn in this area level. This is used for specific quests handling lists of monsters in the area level. Code 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 Description Act 1 Prologue Seen Den of Evil Complete Sisters’ Burial Grounds Complete Tools of the Trade Complete The Search for Cain Complete The Forgotten Tower Complete Sisters to the Slaughter Complete Act 1 Traversed Act 2 Prologue Seen Radament’s Lair Complete The Horadric Staff Complete The Tainted Sun Complete The Arcane Sanctuary Complete The Summoner Complete The Seven Tombs Complete Act 2 Traversed Act 3 Prologue Seen Lam Esen’s Tome Complete Khalim’s Will Complete Blade of the Old Religion Complete The Golden Bird Complete The Blackened Temple Complete The Guardian Complete Act 3 Traversed Act 4 Prologue Seen 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 The Fallen Angel Complete Terror’s End Complete The Hellforge Complete Act 4 Traversed Rogue Warning Complete Guard in Town Warning Complete Guard in Desert Warning Complete Dark Wanderer Seen Angel Warning Complete Act 5 Prologue Seen Siege on Harrogath Complete Rescue on Mount Arreat Complete Prison of Ice Complete Betrayal of Harrogath Complete Rite of Passage Complete Eve of Destruction Complete Respec from Akara Complete"
+    },
+    {
+      "name": "WarpDist",
+      "description": "Defines the minimum pixel distance from a Level Warp that a monster is allowed to spawn near. Tile distance values are converted to game pixel distance values by multiplying the tile distance value by 160 / 32, where 160 is the width of pixels of a tile."
+    },
+    {
+      "name": "MonLvl & MonLvl(N) & MonLvl(H)",
+      "description": "Controls the overall monster level for the area level for Normal, Nightmare, and Hell Difficulty, respectively. This is for Classic mode only. This can affect the highest item level allowed to drop in this area level."
+    },
+    {
+      "name": "MonLvlEx & MonLvlEx(N) & MonLvlEx(H)",
+      "description": "Controls the overall monster level for the area level for Normal, Nightmare, and Hell Difficulty, respectively. This is for Expansion mode only. This can affect the highest item level allowed to drop in this area level."
+    },
+    {
+      "name": "MonDen & MonDen(N) & MonDen(H)",
+      "description": "Controls the monster density on the area level for Normal, Nightmare, and Hell Difficulty, respectively. This is a random value out of 100000, which will determine whether to spawn or not spawn a monster pack in the room of the area level. If this value equals 0, then no random monsters will populate on the area level."
+    },
+    {
+      "name": "MonUMin & MonUMin(N) & MonUMin(H)",
+      "description": "Defines the minimum number of Unique Monsters that can spawn in the area level for Normal, Nightmare, and Hell Difficulty, respectively. This field depends on the related “MonDen” field being defined."
+    },
+    {
+      "name": "MonUMax & MonUMax(N) & MonUMax(H)",
+      "description": "Defines the maximum number of Unique Monsters that can spawn in the area level for Normal, Nightmare, and Hell Difficulty, respectively. This field depends on the related “MonDen” field being defined. Each room in the area level will attempt to spawn a Unique Monster with a 5/100 random chance, and this field’s value will cap the number of successful attempts for the entire area level."
+    },
+    {
+      "name": "MonWndr",
+      "description": "Boolean Field. If equals 1, then allow Wandering Monsters to spawn on this area level (see wanderingmon.txt). This field depends on the related “MonDen” field being defined. If equals 0, then ignore this."
+    },
+    {
+      "name": "MonSpcWalk",
+      "description": "Defines a distance value, used to handle monster pathing AI when the level has certain pathing blockers, such as jail bars or rivers. In these cases, monsters will walk randomly until a player is located within this distance value or when the monsters find a possible path to target the player. If this equals 0, then ignore this field."
+    },
+    {
+      "name": "NumMon",
+      "description": "Controls the number of different monsters randomly spawn in the area level. The maximum value is 13. This controls the number of random selections from the 25 related “mon#” and “umon#” fields or “nmmon#” fields, depending on the game difficulty."
+    },
+    {
+      "name": "mon1 (to mon25)",
+      "description": "Defines which monsters can spawn on the area level for Normal Difficulty. Uses the monster “Id” field from the monstats.txt file."
+    },
+    {
+      "name": "rangedspawn",
+      "description": "Boolean Field. If equals 1, then for the first monster, try to pick a ranged type. If equals 0, then ignore this."
+    },
+    {
+      "name": "nmon1 (to nmon25)",
+      "description": "Defines which monsters can spawn on the area level for Nightmare Difficulty and Hell Difficulty. Uses the monster “Id” field from the monstats.txt file."
+    },
+    {
+      "name": "umon1 (to umon25)",
+      "description": "Defines which monsters can spawn as Unique monsters on this area level for Normal Difficulty. Uses the monster “Id” field from the monstats.txt file."
+    },
+    {
+      "name": "cmon1 (to cmon4)",
+      "description": "Defines which Critter monsters can spawn on the area level. Uses the monster “Id” field from the monstats.txt file. Critter monsters are determined by the “critter” field from the monstats2.txt file."
+    },
+    {
+      "name": "cpct1 (to cpct4)",
+      "description": "Controls the percent chance (out of 100) to spawn a Critter monster on the area level."
+    },
+    {
+      "name": "camt1 (to camt4)",
+      "description": "Controls the amount of Critter monsters to spawn on the area level after they succeeded their random spawn chance from the related “cpct#” field."
+    },
+    {
+      "name": "Themes",
+      "description": "Controls the type of theme when building a level room. This value is a summation of possible values to build a bit mask for determining which themes to use when building a level room. For example, a value of 60 means that the area level can have the following themes: 32, 16, 8, 4. Code 0 1 2 4 8 16 32 Description No Theme Object Empty Theme (no objects spawn) Barrel Theme (create random barrel objects) Shrine Theme Treasure Theme (create random items) Armor Stand Theme Weapon Rack Theme"
+    },
+    {
+      "name": "SoundEnv",
+      "description": "Uses the “Index” field from SoundEnviron.txt, which controls what music is played while the player is in the area level"
+    },
+    {
+      "name": "Waypoint",
+      "description": "Defines the unique numeric ID for the Waypoint in the area level. If this value is greater than or equal to 255, then ignore this field."
+    },
+    {
+      "name": "LevelName",
+      "description": "String Field. Used for displaying the name of the area level, such as when in the UI when the Automap is being viewed."
+    },
+    {
+      "name": "LevelWarp",
+      "description": "String Field. Used displaying the entrance name of the area level on Level Warp tiles that link to this area level. For example, when the player mouse hovers over a tile to warp to the area level, then this string is displayed."
+    },
+    {
+      "name": "LevelEntry",
+      "description": "String Field. Used for displaying the UI popup title string when the player enters the area level."
+    },
+    {
+      "name": "ObjGrp0 (to ObjGrp7)",
+      "description": "Uses a numeric ID to define which possible Object Groups to spawn in this area level (See objgroup.txt). The game will go through each of these fields, so there can be more than 1 Object Group used in an area level. If this value equals 0, then ignore this."
+    },
+    {
+      "name": "ObjPrb0 (to ObjPrb7)",
+      "description": "Determines the random chance (out of 100) for each Object Group to spawn in the area level. This field depends on the related “ObjGrp#” field being defined. LevelGroup – Defines what group this level belongs to. Used for condensing level names in desecrated (terror) zones messaging. See LevelGroups.txt."
+    }
+  ],
+  "filename": "Levels.txt"
+}

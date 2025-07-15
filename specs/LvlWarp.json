@@ -1,0 +1,66 @@
+{
+  "overview": "This file controls how the player is moved to different area levels, such as entrances and exits between different areas. This player transportation of between levels is defined as a Level Warp. Level Warps function as special tiles that are added to the area for controlling the location for where to transport the player.  This file is used by the Levels.txt file.",
+  "data_fields": [
+    {
+      "name": "Name",
+      "description": "This is a reference field to define the Level Warp"
+    },
+    {
+      "name": "Id",
+      "description": "Defines the numeric ID for the type of Level Warp. This ID can be shared between multiple Level Warps if those Level Warps want to use the same functionality. This is referenced in other files."
+    },
+    {
+      "name": "SelectX & SelectY",
+      "description": "These values define the horizontal and vertical offsets (respectively) of the starting left corner position of the Level Warp area. This is treated as the starting position to select the interactable Level Warp area in the area level. This value is measured in pixels."
+    },
+    {
+      "name": "SelectDX & SelectDY",
+      "description": "These values define the horizontal and vertical offsets (respectively) of the offset from the starting position of the Level Warp area. This is added with the “SelectX” & “SelectY” fields (respectively) to determine the overall size and position of the Level Warp in the area level. This value is measured in pixels."
+    },
+    {
+      "name": "ExitWalkX & ExitWalkY",
+      "description": "These values define the horizontal and vertical positions (respectively) of the destination location where the player will walk to after"
+    },
+    {
+      "name": "exiting to this Level Warp. This value is measured with a sub",
+      "description": "tile offset from the base position of the Level Warp. One full tile on a level is composed of a grid of"
+    },
+    {
+      "name": "5x5 sub",
+      "description": "tiles."
+    },
+    {
+      "name": "OffsetX & OffsetY",
+      "description": "These values define the horizontal and vertical positions (respectively) of the sub-tile for the Level Warp, where the player will appear when"
+    },
+    {
+      "name": "exiting to this area level. This value is measured with a sub",
+      "description": "tile offset from the base position of the Level Warp. One full tile on a level is composed of a grid of 5x5"
+    },
+    {
+      "name": "sub",
+      "description": "tiles."
+    },
+    {
+      "name": "LitVersion",
+      "description": "Boolean Field. If equals 1, then Level Warp tiles will change their appearance when highlighted. If equals 0, then the Level Warp tiles will not change appearance when highlighted."
+    },
+    {
+      "name": "Tiles",
+      "description": "Defines an index offset to determine which tile to use in the tile set for the highlighted version of the Level Warp. These tiles are loaded and hidden/revealed when the player mouse hovers over the Level Warp tiles. This relies on “LitVersion” being enabled."
+    },
+    {
+      "name": "NoInteract",
+      "description": "Boolean Field. If equals 1, then the Level War cannot be directly interacted by the player. If equals 0, then the player can interact with the Level Warp."
+    },
+    {
+      "name": "Direction",
+      "description": "Defines the orientation of the Level Warp. Uses a specific string code. Code l r b Description Left. If this is selected, then the tile type direction should match this. Right. If this is selected, then the tile type direction should match this. Both. This can mean that the Level Warp can be reassigned its direction."
+    },
+    {
+      "name": "UniqueId",
+      "description": "Defines the unique numeric ID for the Level Warp. Each Level Warp should have a unique ID so that the game can handle loading that specific Level Warp’s related files."
+    }
+  ],
+  "filename": "LvlWarp.txt"
+}

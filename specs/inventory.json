@@ -1,0 +1,298 @@
+{
+  "overview": "This file controls the grid sizes of the inventory slots for the game’s various UI windows.  These values are measured in pixels on the screen.",
+  "data_fields": [
+    {
+      "name": "class",
+      "description": "This is a reference field to define the type of inventory screen"
+    },
+    {
+      "name": "invLeft",
+      "description": "Starting X coordinate pixel position of the inventory panel"
+    },
+    {
+      "name": "invRight",
+      "description": "Ending X coordinate pixel position of the inventory panel (Includes the “invLeft” value with the inventory width size)"
+    },
+    {
+      "name": "invTop",
+      "description": "Starting Y coordinate pixel position of the inventory panel"
+    },
+    {
+      "name": "invBottom",
+      "description": "Ending Y coordinate pixel position of the inventory panel (Includes the “invTop” value with the inventory height size)"
+    },
+    {
+      "name": "gridX",
+      "description": "Column number size of the inventory grid, measured in the number of grid boxes to use"
+    },
+    {
+      "name": "gridY",
+      "description": "Column row size of the inventory grid, measured in the number of grid boxes to use"
+    },
+    {
+      "name": "gridLeft",
+      "description": "Starting X coordinate location of the inventory’s left grid side"
+    },
+    {
+      "name": "gridRight",
+      "description": "Ending X coordinate location of the inventory’s right grid side (Includes the “gridLeft” value with the grid width size)"
+    },
+    {
+      "name": "gridTop",
+      "description": "Starting Y coordinate location of the inventory’s top grid side"
+    },
+    {
+      "name": "gridBottom",
+      "description": "Ending Y coordinate location of the inventory’s bottom grid side (Includes the “gridTop” value with the grid height size)"
+    },
+    {
+      "name": "gridBoxWidth",
+      "description": "Width size of an inventory’s box cell"
+    },
+    {
+      "name": "gridBoxHeight",
+      "description": "Height size of an inventory’s box cell"
+    },
+    {
+      "name": "rArmLeft",
+      "description": "Starting X coordinate location of the Right Weapon Slot"
+    },
+    {
+      "name": "rArmRight",
+      "description": "Ending X coordinate location of the Right Weapon Slot (Includes the “rArmLeft” value with the “rArmWidth” value)"
+    },
+    {
+      "name": "rArmTop",
+      "description": "Starting Y coordinate location of the Right Weapon Slot"
+    },
+    {
+      "name": "rArmBottom",
+      "description": "Ending Y coordinate location of the Right Weapon Slot (Includes the “rArmTop” value with the “rArmHeight” value)"
+    },
+    {
+      "name": "rArmWidth",
+      "description": "The pixel width of the Right Weapon Slot"
+    },
+    {
+      "name": "rArmHeight",
+      "description": "The pixel Height of the Right Weapon Slot"
+    },
+    {
+      "name": "torsoLeft",
+      "description": "Starting X coordinate location of the Body Armor Slot"
+    },
+    {
+      "name": "torsoRight",
+      "description": "Ending X coordinate location of the Body Armor Slot (Includes the “torsoLeft” value with the “torsoWidth” value)"
+    },
+    {
+      "name": "torsoTop",
+      "description": "Starting Y coordinate location of the Body Armor Slot"
+    },
+    {
+      "name": "torsoBottom",
+      "description": "Ending Y coordinate location of the Body Armor Slot (Includes the “torsoTop” value with the “torsoHeight” value)"
+    },
+    {
+      "name": "torsoWidth",
+      "description": "The pixel width of the Body Armor Slot"
+    },
+    {
+      "name": "torsoHeight",
+      "description": "The pixel Height of the Body Armor Slot"
+    },
+    {
+      "name": "lArmLeft",
+      "description": "Starting X coordinate location of the Left Weapon Slot"
+    },
+    {
+      "name": "lArmRight",
+      "description": "Ending X coordinate location of the Left Weapon Slot (Includes the “lArmLeft” value with the “lArmWidth” value)"
+    },
+    {
+      "name": "lArmTop",
+      "description": "Starting Y coordinate location of the Left Weapon Slot"
+    },
+    {
+      "name": "lArmBottom",
+      "description": "Ending Y coordinate location of the Left Weapon Slot (Includes the “lArmTop” value with the “lArmHeight” value)"
+    },
+    {
+      "name": "lArmWidth",
+      "description": "The pixel width of the Left Weapon Slot"
+    },
+    {
+      "name": "lArmHeight",
+      "description": "The pixel Height of the Left Weapon Slot"
+    },
+    {
+      "name": "headLeft",
+      "description": "Starting X coordinate location of the Helm Slot"
+    },
+    {
+      "name": "headRight",
+      "description": "Ending X coordinate location of the Helm Slot (Includes the “headLeft” value with the “headWidth” value)"
+    },
+    {
+      "name": "headTop",
+      "description": "Starting Y coordinate location of the Helm Slot"
+    },
+    {
+      "name": "headBottom",
+      "description": "Ending Y coordinate location of the Helm Slot (Includes the “headTop” value with the “headHeight” value)"
+    },
+    {
+      "name": "headWidth",
+      "description": "The pixel width of the Helm Slot"
+    },
+    {
+      "name": "headHeight",
+      "description": "The pixel Height of the Helm Slot"
+    },
+    {
+      "name": "neckLeft",
+      "description": "Starting X coordinate location of the Amulet Slot"
+    },
+    {
+      "name": "neckRight",
+      "description": "Ending X coordinate location of the Amulet Slot (Includes the “neckLeft” value with the “neckWidth” value)"
+    },
+    {
+      "name": "neckTop",
+      "description": "Starting Y coordinate location of the Amulet Slot"
+    },
+    {
+      "name": "neckBottom",
+      "description": "Ending Y coordinate location of the Amulet Slot (Includes the “neckTop” value with the “neckHeight” value)"
+    },
+    {
+      "name": "neckWidth",
+      "description": "The pixel width of the Amulet Slot"
+    },
+    {
+      "name": "neckHeight",
+      "description": "The pixel Height of the Amulet Slot"
+    },
+    {
+      "name": "rHandLeft",
+      "description": "Starting X coordinate location of the Right Ring Slot"
+    },
+    {
+      "name": "rHandLeft",
+      "description": "Ending X coordinate location of the Right Ring Slot (Includes the “rHandLeft” value with the “rHandWidth” value)"
+    },
+    {
+      "name": "rHandTop",
+      "description": "Starting Y coordinate location of the Right Ring Slot"
+    },
+    {
+      "name": "rHandBottom",
+      "description": "Ending Y coordinate location of the Right Ring Slot (Includes the “rHandTop” value with the “rHandHeight” value)"
+    },
+    {
+      "name": "rHandWidth",
+      "description": "The pixel width of the Right Ring Slot"
+    },
+    {
+      "name": "rHandHeight",
+      "description": "The pixel Height of the Right Ring Slot"
+    },
+    {
+      "name": "lHandLeft",
+      "description": "Starting X coordinate location of the Left Ring Slot"
+    },
+    {
+      "name": "lHandRight",
+      "description": "Ending X coordinate location of the Left Ring Slot (Includes the “lHandLeft” value with the “lHandWidth” value)"
+    },
+    {
+      "name": "lHandTop",
+      "description": "Starting Y coordinate location of the Left Ring Slot"
+    },
+    {
+      "name": "lHandBottom",
+      "description": "Ending Y coordinate location of the Left Ring Slot (Includes the “lHandTop” value with the “lHandHeight” value)"
+    },
+    {
+      "name": "lHandWidth",
+      "description": "The pixel width of the Left Ring Slot"
+    },
+    {
+      "name": "lHandHeight",
+      "description": "The pixel Height of the Left Ring Slot"
+    },
+    {
+      "name": "beltLeft",
+      "description": "Starting X coordinate location of the Belt Slot"
+    },
+    {
+      "name": "beltRight",
+      "description": "Ending X coordinate location of the Belt Slot (Includes the “beltLeft” value with the “beltWidth” value)"
+    },
+    {
+      "name": "beltTop",
+      "description": "Starting Y coordinate location of the Belt Slot"
+    },
+    {
+      "name": "beltBottom",
+      "description": "Ending Y coordinate location of the Belt Slot (Includes the “beltTop” value with the “beltHeight” value)"
+    },
+    {
+      "name": "beltWidth",
+      "description": "The pixel width of the Belt Slot"
+    },
+    {
+      "name": "beltHeight",
+      "description": "The pixel Height of the Belt Slot"
+    },
+    {
+      "name": "feetLeft",
+      "description": "Starting X coordinate location of the Boots Slot"
+    },
+    {
+      "name": "feetRight",
+      "description": "Ending X coordinate location of the Boots Slot (Includes the “feetLeft” value with the “feetWidth” value)"
+    },
+    {
+      "name": "feetTop",
+      "description": "Starting Y coordinate location of the Boots Slot"
+    },
+    {
+      "name": "feetBottom",
+      "description": "Ending Y coordinate location of the Boots Slot (Includes the “feetTop” value with the “feetHeight” value)"
+    },
+    {
+      "name": "feetWidth",
+      "description": "The pixel width of the Boots Slot"
+    },
+    {
+      "name": "feetHeight",
+      "description": "The pixel Height of the Boots Slot"
+    },
+    {
+      "name": "glovesLeft",
+      "description": "Starting X coordinate location of the Gloves Slot"
+    },
+    {
+      "name": "glovesRight",
+      "description": "Ending X coordinate location of the Gloves Slot (Includes the “glovesLeft” value with the “glovesWidth” value)"
+    },
+    {
+      "name": "glovesTop",
+      "description": "Starting Y coordinate location of the Gloves Slot"
+    },
+    {
+      "name": "glovesBottom",
+      "description": "Ending Y coordinate location of the Gloves Slot (Includes the “glovesTop” value with the “glovesHeight” value)"
+    },
+    {
+      "name": "glovesWidth",
+      "description": "The pixel width of the Gloves Slot"
+    },
+    {
+      "name": "glovesHeight",
+      "description": "The pixel Height of the Gloves Slot"
+    }
+  ],
+  "filename": "inventory.txt"
+}

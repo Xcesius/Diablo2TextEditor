@@ -1,0 +1,42 @@
+{
+  "overview": "This file controls the experience required for each level by each class",
+  "data_fields": [
+    {
+      "name": "Level",
+      "description": "This is a reference field to define the level"
+    },
+    {
+      "name": "Amazon",
+      "description": "Controls the experience required for each level with the Amazon class"
+    },
+    {
+      "name": "Sorceress",
+      "description": "Controls the experience required for each level with the Sorceress class"
+    },
+    {
+      "name": "Necromancer",
+      "description": "Controls the experience required for each level with the Necromancer class"
+    },
+    {
+      "name": "Paladin",
+      "description": "Controls the experience required for each level with the Paladin class"
+    },
+    {
+      "name": "Barbarian",
+      "description": "Controls the experience required for each level with the Barbarian class"
+    },
+    {
+      "name": "Druid",
+      "description": "Controls the experience required for each level with the Druid class"
+    },
+    {
+      "name": "Assassin",
+      "description": "Controls the experience required for each level with the Assassin class"
+    },
+    {
+      "name": "ExpRatio",
+      "description": "This multiplier affects the percentage of experienced earned, based on the level (Calculated in 1024ths by default, but this can be changed by updating the “10” value in the “Maxlvl” row)"
+    }
+  ],
+  "filename": "experience.txt"
+}

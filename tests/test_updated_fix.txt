@@ -1,0 +1,5 @@
+description	enabled	ladder	numinputs	input 1	input 2	input 3	output	*eol
+3 t1-> new t2	1	4	3	"t1me,qty=2"	"t1me"	"upmp,qty=1"	"t2me,nor"	0
+3 t2-> new t3	1	4	4	"t2me,qty=1"	"t2me"	"t2me"	"t3me,nor"	0
+r33 + weapon -> repair + recharge	1		3	"weap"	"r33g,qty=1"	"gg4z,qty=1"	"useitem,rep,rch,qty=255"	0
+relic of the false prophet -> replica	1	2	1	"rofp"			Replica Arm of King Leoric	

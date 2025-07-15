@@ -1,0 +1,5 @@
+description	enabled	ladder	version	op	param	value	numinputs	input 1	input 2	input 3	output	lvl	*eol
+MAPS													0
+t1 map upgrade mag to rare	1	4	100	18	361	0	4	"t1me,mag"	"runs,qty=1"	"gg4z,qty=1"	"usetype,rar"		0
+Staff of Kings + Viper amulet -> Horadric Staff	1		0	28			2	msf	vip		hst		0
+relic of the false prophet -> replica	1	2	100	16	509	111	1	"rofp"			Replica Arm of King Leoric	120	

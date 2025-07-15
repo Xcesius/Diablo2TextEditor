@@ -1,0 +1,162 @@
+{
+  "overview": "This file controls the recipes for the Horadric Cube  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "description",
+      "description": "This is a reference field to define the cube recipe"
+    },
+    {
+      "name": "enabled",
+      "description": "Boolean field. If equals 1, then the recipe can be used in-game. If equals 0, then the recipe cannot be used in-game."
+    },
+    {
+      "name": "firstLadderSeason",
+      "description": "Integer field. The first ladder season this cube recipe can be made on (inclusive). If blank or 0 then it is available in non-ladder."
+    },
+    {
+      "name": "lastLadderSeason",
+      "description": "Integer field. The last ladder season this cube recipe is ladder-only (inclusive). Must be used in conjunction with firstLadderSeason."
+    },
+    {
+      "name": "min diff",
+      "description": "The minimum game difficulty to use the recipe (0 = All Game Difficulties | 1 = Nightmare and Hell Difficulty only | 2 = Hell Difficulty only)"
+    },
+    {
+      "name": "version",
+      "description": "Defines which game version to use this recipe (0 = Classic mode | 100 = Expansion mode)"
+    },
+    {
+      "name": "op",
+      "description": "Uses a function as an additional input requirement for the recipe Op ID (empty) 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 Parameters Description param value value param value param value param value param value param value param value param value param value param value param value param value param value param value param value param value param Do nothing Require that the current day of the month is less than “param” or greater than “value” Require that the current day of the week does not equal “value” (0=None, 1=Sunday, 2=Monday, 3=Tuesday, 4=Wednesday, 5=Thursday, 6=Friday, 7=Saturday) Require that the player’s current stat (using “param” as the stat ID from ItemStatCost.txt) is greater than “value” Require that the player’s current stat (using “param” as the stat ID from ItemStatCost.txt) is less than “value” Require that the player’s current stat (using “param” as the stat ID from ItemStatCost.txt) is not equal to “value” Require that the player’s current stat (using “param” as the stat ID from ItemStatCost.txt) is equal to “value” Require that the player’s base stat (using “param” as the stat ID from ItemStatCost.txt) is greater than “value” Require that the player’s base stat (using “param” as the stat ID from ItemStatCost.txt) is less than “value” Require that the player’s base stat (using “param” as the stat ID from ItemStatCost.txt) is not equal to “value” Require that the player’s base stat (using “param” as the stat ID from ItemStatCost.txt) is equal to “value” Require that the player’s non-base stat (using “param” as the stat ID from ItemStatCost.txt) is greater than “value” Require that the player’s non-base stat (using “param” as the stat ID from ItemStatCost.txt) is less than “value” Require that the player’s non-base stat (using “param” as the stat ID from ItemStatCost.txt) is not equal to “value” Require that the player’s non-base stat (using “param” as the stat ID from ItemStatCost.txt) is equal to “value” Require that the input item’s current stat (using “param” as the stat ID from ItemStatCost.txt) is greater than “value” Require that the input item’s current stat (using “param” as the stat ID from ItemStatCost.txt) is less than “value” Require that the input item’s current stat (using “param” as the stat ID from ItemStatCost.txt) is not equal to “value” Require that the input item’s current stat (using “param” as the stat ID from ItemStatCost.txt) is equal to “value” value param value param value param value param value param value param value param value param value value 19 20 21 22 23 24 25 26 27 28 Require that the input item’s base stat (using “param” as the stat ID from ItemStatCost.txt) is greater than “value” Require that the input item’s base stat (using “param” as the stat ID from ItemStatCost.txt) is less than “value” Require that the input item’s base stat (using “param” as the stat ID from ItemStatCost.txt) is not equal to “value” Require that the input item’s base stat (using “param” as the stat ID from ItemStatCost.txt) is equal to “value” Require that the input item’s non-base stat (using “param” as the stat ID from ItemStatCost.txt) is greater than “value” Require that the input item’s non-base stat (using “param” as the stat ID from ItemStatCost.txt) is less than “value” Require that the input item’s non-base stat (using “param” as the stat ID from ItemStatCost.txt) is not equal to “value” Require that the input item’s non-base stat (using “param” as the stat ID from ItemStatCost.txt) is equal to “value” Require that the item’s Mod Class is not equal to “value”. An item’s Mod Class value can be the item’s unique ID or quality type, depending on the case. Checks that the item has the Quest and QuestDiffCheck flag, then ensures that the item’s quest difficulty is greater than the game’s difficulty level"
+    },
+    {
+      "name": "param",
+      "description": "Integer value used as a possible parameter for the “op” function"
+    },
+    {
+      "name": "value",
+      "description": "Integer value used as a possible parameter for the “op” function"
+    },
+    {
+      "name": "class",
+      "description": "Defines the recipe to be only usable by a defined class Description Code (empty) Any Class ama bar pal nec sor dru ass Amazon only Barbarian only Paladin only Necromancer only Sorceress only Druid only Assassin only"
+    },
+    {
+      "name": "numinputs",
+      "description": "Controls the number of items that need to be inside the cube for the recipe"
+    },
+    {
+      "name": "input 1 (to input7)",
+      "description": "Controls what items are required for the recipe. Uses the item’s unique code. Users can also add input parameters by adding a comma “,” to the input and using a code. Description The number (#) of this item type required for the recipe Low Quality Normal Quality High Quality (Superior) Magic Item Set Item Rare Item Unique Item Crafted Item Tempered Item Item with no sockets Code qty=# low nor hiq mag set rar uni crf tmp nos sock=# Item with sockets, where # defines the number of sockets noe eth upg bas exc eli nru Item that is not Ethereal Item that is Ethereal Item that allows Upgrades Basic Item Exceptional Item Elite Item Item is not a Rune Word"
+    },
+    {
+      "name": "output",
+      "description": "Controls the first output item. Uses the item’s unique code. Users can also add output parameters by adding a comma “,” to the output and using a code. Code Cow Portal Pandemonium Portal Pandemonium Finale Portal Red Portal usetype useitem qty=# pre=# suf=# low nor hiq Description Special code to create the Portal to the Moo Moo Farm Special code to randomly create 1 of the 3 Pandemonium Portals: (The Matron’s Den / The Forgotten Sands / The Furnace of Pain) (Does not create duplicate portals in the same game) Special code to create the Portal to Uber Tristram Special code to create a permanent Red Portal to a Level ID. The Level ID is determined by the output “qty=#” code. Use the same item type as “input 1” for the output item’s type Use the item from “input 1” as the output item The number (#) of this item type created Force the output item to have an item prefix, where # equals the ID of the prefix (see the row count on MagicPrefix.txt) Force the output item to have an item suffix, where # equals the ID of the suffix (see the row count on MagicSuffix.txt) Low Quality Item Normal Item High Quality Item (Superior) mag set rar uni crf tmp eth sock mod uns rem reg exc eli rep rch lvl=# Magic Item Set Item Rare Item Unique Item Crafted Item Tempered Item Ethereal Item Item with sockets, where # defines the number of sockets Use the item modifiers from “input 1” as the output item’s modifiers Destroy all gems/runes/jewels in the item’s sockets Remove all gems/runes/jewels in the item’s sockets If the function has “usetype” and if the item is a Unique, then regenerate/reroll the Unique Exceptional Item Elite Item Repair the Item Recharge all of the skill charges on the Item The number (#) of this item type created (same as “qty=#”)"
+    },
+    {
+      "name": "lvl",
+      "description": "Forces the output item level to be a specific level. If this field is used, then ignore the “plvl” and “ilvl” fields."
+    },
+    {
+      "name": "plvl",
+      "description": "This is a numeric ratio that gets multiplied with the current player’s level, to add to the output item’s level requirement"
+    },
+    {
+      "name": "ilvl",
+      "description": "This is a numeric ratio that gets multiplied with “input 1” item’s level, to add to the output item’s level requirement"
+    },
+    {
+      "name": "mod 1 (to mod 5)",
+      "description": "Controls the output item properties (Uses the “code” field from Properties.txt)"
+    },
+    {
+      "name": "mod 1 chance (to mod 5 chance)",
+      "description": "The percent chance that the property will be assigned. If this equals 0, then the Property will always be assigned."
+    },
+    {
+      "name": "mod 1 param (to mod 5 param)",
+      "description": "The “parameter” value associated with the listed property (mod). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "mod 1 min (to mod 5 min)",
+      "description": "The “min” value to assign to the listed property (mod). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "mod 1 max (to mod 5 max)",
+      "description": "The “max” value to assign to the listed property (mod). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "output b",
+      "description": "Controls the second output item. Uses the item’s unique code. Users can also add output parameters by adding a comma “,” to the output and using a code. (See “output” for more details)"
+    },
+    {
+      "name": "b lvl",
+      "description": "Forces the output item level to be a specific level. If this field is used, then ignore the “plvl” and “ilvl” fields."
+    },
+    {
+      "name": "b plvl",
+      "description": "This is a numeric ratio that gets multiplied with the current player’s level, to add to the output item’s level requirement"
+    },
+    {
+      "name": "b ilvl",
+      "description": "This is a numeric ratio that gets multiplied with “input 2” item’s level, to add to the output item’s level requirement"
+    },
+    {
+      "name": "b mod 1 (to b mod 5)",
+      "description": "Controls the output item properties (Uses the “code” field from Properties.txt)"
+    },
+    {
+      "name": "b mod 1 chance (to b mod 5 chance)",
+      "description": "The percent chance that the property will be assigned. If this equals 0, then the Property will always be assigned."
+    },
+    {
+      "name": "b mod 1 param (to b mod 5 param)",
+      "description": "The “parameter” value associated with the listed property (mod). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "b mod 1 min (to b mod 5 min)",
+      "description": "The “min” value to assign to the listed property (mod). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "b mod 1 max (to b mod 5 max)",
+      "description": "The “max” value to assign to the listed property (mod). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "output c",
+      "description": "Controls the third output item. Uses the item’s unique code. Users can also add output parameters by adding a comma “,” to the output and using a code. (See “output” for more details)"
+    },
+    {
+      "name": "c lvl",
+      "description": "Forces the output item level to be a specific level. If this field is used, then ignore the “plvl” and “ilvl” fields."
+    },
+    {
+      "name": "c plvl",
+      "description": "This is a numeric ratio that gets multiplied with the current player’s level, to add to the output item’s level requirement"
+    },
+    {
+      "name": "c ilvl",
+      "description": "This is a numeric ratio that gets multiplied with “input 3” item’s level, to add to the output item’s level requirement"
+    },
+    {
+      "name": "c mod 1 (to c mod 5)",
+      "description": "Controls the output item properties (Uses the “code” field from Properties.txt)"
+    },
+    {
+      "name": "c mod 1 chance (to c mod 5 chance)",
+      "description": "The percent chance that the property will be assigned. If this equals 0, then the Property will always be assigned."
+    },
+    {
+      "name": "c mod 1 param (to c mod 5 param)",
+      "description": "The “parameter” value associated with the listed property (mod). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "c mod 1 min (to c mod 5 min)",
+      "description": "The “min” value to assign to the listed property (mod). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "c mod 1 max (to c mod 5 max)",
+      "description": "The “max” value to assign to the listed property (mod). Usage depends on the property function (See the “func” field on Properties.txt)"
+    }
+  ],
+  "filename": "cubemain.txt"
+}

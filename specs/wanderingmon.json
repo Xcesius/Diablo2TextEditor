@@ -1,0 +1,10 @@
+{
+  "overview": "This file controls the list of monsters that can be used as good NPC units to randomly place in certain area levels. The “actinfo.txt” file controls the statistics on when to spawn wandering monsters, and this file simply controls the list of possible monsters to choose from.",
+  "data_fields": [
+    {
+      "name": "class",
+      "description": "Uses a monster “Id” defined from the monstats.txt file. Monsters defined here are added to a list which is used to randomly pick a monster to spawn in an area level."
+    }
+  ],
+  "filename": "wanderingmon.txt"
+}

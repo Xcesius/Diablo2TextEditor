@@ -1,0 +1,114 @@
+{
+  "overview": "This file controls the values for each Level Preset. A Level Preset is a static area composed of tiles that is used to construct entire area levels found in the game.  Any column field name starting with “*” is considered a comment field and is not used by the game   This file controls how tiles can be substituted in for other tiles. The game will divide the level into clusters and iterate through these clusters to randomly substitute tiles with different ones for more visual diversity.",
+  "data_fields": [
+    {
+      "name": "Name",
+      "description": "This is a reference field to define the Level Preset"
+    },
+    {
+      "name": "Def",
+      "description": "Defines the unique numeric ID for the Level Preset. This is referenced in other files."
+    },
+    {
+      "name": "LevelId",
+      "description": "This refers to the “Id” field from the Levels.txt file. If this value is not equal to 0, then this Level Preset is used to build that entire area level. If this value is equal to 0, then the Level Preset does not define the entire area level and is used as a part of constructing area levels."
+    },
+    {
+      "name": "Populate",
+      "description": "Boolean Field. If equals 1, then units are allowed to spawn in the Level Preset. If equals 0, then units will never spawn in the Level Preset."
+    },
+    {
+      "name": "Logicals",
+      "description": "Boolean Field. If equals 1, then the Level Preset allow for wall transparency to function. If equals 0, then walls will always appear solid."
+    },
+    {
+      "name": "Outdoors",
+      "description": "Boolean Field. If equals 1, then the Level Preset will be classified as an outdoor area, which can mean that lighting will function differently. If equals 0, then the Level Preset will be classified as an indoor area."
+    },
+    {
+      "name": "Animate",
+      "description": "Boolean Field. If equals 1, then the game will animate the tiles in the Level Preset. If equals 0, then ignore this."
+    },
+    {
+      "name": "KillEdge",
+      "description": "Boolean Field. If equals 1, then the game will remove tiles that border the size of the Level Preset. If equals 0, then ignore this."
+    },
+    {
+      "name": "FillBlanks",
+      "description": "Boolean Field. If equals 1, then all blank tiles in the Level Preset will be filled with unwalkable tiles. If equals 0, then ignore this."
+    },
+    {
+      "name": "SizeX & SizeY",
+      "description": "Specifies the Length and Width tile size values of the Level Preset, which are used for determining how big to build area levels. These values are equal to 0 for Level Presets that are static."
+    },
+    {
+      "name": "AutoMap",
+      "description": "Boolean Field. If equals 1, then this Level Preset will be automatically completely revealed on the Automap. If equals 0, then this Level Preset will be hidden on the Automap and will need to be explored."
+    },
+    {
+      "name": "Scan",
+      "description": "Boolean Field. If equals 1, then this Level Preset will allow the usage of warping with waypoints (This requires that the Level Preset has a waypoint object). If equals 0, then ignore this."
+    },
+    {
+      "name": "Pops",
+      "description": "Defines how many Pop tiles are defined in the Level Preset file. These Pop tiles are mainly used for controlling the roof and wall popping when a player enters a building in an area."
+    },
+    {
+      "name": "PopPad",
+      "description": "Determines the size of the Pop tile area, by using an offset value. This offset value can increase or decrease the size of the Pop tile size if it has a positive or negative value."
+    },
+    {
+      "name": "Files",
+      "description": "Determines the number of different versions to use for the Level Preset. This value acts as a range, which the game will use for randomly choosing one of the “File#” fields to build the Level Preset. This is how the Level Presets have variety when the area level is being built."
+    },
+    {
+      "name": "File1 (to File6)",
+      "description": "Specifies the name of which ds1 file to use. The ds1 files contain data for building Level Presets. If this value equals 0, then this field will be ignored. The number of these defined fields should match the value used in the “Files” field."
+    },
+    {
+      "name": "Dt1Mask",
+      "description": "This functions as a bit field mask with a size of a 32 bit value. This explains to the ds1 file which of the 32 dt1 tile files to use from a Level Type when assembling the Level Preset. Each “File#” field from LevelType.txt is assigned a bit value, up to the 32 possible bit values. (For example: File1 = 1, File2=2, File3 = 4, File4=8, File5=16….File32 = 2147483648). To build the “Dt1Mask”, you would select which “File#” fields to use from LevelTypes.txt and add their associated bit values together for a total value. This total value is the bitmask value. LvlSub.txt"
+    },
+    {
+      "name": "Name",
+      "description": "This is a reference field to describe the Level Substitution"
+    },
+    {
+      "name": "Type",
+      "description": "This refers to the “SubType” field from the Levels.txt file. This defines a group that multiple substitutions can share."
+    },
+    {
+      "name": "File",
+      "description": "Specifies the name of which ds1 file to use. The ds1 files contain data for building Level Presets."
+    },
+    {
+      "name": "CheckAll",
+      "description": "Boolean Field. If equals 1, then substitute each tile in the room. If equals 0, then substitute random tiles in the room."
+    },
+    {
+      "name": "BordType",
+      "description": "This controls how often substituting tiles can work for border tiles Code 0 1 Other values Description Single One Only. This allows substituting for 1 border in total One Per Cluster. This allows substituting 1 border for each cluster in the level Allow substituting borders for all of the level"
+    },
+    {
+      "name": "GridSize",
+      "description": "Controls the tile size of a cluster for substituting tiles. This evenly affects both the X and Y size values of a room."
+    },
+    {
+      "name": "Dt1Mask",
+      "description": "This functions as a bit field mask with a size of a 32 bit value. This explains to the ds1 file which of the 32 dt1 tile files to use from a Level Type when assembling selecting a tile for substitution. Each “File#” field from LevelType.txt is assigned a bit value, up to the 32 possible bit values. (For example: File1 = 1, File2=2, File3 = 4, File4=8, File5=16….File32 = 2147483648). To build the “Dt1Mask”, you would select which “File#” fields to use from LevelTypes.txt and add their associated bit values together for a total value. This total value is the bitmask value."
+    },
+    {
+      "name": "Prob0 (to Prob4)",
+      "description": "This value affects the probability that the tile substitution is used. This is a random chance out of 100. Which “Prob#” field that is checked depends on the “SubTheme” value from the Levels.txt file."
+    },
+    {
+      "name": "Trials0 (to Trials4)",
+      "description": "Controls the number of times to randomly substitute tiles in a cluster. If this value equals -1, then the game will try to do as many tile substitutions that can be allowed based on the cluster and tile size. This field depends on the “CheckAll” field being equals to 0."
+    },
+    {
+      "name": "Max0 (to Max4)",
+      "description": "The maximum number of clusters of tiles to substitute randomly. This field depends on the “CheckAll” field being equals to 0."
+    }
+  ],
+  "filename": "LvlPrest.txt"
+}

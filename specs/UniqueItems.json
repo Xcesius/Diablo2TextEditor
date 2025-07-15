@@ -1,0 +1,114 @@
+{
+  "overview": "This file defines each Unique item and controls their item modifiers.  The row order of items should not be changed because it defines their ID value.  Any column field name starting with “*” is considered a comment field and is not used by the game.   This file controls the list of strings that are randomly selected to be used as the prefix when generating unique monster names  This is always added to every unique monster name   This file controls the list of strings that are randomly selected to be used as the suffix when generating unique monster names  This is always added to every unique monster name",
+  "data_fields": [
+    {
+      "name": "index",
+      "description": "Points to a string key value to use as the Unique item’s name"
+    },
+    {
+      "name": "version",
+      "description": "Defines which game version to create this item (<100 = Classic mode | 100 = Expansion mode)"
+    },
+    {
+      "name": "enabled",
+      "description": "Boolean Field. If equals 1, then this item can be rolled as a choice when randomly dropping a unique. If equals 0, then this item cannot be dropped randomly, but can still be drop explicitly from a treasure class."
+    },
+    {
+      "name": "firstLadderSeason",
+      "description": "Integer field. The first ladder season the unique item can be Dropped or created on (inclusive). If blank or 0 then it is available in non-ladder."
+    },
+    {
+      "name": "lastLadderSeason",
+      "description": "Integer field. The last ladder season the unique item is ladder-only (inclusive). Must be used in conjunction with firstLadderSeason."
+    },
+    {
+      "name": "rarity",
+      "description": "Modifies the chances that this Unique item will spawn compared to the other Unique items. This value acts as a numerator and a denominator. Each “rarity” value gets summed together to give a total denominator, used for the random roll for the item. For example, if there are 3 possible Unique items, and their “rarity” values are 3, 5, 7, then their chances to be chosen are 3/15, 5/15, and 7/15 respectively. (The minimum “rarity” value equals 1) (Only works for games in Expansion mode)"
+    },
+    {
+      "name": "nolimit",
+      "description": "Boolean Field. Requires the “quest” field from the misc.txt file to be enabled. If equals 1, then this item can be created and will automatically be identified. If equals 0, then ignore this."
+    },
+    {
+      "name": "lvl",
+      "description": "The item level for the item, which controls what object or monster needs to be in order to drop this item"
+    },
+    {
+      "name": "lvl req",
+      "description": "The minimum character level required to equip the item"
+    },
+    {
+      "name": "code",
+      "description": "Defines the baseline item code to use for this Unique item (must match the “code” field value from weapons.txt, armor.txt, or misc.txt)"
+    },
+    {
+      "name": "carry1",
+      "description": "Boolean Field. If equals 1, then players can only carry one of these items in their inventory. If equals 0, then ignore this."
+    },
+    {
+      "name": "cost mult",
+      "description": "Multiplicative modifier for the Unique item’s buy, sell, and repair costs"
+    },
+    {
+      "name": "cost add",
+      "description": "Flat integer modification to the Unique item’s buy, sell, and repair costs. This is added after the “cost mult” has modified the costs."
+    },
+    {
+      "name": "chrtransform",
+      "description": "Controls the color change of the item when equipped on a character or dropped on the ground. If empty, then the item will have the default item color. (Uses Color Codes from the reference file colors.txt) Code Color No color change White Light Grey Dark Grey Black whit lgry dgry blac Light Blue Dark Blue Crystal Blue Light Red Dark Red Crystal Red Light Green Dark Green Crystal Green Light Yellow Dark Yellow Light Gold Dark Gold Light Purple Dark Purple Orange Bright White lblu dblu cblu lred dred cred lgrn dgrn cgrn lyel dyel lgld dgld lpur dpur oran bwht"
+    },
+    {
+      "name": "invtransform",
+      "description": "Controls the color change of the item in the inventory UI. If empty, then the item will have the default item color. (Uses Color Codes from the reference file colors.txt) Code Color No color change White Light Grey Dark Grey Black Light Blue Dark Blue Crystal Blue Light Red Dark Red Crystal Red Light Green Dark Green Crystal Green Light Yellow Dark Yellow Light Gold Dark Gold Light Purple Dark Purple Orange Bright White whit lgry dgry blac lblu dblu cblu lred dred cred lgrn dgrn cgrn lyel dyel lgld dgld lpur dpur oran bwht"
+    },
+    {
+      "name": "invfile",
+      "description": "An override for the “invfile” field from the weapon.txt, armor.txt, or misc.txt files. By default, the Unique item will use what was defined by the baseline item from the “item” field."
+    },
+    {
+      "name": "flippyfile",
+      "description": "An override for the “flippyfile” field from the weapon.txt, armor.txt, or misc.txt files. By default, the Unique item will use what was defined by the baseline item from the “item” field."
+    },
+    {
+      "name": "dropsound",
+      "description": "An override for the “dropsound” field from the weapon.txt, armor.txt, or misc.txt files. By default, the Unique item will use what was defined by the baseline item from the “item” field."
+    },
+    {
+      "name": "dropsfxframe",
+      "description": "An override for the “dropsfxframe” field from the weapon.txt, armor.txt, or misc.txt files. By default, the Unique item will use what was defined by the baseline item from the “item” field."
+    },
+    {
+      "name": "usesound",
+      "description": "An override for the “usesound” field from the weapon.txt, armor.txt, or misc.txt files. By default, the Unique item will use what was defined by the baseline item from the “item” field."
+    },
+    {
+      "name": "prop1 (to prop12)",
+      "description": "Controls the item properties for the Unique item (Uses the “code” field from Properties.txt)"
+    },
+    {
+      "name": "par1 (to par12)",
+      "description": "The stat’s “parameter” value associated with the related property (prop#). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "min1 (to min12)",
+      "description": "The stat’s “min” value to assign to the related property (prop#). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "max1 (to max12)",
+      "description": "The stat’s “max” value to assign to the related property (prop#). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "diablocloneweight",
+      "description": "The amount of weight added to the diablo clone progress when this item is sold. When offline, selling this item will instead immediately spawn diablo clone. UniquePrefix.txt"
+    },
+    {
+      "name": "Name",
+      "description": "A string key, which is used as a potential selection for generating a unique monster’s name UniqueSuffix.txt"
+    },
+    {
+      "name": "Name",
+      "description": "A string key, which is used as a potential selection for generating a unique monster’s name"
+    }
+  ],
+  "filename": "UniqueItems.txt"
+}

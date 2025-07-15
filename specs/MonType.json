@@ -1,0 +1,22 @@
+{
+  "overview": "This file handles the classification, naming conventions and element of monsters  This is used by the monstats.txt data file",
+  "data_fields": [
+    {
+      "name": "type",
+      "description": "Defines the unique monster type ID"
+    },
+    {
+      "name": "equiv1 (to equiv3)",
+      "description": "Points to the index of another Monster Type to reference as a parent. This is used to create a hierarchy for Monster Types where the parents will have more universal settings shared across the related children"
+    },
+    {
+      "name": "strplur",
+      "description": "Uses a string for the plural form of the monster type. This is used for the “descfunc” code 22 function from the ItemStatCost.txt file, based on the monster type selected."
+    },
+    {
+      "name": "element",
+      "description": "Defines the monster’s element type. This can be used for the Necromancer’s Raise Skeletal Mage skill for determining what elemental type a Skeletal Mage should be based on the monster it was raised from (If the monster has no element, then the skeletal mage element will be randomly selected). Code (empty) pois cold fire ltng Description Any Element Poison Cold Fire Lightning"
+    }
+  ],
+  "filename": "MonType.txt"
+}

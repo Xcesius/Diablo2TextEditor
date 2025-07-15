@@ -1,0 +1,366 @@
+{
+  "overview": "This file controls the functionalities for weapons type items  This file is loaded together with other similar files in the following order: weapons.txt, armor.txt, misc.txt These combined files form the items structure. Technically these files share the same fields, but some fields are exclusive for specific item types, so they are not displayed in the data files that do not need them.  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "name",
+      "description": "This is a reference field to define the item"
+    },
+    {
+      "name": "version",
+      "description": "Defines which game version to create this item (0 = Classic mode | 100 = Expansion mode)"
+    },
+    {
+      "name": "compactsave",
+      "description": "Boolean Field. If equals 1, then only the item’s base stats will be stored in the character save, but not any modifiers or additional stats. If equals 0, then all of the items stats will be saved."
+    },
+    {
+      "name": "rarity",
+      "description": "Determines the chance that the item will randomly spawn (1/#). The higher the value then the rarer the item will be. This field depends on the “spawnable” field being enabled, the “quest” field being disabled, and the item level being less than or equal to the area level. This value is also affected by the relative Act number that the item is dropping in, where the higher the Act number, then the more common the item will drop."
+    },
+    {
+      "name": "spawnable",
+      "description": "Boolean Field. If equals 1, then this item can be randomly spawned. If equals 0, then this item will never randomly spawn."
+    },
+    {
+      "name": "speed",
+      "description": "If the item type is an armor, then this will affect the Walk/Run Speed reduction when wearing the armor. If the item type is a weapon, then this will affect the Attack Speed reduction when wearing the weapon."
+    },
+    {
+      "name": "reqstr",
+      "description": "Defines the amount of the Strength attribute needed to use the item"
+    },
+    {
+      "name": "reqdex",
+      "description": "Defines the amount of the Dexterity attribute needed to use the item"
+    },
+    {
+      "name": "durability",
+      "description": "Defines the base durability amount that the item will spawn with."
+    },
+    {
+      "name": "nodurability",
+      "description": "Boolean Field. If equals 1, then the item will not have durability. If equals 0, then the item will have durability."
+    },
+    {
+      "name": "level",
+      "description": "Controls the base item level. This is used for determining when the item is allowed to drop, such as making sure that the item level is not greater than the monster’s level or the area level."
+    },
+    {
+      "name": "ShowLevel",
+      "description": "Boolean Field. If equals 1, then display the item level next to the item name. If equals 0, then ignore this."
+    },
+    {
+      "name": "levelreq",
+      "description": "Controls the player level requirement for being able to use the item"
+    },
+    {
+      "name": "cost",
+      "description": "Defines the base gold cost of the item when being sold by an NPC. This can be affected by item modifiers and the rarity of the item."
+    },
+    {
+      "name": "gamble cost",
+      "description": "Defines the gambling gold cost of the item on the Gambling UI"
+    },
+    {
+      "name": "code",
+      "description": "Defines a unique 3 letter/number code for the item. This is used as an identifier to reference the item."
+    },
+    {
+      "name": "namestr",
+      "description": "String Key that is used for the base item name"
+    },
+    {
+      "name": "magic lvl",
+      "description": "Defines the magic level of the item, which can affect how magical item modifiers that can appear on the item (See automagic.txt)"
+    },
+    {
+      "name": "auto prefix",
+      "description": "Automatically picks an item affix name from a designated “group” value from the automagic.txt file, instead of using random prefixes. This is only used when the item is Magical quality."
+    },
+    {
+      "name": "alternategfx",
+      "description": "Uses a unique 3 letter/number code similar to the defined “code” fields to determine what in-game graphics to display on the player character when the item is equipped"
+    },
+    {
+      "name": "normcode",
+      "description": "Links to a “code” field to determine the normal version of the item"
+    },
+    {
+      "name": "ubercode",
+      "description": "Links to a “code” field to determine the Exceptional version of the item"
+    },
+    {
+      "name": "ultracode",
+      "description": "Links to a “code” field to determine the Elite version of the item"
+    },
+    {
+      "name": "component",
+      "description": "Determines the layer of player animation when the item is equipped. This uses a code referenced from the Composit.txt file. Code 0 1 2 Description Head Torso Legs 3 4 5 6 7 8 9 10 11 12 13 14 15 16 Right Arm Left Arm Right Hand Left Hand Shield Special 1 Special 2 Special 3 Special 4 Special 5 Special 6 Special 7 Special 8 Do not display anything"
+    },
+    {
+      "name": "invwidth & invheight",
+      "description": "Defines the width and height of grid cells that the item occupies in the player inventory"
+    },
+    {
+      "name": "hasinv",
+      "description": "Boolean Field. If equals 1, then the item will have its own inventory allowing for the capability to socket gems, runes, or jewels. If equals 0, then the item cannot have sockets."
+    },
+    {
+      "name": "gemsockets",
+      "description": "Controls the maximum number of sockets allowed on this item. This is limited by the item’s size based on the “invwidth” and “invheight” fields. This also compares with the “MaxSock1”, “MaxSock25” and “MaxSock40” fields from the ItemTypes.txt file."
+    },
+    {
+      "name": "gemapplytype",
+      "description": "Determines which affect from a gem or rune will be applied when it is socketed into this item (See gems.txt) Code 0 1 2 Description Weapon Armor or Helmet Shield"
+    },
+    {
+      "name": "flippyfile",
+      "description": "Controls which DC6 file to use for displaying the item in the game world when it is dropped on the ground (uses the file name as the input)"
+    },
+    {
+      "name": "invfile",
+      "description": "Controls which DC6 file to use for displaying the item graphics in the inventory (uses the file name as the input)"
+    },
+    {
+      "name": "uniqueinvfile",
+      "description": "Controls which DC6 file to use for displaying the item graphics in the inventory when it is a Unique quality item (uses the file name as the input)"
+    },
+    {
+      "name": "setinvfile",
+      "description": "Controls which DC6 file to use for displaying the item graphics in the inventory when it is a Set quality item (uses the file name as the input)"
+    },
+    {
+      "name": "useable",
+      "description": "Boolean Field. If equals 1, then the item can be used with the right-click mouse button command (this only works with specific belt items or quest items). If equals 0, then ignore this."
+    },
+    {
+      "name": "stackable",
+      "description": "Boolean Field. If equals 1, then the item will use a quantity field and handle stacking functionality. This can depend on if the item type is throwable, is a type of ammunition, or is some other kind of miscellaneous item. If equals 0, then the item cannot be stacked."
+    },
+    {
+      "name": "minstack",
+      "description": "Controls the minimum stack count or quantity that is allowed on the item. This field depends on the “stackable” field being enabled."
+    },
+    {
+      "name": "maxstack",
+      "description": "Controls the maximum stack count or quantity that is allowed on the item. This field depends on the “stackable” field being enabled."
+    },
+    {
+      "name": "spawnstack",
+      "description": "Controls the stack count or quantity that the item can spawn with. This field depends on the “stackable” field being enabled."
+    },
+    {
+      "name": "Transmogrify",
+      "description": "Boolean Field. If equals 1, then the item will use the transmogrify function. If equals 0, then ignore this. This field depends on the “useable” field being enabled."
+    },
+    {
+      "name": "TMogType",
+      "description": "Links to a “code” field to determine which item is chosen to transmogrify this item to."
+    },
+    {
+      "name": "TMogMin",
+      "description": "Controls the minimum quantity that the transmogrify item will have. This depends on what item was chosen in the “TMogType” field, and that the transmogrify item has quantity."
+    },
+    {
+      "name": "TMogMax",
+      "description": "Controls the minimum quantity that the transmogrify item will have. This depends on what item was chosen in the “TMogType” field, and that the transmogrify item has quantity."
+    },
+    {
+      "name": "type",
+      "description": "Points to an Item Type defined in the ItemTypes.txt file, which controls how the item functions"
+    },
+    {
+      "name": "type2",
+      "description": "Points to a secondary Item Type defined in the ItemTypes.txt file, which controls how the item functions. This is optional but can add more functionalities and possibilities with the item."
+    },
+    {
+      "name": "dropsound",
+      "description": "Points to sound defined in the sounds.txt file. Used when the item is dropped on the ground."
+    },
+    {
+      "name": "dropsfxframe",
+      "description": "Defines which frame in the “flippyfile” animation to play the “dropsound” sound when the item is dropped on the ground."
+    },
+    {
+      "name": "usesound",
+      "description": "Points to sound defined in the sounds.txt file. Used when the item is moved in the inventory or used."
+    },
+    {
+      "name": "unique",
+      "description": "Boolean Field. If equals 1, then the item can only spawn as a Unique quality type. If equals 0, then the item can spawn as other quality types."
+    },
+    {
+      "name": "transparent",
+      "description": "Boolean Field. If equals 1, then the item will be drawn transparent on the player model (similar to ethereal models). If equals 0, then the item will appear solid on the player model."
+    },
+    {
+      "name": "transtbl",
+      "description": "Controls what type of transparency to use, based on the “transparent” field being enabled. Code 0 1 2 3 4 5 6 7 8 Description Transparency at 25% Transparency at 50% Transparency at 75% Black Alpha Transparency White Alpha Transparency No Transparency Dark Transparency (Unused) Highlight Transparency (Used when mousing over the unit) Blended"
+    },
+    {
+      "name": "lightradius",
+      "description": "Controls the value of the light radius that this item can apply on the monster. This only affects monsters with this item equipped, not other types of units. This is ignored if the item’s component on the monster is “lit”, “med”, or “hvy”."
+    },
+    {
+      "name": "belt",
+      "description": "Controls which belt type to use for belt items only. This field determines what index entry in the belts.txt file to use."
+    },
+    {
+      "name": "quest",
+      "description": "Controls what quest class is tied to the item which can enable certain item functionalities for a specific quest. Any value greater than 0 will also mean the item is flagged as a quest item, which can affect how it is displayed in tooltips, how it is traded with other players, its item rarity, and how it cannot be sold to an NPC. If equals 0, then the item will not be flagged as a quest item. Code 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 Description Not a quest item Act 1 Prologue Den of Evil Sisters’ Burial Grounds Tools of the Trade The Search for Cain The Forgotten Tower Sisters to the Slaughter Act 2 Prologue Radament’s Lair The Horadric Staff The Tainted Sun The Arcane Sanctuary The Summoner The Seven Tombs Act 2 Traversed Lam Esen’s Tome Khalim’s Will Blade of the Old Religion The Golden Bird The Blackened Temple The Guardian Act 4 Prologue The Fallen Angel Terror’s End The Hellforge Rogue Warning Guard in Town Warning Guard in Desert Warning Dark Wanderer Seen Angel Warning Respec from Akara Complete Act 5 Prologue Siege on Harrogath Rescue on Mount Arreat Prison of Ice Betrayal of Harrogath Rite of Passage Eve of Destruction"
+    },
+    {
+      "name": "questdiffcheck",
+      "description": "Boolean Field. If equals 1 and the “quest” field is enabled, then the game will check the current difficulty setting and will tie that difficulty setting to the quest item. This means that the player can have more than 1 of the same quest item as long each they are obtained per difficulty mode (Normal / Nightmare / Hell). If equals 0 and the “quest” field is enabled, then the player can only have 1 count of the quest item in the inventory, regardless of difficulty."
+    },
+    {
+      "name": "missiletype",
+      "description": "Points to the “Id” field from the Missiles.txt file, which determines what type of missile is used when using the throwing weapons"
+    },
+    {
+      "name": "durwarning",
+      "description": "Controls the threshold value for durability to display the low durability warning UI. This is only used if the item has durability."
+    },
+    {
+      "name": "qntwarning",
+      "description": "Controls the threshold value for quantity to display the low quantity warning UI. This is only used if the item has stacks."
+    },
+    {
+      "name": "mindam",
+      "description": "The minimum physical damage provided by the item"
+    },
+    {
+      "name": "maxdam",
+      "description": "The maximum physical damage provided by the item"
+    },
+    {
+      "name": "StrBonus",
+      "description": "The percentage multiplier that gets multiplied the player’s current Strength attribute value to modify the bonus damage percent from the equipped item. If this equals 1, then default the value to 100."
+    },
+    {
+      "name": "DexBonus",
+      "description": "The percentage multiplier that gets multiplied the player’s current Dexterity attribute value to modify the bonus damage percent from the equipped item. If this equals 1, then default the value to 100."
+    },
+    {
+      "name": "gemoffset",
+      "description": "Determines the starting index offset for reading the gems.txt file when determining what effects gems or runes will have the item based on the “gemapplytype” field. For example, if this value equals 9, then the game will start with index 9 (“Chipped Emerald”) and ignore the previously defined gems in the gems.txt file, which can mean that those ignored gems will not apply modifiers when socketed into the item."
+    },
+    {
+      "name": "bitfield1",
+      "description": "Controls different flags that can affect the item. Uses an integer value to check against different bit fields by using the “&” operator. For example, if the value equals 5 (binary = 101) then that returns true for both the 4 (binary = 100) and 1 (binary = 1) bit field values. Bit Field One Bits Binary Equivalent Description 1 2 4 8 Value 1 10 100 1000 Allow the item to be capable of having Magic quality The item is classified as metal The item is classified as a spellcaster item (currently does nothing) The item is classified as a skill based item (currently does nothing) The following fields are separated per NPC in each Act:"
+    },
+    {
+      "name": "[NPC]Min",
+      "description": "Minimum amount of this item type in Normal rarity that the NPC can sell at once"
+    },
+    {
+      "name": "[NPC]Max",
+      "description": "Maximum amount of this item type in Normal rarity that the NPC can sell at once. This must be equal to or greater than the minimum amount."
+    },
+    {
+      "name": "[NPC]MagicMin",
+      "description": "Minimum amount of this item type in Magical rarity that the NPC can sell at once"
+    },
+    {
+      "name": "[NPC]MagicMax",
+      "description": "Maximum amount of this item type in Magical rarity that the NPC can sell at once. This must be equal to or greater than the minimum amount."
+    },
+    {
+      "name": "[NPC]MagicLvl",
+      "description": "Maximum magic level allowed for this item type in Magical rarity Where [NPC] is one of the following: Charsi Gheed Akara Fara Lysander Drognan Hratli Alkor Ormus Elzix Asheara Cain Halbu Jamella Larzuk Malah Anya"
+    },
+    {
+      "name": "Transform",
+      "description": "Controls the color palette change of the item for the character model graphics"
+    },
+    {
+      "name": "InvTrans",
+      "description": "Controls the color palette change of the item for the inventory graphics Code 0 1 2 3 4 5 6 7 8 Color No color change Grey Grey 2 Gold Brown Grey Brown Inventory Grey Inventory Grey 2 Inventory Grey Brown"
+    },
+    {
+      "name": "SkipName",
+      "description": "Boolean Field. If equals 1 and the item is Unique rarity, then skip adding the item’s base name in its title. If equals 0, then ignore this."
+    },
+    {
+      "name": "NightmareUpgrade",
+      "description": "Links to another item’s “code” field. Used to determine which item will replace this item when being generated in the NPC’s store while the game is playing in Nightmare difficulty. If this field’s code equals “xxx”, then this item will not change in this difficulty."
+    },
+    {
+      "name": "HellUpgrade",
+      "description": "Links to another item’s “code” field. Used to determine which item will replace this item when being generated in the NPC’s store while the game is playing in Hell difficulty. If this field’s code equals “xxx”, then this item will not change in this difficulty."
+    },
+    {
+      "name": "Nameable",
+      "description": "Boolean Field. If equals 1, then the item’s name can be personalized by Anya for the Act 5 Betrayal of Harrogath quest reward. If equals 0, then the item cannot be used for the personalized name reward."
+    },
+    {
+      "name": "PermStoreItem",
+      "description": "Boolean Field. If equals 1, then this item will always appear on the NPC’s store. If equals 0, then the item will randomly appear on the NPC’s store when appropriate."
+    },
+    {
+      "name": "diablocloneweight",
+      "description": "The amount of weight added to the diablo clone progress when this item is sold. When offline, selling this item will instead immediately spawn diablo clone. The following fields are exclusive to the weapons.txt file because these fields only work with Weapon type items:"
+    },
+    {
+      "name": "1or2handed",
+      "description": "Boolean Field. If equals 1, then the item will be treated as a one-handed and two-handed weapon by the Barbarian class. If equals 0, then the"
+    },
+    {
+      "name": "Barbarian can only use this weapon as either one",
+      "description": "handed or two-handed, but not both."
+    },
+    {
+      "name": "2handed",
+      "description": "Boolean Field. If equals 1, then the item will be treated as two-handed weapon. If equals 0, then the item will be treated as one-handed weapon."
+    },
+    {
+      "name": "2handedwclass",
+      "description": "Defines the two-handed weapon class, which controls what character animations are used when the weapon is equipped Code 1hs 1ht bow 2hs 2ht 1js 1jt 1ss 1st stf xbw ht1 ht2 Description One Handed Swing One Handed Thrust Bow Two Handed Swing Two Handed Thrust Left Jab Right Swing Left Jab Right Thrust Left Swing Right Swing Left Swing Right Thrust Staff Crossbow"
+    },
+    {
+      "name": "One Hand",
+      "description": "To-Hand"
+    },
+    {
+      "name": "Two Hand",
+      "description": "To-Hand"
+    },
+    {
+      "name": "2handmindam",
+      "description": "The minimum physical damage provided by the weapon if the item is two-handed. This relies on the “2handed” field being enabled."
+    },
+    {
+      "name": "2handmaxdam",
+      "description": "The maximum physical damage provided by the weapon if the item is two-handed. This relies on the “2handed” field being enabled."
+    },
+    {
+      "name": "hit class",
+      "description": "Defines the hit class of the weapon which is used to know what SFX to use when the weapon hits an enemy Code (empty) hth 1hss 1hsl 2hss 2hsl Hit Class None Hand To Hand One Hand Swing vs. Small One Hand Swing vs. Large Two Hand Swing vs. Small Two Hand Swing vs. Large 1ht 2ht club staf bow xbow claw over One Hand Thrust Two Hand Thrust Club Staff Bow Crossbow Claw Overlay"
+    },
+    {
+      "name": "minmisdam",
+      "description": "The maximum physical damage provided by the item if it is a throwing weapon"
+    },
+    {
+      "name": "maxmisdam",
+      "description": "The maximum physical damage provided by the item if it is a throwing weapon"
+    },
+    {
+      "name": "rangeadder",
+      "description": "Adds extra range in grid spaces for melee attacks while the melee weapon is equipped. The baseline melee range is 1, and this field adds to that range."
+    },
+    {
+      "name": "wclass",
+      "description": "Defines the one-handed weapon class, which controls what character animations are used when the weapon is equipped Code 1hs 1ht bow 2hs 2ht 1js 1jt 1ss 1st stf xbw ht1 ht2 Description One Handed Swing One Handed Thrust Bow Two Handed Swing Two Handed Thrust Left Jab Right Swing Left Jab Right Thrust Left Swing Right Swing Left Swing Right Thrust Staff Crossbow"
+    },
+    {
+      "name": "One Hand",
+      "description": "To-Hand"
+    },
+    {
+      "name": "Two Hand",
+      "description": "To-Hand"
+    }
+  ],
+  "filename": "weapons.txt"
+}

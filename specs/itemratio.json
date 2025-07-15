@@ -1,0 +1,86 @@
+{
+  "overview": "This file determines the quality of items when being spawned. After the game determines what Item Type should spawn, it then uses this file to calculate the quality of that item.  These Item Quality checks are used for most item drops in the game such as monster drops and chest drops.  The following files related to these calculations: ItemTypes.txt, weapons.txt, armor.txt, misc.txt, Uniqueitems.txt, SetItems.txt, monstats.txt, TreasureClassEx.txt",
+  "data_fields": [
+    {
+      "name": "Function",
+      "description": "This is a reference field to define the item ratio name"
+    },
+    {
+      "name": "Version",
+      "description": "Defines which game version to use this item ratio (0 = Classic mode | 100 = Expansion mode)"
+    },
+    {
+      "name": "Uber",
+      "description": "Boolean Field. If equals 1, then the item ratio will apply to items with Exceptional or Elite Quality. If equals 0, then the item ratio will apply to Normal Quality items (This is determined by the “normcode”, “ubercode” and “ultracode” fields in weapons.txt / armor.txt)"
+    },
+    {
+      "name": "Class Specific",
+      "description": "Boolean Field. If equals 1, then the item ratio will apply to class-based items (This will compare to the Item Type’s “Class” field to determine if the item is class specific)"
+    },
+    {
+      "name": "Unique",
+      "description": "Base value for calculating the Unique Quality chance. Higher value means rarer chance. (Calculated first)"
+    },
+    {
+      "name": "UniqueDivisor",
+      "description": "Modifier for changing the Unique Quality chance, based on the difference between the Monster Level and the Item’s base level"
+    },
+    {
+      "name": "UniqueMin",
+      "description": "The minimum value of the probability denominator for Unique Quality. This is compared to the calculated Unique Quality value after Magic Find calculations and is chosen if it is greater than that value. (Calculated in 128ths)"
+    },
+    {
+      "name": "Set",
+      "description": "Base value for calculating the Set Quality chance. Higher value means rarer chance. (Calculated after Unique)"
+    },
+    {
+      "name": "SetDivisor",
+      "description": "Modifier for changing the Set Quality chance, based on the difference between the Monster Level and the Item’s base level"
+    },
+    {
+      "name": "SetMin",
+      "description": "The minimum value of the probability denominator for Set Quality. This is compared to the calculated Set Quality value after Magic Find calculations and is chosen if it is greater than that value. (Calculated in 128ths)"
+    },
+    {
+      "name": "Rare",
+      "description": "Base value for calculating the Rare Quality chance. Higher value means rarer chance. (Calculated after Set)"
+    },
+    {
+      "name": "RareDivisor",
+      "description": "Modifier for changing the Rare Quality chance, based on the difference between the Monster Level and the Item’s base level"
+    },
+    {
+      "name": "RareMin",
+      "description": "The minimum value of the probability denominator for Rare Quality. This is compared to the calculated Rare Quality value after Magic Find calculations and is chosen if it is greater than that value. (Calculated in 128ths)"
+    },
+    {
+      "name": "Magic",
+      "description": "Base value for calculating the Magic Quality chance. Higher value means rarer chance. (Calculated after Rare)"
+    },
+    {
+      "name": "MagicDivisor",
+      "description": "Modifier for changing the Magic Quality chance, based on the difference between the Monster Level and the Item’s base level"
+    },
+    {
+      "name": "MagicMin",
+      "description": "The minimum value of the probability denominator for Magic Quality. This is compared to the calculated Magic Quality value after Magic Find calculations and is chosen if it is greater than that value. (Calculated in 128ths)"
+    },
+    {
+      "name": "HiQuality",
+      "description": "Base value for calculating the High Quality (Superior) chance. Higher value means rarer chance. (Calculated after Magic)"
+    },
+    {
+      "name": "HiQualityDivisor",
+      "description": "Modifier for changing the High Quality (Superior) chance, based on the difference between the Monster Level and the Item’s base level"
+    },
+    {
+      "name": "Normal",
+      "description": "Base value for calculating the Normal Quality chance. Higher value means rarer chance. (Calculated after Normal, and if this does not succeed in rolling, then the item is defaulted to Low Quality)"
+    },
+    {
+      "name": "NormalDivisor",
+      "description": "Modifier for changing the Normal Quality chance, based on the difference between the Monster Level and the Item’s base level"
+    }
+  ],
+  "filename": "itemratio.txt"
+}

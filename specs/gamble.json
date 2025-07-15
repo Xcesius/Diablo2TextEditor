@@ -1,0 +1,14 @@
+{
+  "overview": "This file controls what Item Types will appear as possible items to purchase in the Gambling UI  Item Types can be added to this list as a potential option for the Gambling system",
+  "data_fields": [
+    {
+      "name": "name",
+      "description": "This is a reference field to describe the Item"
+    },
+    {
+      "name": "code",
+      "description": "This is a pointer to “code” field from weapons.txt/armor.txt/misc.txt"
+    }
+  ],
+  "filename": "gamble.txt"
+}

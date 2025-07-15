@@ -1,0 +1,106 @@
+{
+  "overview": "This file controls the sounds that play for each of a monster’s actions  This file relies on sounds from sounds.txt  This file is used by the monstats.txt file",
+  "data_fields": [
+    {
+      "name": "Id",
+      "description": "Defines the unique name ID for the monster sound"
+    },
+    {
+      "name": "Attack1 & Attack2",
+      "description": "Play this sound when the monster performs Attack 1 and Attack 2, respectively. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "Weapon1 & Weapon2",
+      "description": "Play this sound when the monster performs Attack 1 and Attack 2, respectively. This acts as an extra sound that can play with the “Attack1” and “Attack2” sounds. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "Att1Del & Att2Del",
+      "description": "Controls the amount of game frames to delay playing the “Attack1” and “Attack2” sounds, respectively."
+    },
+    {
+      "name": "Wea1Del & Wea2Del",
+      "description": "Controls the amount of game frames to delay playing the “Weapon1” and “Weapon2” sounds, respectively."
+    },
+    {
+      "name": "Att1Prb & Att2Prb",
+      "description": "Controls the percent chance (out of 100) to play the “Attack1” and “Attack2” sounds, respectively."
+    },
+    {
+      "name": "Wea1Vol & Wea2Vol",
+      "description": "Controls the volume of the “Weapon1” and “Weapon2” sounds, respectively. Uses a range between 0 to 255, where 255 is the maximum volume."
+    },
+    {
+      "name": "HitSound",
+      "description": "Play this sound when the monster gets hit or knocked back. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "DeathSound",
+      "description": "Play this sound when the monster dies. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "HitDelay",
+      "description": "Controls the amount of game frames to delay playing the “HitSound” sound"
+    },
+    {
+      "name": "DeaDelay",
+      "description": "Controls the amount of game frames to delay playing the “DeathSound” sound"
+    },
+    {
+      "name": "Skill1 (to Skill4)",
+      "description": "Play this sound when the monster uses the skill linked in the related “Skill#” field from the monstats.txt file. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "Footstep",
+      "description": "Play this sound while the monster is walking or running. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "FootstepLayer",
+      "description": "Play this sound while the monster is walking or running. This acts as an extra sound that can play with the “Footstep” sound. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "FsCnt",
+      "description": "Controls the footstep count which is used to determine how often to play the “Footstep” and “FootstepLayer” sound. A higher value would mean that the sounds would play more often."
+    },
+    {
+      "name": "FsOff",
+      "description": "Controls the footstep offset which is used for calculating when to play the next “Footstep” and “FootstepLayer” sound, based on the current animation frame and the animation rate. A higher value would mean that the sounds would play less often."
+    },
+    {
+      "name": "FsPrb",
+      "description": "Controls the probability to play the “Footstep” and “FootstepLayer” sound, with a random chance out of 100."
+    },
+    {
+      "name": "Neutral",
+      "description": "Play this sound while the monster is in Neutral, Walk, or Run mode. Also play this sound when the monster “Id” equals “vulture1” and while the monster is in Skill1 mode. Also play this sound when the monster “Id” equals “batdemon1” and while the monster is in Skill4 mode. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "NeuTime",
+      "description": "Controls the amount of game frames to delay between re-playing the “Neutral” sound after it finishes."
+    },
+    {
+      "name": "Init",
+      "description": "Play this sound when the monster spawns and is not dead and is not playing its Neutral sound. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "Taunt",
+      "description": "Play this sound when the server requests that the monster should play its Taunt. This is typically used for quest or story related moments. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "Flee",
+      "description": "Play this sound when the monster is told to flee. This depends on when the monster AI is told to play this sound. Points to a “Sound” value in the sounds.txt file."
+    },
+    {
+      "name": "CvtMo1 (to CvtMo3)",
+      "description": "This is used to convert the mode for playing the sound. This field defines the original mode that the monster is using. (See MonMode.txt for the list of possible inputs)"
+    },
+    {
+      "name": "CvtSk1 (to CvtSk3)",
+      "description": "Defines the skill that the monster is using. If the monster uses a specific skill, then the game can change the monster’s mode for sound functionalities to another mode to change how sounds are generally handled. Points to a “skill” in the skills.txt file."
+    },
+    {
+      "name": "CvtTgt1 (to CvtTgt3)",
+      "description": "Defines the mode to convert the sound to when the monster is using the relative skill from the “CvtSk#” field. This does not actually change the monster’s actual mode but only what mode that sounds think the monster is using. (See MonMode.txt for the list of possible inputs)"
+    }
+  ],
+  "filename": "monsounds.txt"
+}

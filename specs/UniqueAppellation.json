@@ -1,0 +1,10 @@
+{
+  "overview": "This file controls the list of strings that are randomly selected to be used as an extra suffix when generating unique monster names  The game has a 50% chance to randomly use Unique Appellation when generating the Unique monster name.  ·         If a Unique Appellation is not added, then the game will generate a unique monster name using the string called Monster1Format (ID: 1721) ·         If a Unique Appellation is added, then the game will generate a unique monster name using the string called Monster2Format (ID: 1722)",
+  "data_fields": [
+    {
+      "name": "Name",
+      "description": "A string key, which is used as a potential selection for generating a unique monster’s name"
+    }
+  ],
+  "filename": "UniqueAppellation.txt"
+}

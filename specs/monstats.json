@@ -1,0 +1,474 @@
+{
+  "overview": "This file controls the main functionalities and statistics for every monster in the game. This includes enemy monsters, pets, and NPC units.  This file is connected to the monstats2.txt file, so additional functionalities can be found in that file. This means that this file’s number and order of entries should be identical with the monstats2.txt file.  The “(N)” text in field names signifies to use that specific value for games in Nightmare difficulty The “(H)” text in field names signifies to use that specific value for games in Hell difficulty  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "Id",
+      "description": "Controls the unique name ID to define the monster. This must match the same value in the monstats2.txt file."
+    },
+    {
+      "name": "BaseId",
+      "description": "Points to the “Id” of another monster to define the monster’s base type. This is to create groups of monsters which are considered the same type."
+    },
+    {
+      "name": "NextInClass",
+      "description": "Points to the “Id” of another monster to signify the next monster in the group of this monster’s type. This is to continue the groups of monsters which are considered the same type. The order should be contiguous."
+    },
+    {
+      "name": "TransLvl",
+      "description": "Defines the color transform level to use for this monster, which affects what color palette that the monster will use Code 0 1 2 3 4 5 6 7 Description Cold Poison Level 0 Level 1 Level 2 Level 3 Level 4 Level Miscellaneous"
+    },
+    {
+      "name": "NameStr",
+      "description": "String Key. Used to define the monster’s name, such as in the Life bar UI when it is being targeted."
+    },
+    {
+      "name": "MonStatsEx",
+      "description": "Controls a pointer to the “Id” of a monster to define which entry to use in the monstats2.txt file. This should always match the same “Id” value for the monster in this file."
+    },
+    {
+      "name": "MonProp",
+      "description": "Points to the “Id” field from the MonProp.txt file. Used to add special modifiers to the monster."
+    },
+    {
+      "name": "MonType",
+      "description": "Points to the “type” field from the MonType.txt file. Used to handle the monster’s classification."
+    },
+    {
+      "name": "AI",
+      "description": "Points to a type of AI script to use for the monster (See monai.txt)."
+    },
+    {
+      "name": "DescStr",
+      "description": "String Key. Used to add a string to appear as an additional description below the Life bar UI when the monster is being targeted."
+    },
+    {
+      "name": "Code",
+      "description": "Controls the token used for choosing the proper cells to display the monster’s graphics"
+    },
+    {
+      "name": "enabled",
+      "description": "Boolean Field. If equals 1, then this monster is allowed to spawn in the game. If equals 0, then this monster will never spawn in the game."
+    },
+    {
+      "name": "rangedtype",
+      "description": "Boolean Field. If equals 1, then the monster will be classified as a ranged type. If equals 0, then the monster will be classified as a melee type."
+    },
+    {
+      "name": "placespawn",
+      "description": "Boolean Field. If equals 1, then this monster will be treated as a spawner, so monsters that spawn can be initially placed within this monster. If equals 0, then ignore this."
+    },
+    {
+      "name": "spawn",
+      "description": "Points to the “Id” of another monster to control what kind of monster is spawned from this monster. This is only used if the “placespawn” field is enabled."
+    },
+    {
+      "name": "spawnx & spawny",
+      "description": "Controls the X & Y offsets for where another monster is displaced when being spawned by this monster."
+    },
+    {
+      "name": "spawnmode",
+      "description": "Defines the animation mode that the spawned monsters will be initiated with Token Description DT NU WL GH A1 A2 BL SC S1 S2 S3 S4 DD GH xx RN Death / Reset Neutral Walk Get Hit Attack 1 Attack 2 Block Cast Skill 1 Skill 2 Skill 3 Skill 4 Dead Knockback Sequence Run"
+    },
+    {
+      "name": "minion1 & minion2",
+      "description": "Points to the “Id” of another monster to control what kind of monster is spawned with this monster when it is spawned, like a monster pack. The “minion1” field is also used for spawning a monster when this monster is killed while it has the “SplEndDeath” field enabled."
+    },
+    {
+      "name": "SetBoss",
+      "description": "Boolean Field. If equals 1, then set the monster AI to use the Boss AI type, which can affect the monster’s behaviors. If equals 0, then ignore this."
+    },
+    {
+      "name": "BossXfer",
+      "description": "Boolean Field. If equals 1, then the monster’s AI will transfer its boss recognition to another monster, which can affect the minion monster behaviors after this boss is killed. If equals 0, then ignore no boss AI will transfer and minion monsters will behave differently after the boss is killed. This field relies on the “SetBoss” field being enabled."
+    },
+    {
+      "name": "PartyMin",
+      "description": "The minimum number of minions that can spawn with this monster. Uses the “minion1” and “minion2” fields. The actual number is a random value chosen between the “PartyMin” and “PartyMax” field values."
+    },
+    {
+      "name": "PartyMax",
+      "description": "The maximum number of minions that can spawn with this monster. Uses the “minion1” and “minion2” fields. The actual number is a random value chosen between the “PartyMin” and “PartyMax” field values."
+    },
+    {
+      "name": "MinGrp",
+      "description": "The minimum number of duplicates of this monster that can spawn together. The actual number is a random value chosen between the “MinGrp” and “MaxGrp” field values."
+    },
+    {
+      "name": "MaxGrp",
+      "description": "The maximum number of duplicates of this monster that can spawn together. The actual number is a random value chosen between the “MinGrp” and “MaxGrp” field values."
+    },
+    {
+      "name": "sparsePopulate",
+      "description": "If this value is greater than 0, then it controls the percent chance that this monster does not spawn, and another monster will spawn in its place. (Out of 100)"
+    },
+    {
+      "name": "Velocity",
+      "description": "Determines the movement velocity of the monster, which can be the monster’s baseline walk speed."
+    },
+    {
+      "name": "Run",
+      "description": "Determines the run speed of the monster as opposed to walk speed. This is only used if the monster has a Run mode."
+    },
+    {
+      "name": "Rarity",
+      "description": "Modifies the chance that this monster will be chosen to spawn in the area level. The higher the value is, then the more likely this monster will be chosen. This value acts as a numerator and a denominator. All “Rarity” values of possible monsters get summed together to give a total denominator, used for the random roll. For example, if there are 3 possible monsters that can spawn, and their “Rarity” values are 1, 2, 2, then their chances to be chosen are 1/5, 2/5, and 2/5 respectively. If this value equals 0, then this monster is never randomly selected to spawn in an area level."
+    },
+    {
+      "name": "Level",
+      "description": "Determines the monster’s level. This value for Nightmare and Hell difficulty can be overridden by the area level’s “MonLvl#” or “MonLvl#Ex” value (See Levels.txt), unless the monster’s “boss” and “noRatio” fields are enabled."
+    },
+    {
+      "name": "MonSound",
+      "description": "Points to the “Id” field of a monster sound from the monsounds.txt file. This is used to control the monsters assigned sounds, when the monster is spawned as a Normal monster."
+    },
+    {
+      "name": "UMonSound",
+      "description": "Points to the “Id” field of a monster sound from the monsounds.txt file. This is used to control the monsters assigned sounds, when the monster is spawned as a Unique or Champion monster."
+    },
+    {
+      "name": "threat",
+      "description": "Controls the AI threat value of the monster which can affect the targeting priorities of enemy Ais for this monster. The higher this value is, then the more likely that enemy AI will target this monster."
+    },
+    {
+      "name": "aidel",
+      "description": "Controls the delay in frame length for how often the monster’s AI will update its commands. A lower delay means that the monster will perform commands more often without as long of a pause in between."
+    },
+    {
+      "name": "aidist",
+      "description": "Controls the maximum distance (measured in tiles) between the monster and an enemy until the monster’s AI becomes aggressive. If equals 0, then default to 35."
+    },
+    {
+      "name": "aip1 (to aip8)",
+      "description": "Defines numeric parameters used to control various functions of the monster’s AI. These fields depend on which AI script is being used (See monai.txt, and the “AI” field in monstats.txt)"
+    },
+    {
+      "name": "MissA1 & MissA2",
+      "description": "Points to the “Missile” field from Missiles.txt to determine which missile to use when the monster is in Attack 1 & Attack 2 mode"
+    },
+    {
+      "name": "MissS1 (to MissS4)",
+      "description": "Points to the “Missile” field from Missiles.txt to determine which missile to use when the monster is in Skill 1 (to Skill 4) mode"
+    },
+    {
+      "name": "MissC",
+      "description": "Points to the “Missile” field from Missiles.txt to determine which missile to use when the monster is in Cast mode"
+    },
+    {
+      "name": "MissSQ",
+      "description": "Points to the “Missile” field from Missiles.txt to determine which missile to use when the monster is in Sequence mode"
+    },
+    {
+      "name": "Align",
+      "description": "Controls the monster’s alignment, which determines if the monster will be an enemy, ally, or neutral party to the player. Code 0 1 2 Description"
+    },
+    {
+      "name": "Evil Alignment",
+      "description": "The monster will attack the player"
+    },
+    {
+      "name": "Good Alignment",
+      "description": "The monster will fight with the player and will be in the player’s party"
+    },
+    {
+      "name": "Neutral Alignment",
+      "description": "The monster will not attack the player and will not be in the player’s party"
+    },
+    {
+      "name": "isSpawn",
+      "description": "Boolean Field. If equals 1, then the monster is allowed to spawn in an area level. If equals 0, then the monster will not be spawned automatically in an area level."
+    },
+    {
+      "name": "isMelee",
+      "description": "Boolean Field. If equals 1, then the monster is classified as a melee only type, which can affect its AI behaviors and what monster modifiers are allowed on the monster. If equals 0, then ignore this."
+    },
+    {
+      "name": "npc",
+      "description": "Boolean Field. If equals 1, then the monster is classified as an NPC (Non-Playable Character), which can affect its AI behaviors and how the player treats this monster. If equals 0, then ignore this."
+    },
+    {
+      "name": "interact",
+      "description": "Boolean Field. If equals 1, then the monster is interactable, meaning that the player can click on the monster to perform an interact command instead of attacking. If equals 0, then ignore this."
+    },
+    {
+      "name": "inventory",
+      "description": "Boolean Field. If equals 1, then monster will have an inventory with randomly generated items, such as an NPC with shop items (if the “interact” field is enabled) or a summoned unit with random equipped items (also see monequip.txt). If equals 0, then ignore this."
+    },
+    {
+      "name": "inTown",
+      "description": "Boolean Field. If equals 1, then the monster is allowed to be in town. If equals 0, then the monster is not allowed to be in town, which can affect or disable their AI or collision from entering towns."
+    },
+    {
+      "name": "lUndead",
+      "description": "Boolean Field. If equals 1, then the monster is treated as a Low Undead, meaning that the monster is classified as an Undead type and can be resurrected by certain AI. If equals 0, then ignore this."
+    },
+    {
+      "name": "hUndead",
+      "description": "Boolean Field. If equals 1, then the monster is treated as a High Undead, meaning that the monster is classified as an Undead type but cannot be resurrected by certain AI. If equals 0, then ignore this."
+    },
+    {
+      "name": "demon",
+      "description": "Boolean Field. If equals 1, then the monster is classified as a Demon type. If equals 0, then ignore this."
+    },
+    {
+      "name": "flying",
+      "description": "Boolean Field. If equals 1, then the monster is flagged as a flying type, which can affect its collision with the area level and how it is spawned. If equals 0, then ignore this."
+    },
+    {
+      "name": "opendoors",
+      "description": "Boolean Field. If equals 1, then the monster will use its AI to open doors if necessary. If equals 0, then the monster cannot open doors and will treat doors as another type of collision."
+    },
+    {
+      "name": "boss",
+      "description": "Boolean Field. If equals 1, then the monster is classified as a Boss type, which can affect boss related AI and functions. If equals 0, then ignore this."
+    },
+    {
+      "name": "primeevil",
+      "description": "Boolean Field. If equals 1, then the monster is classified as a Prime Evil type, or an Act End boss, which can affect various skills, AI, and damage related functions. If equals 0, then ignore this."
+    },
+    {
+      "name": "killable",
+      "description": "Boolean Field. If equals 1, then the monster can be killed, damage, and be put in a Death or Dead mode. If equals 0, then the monster cannot be damaged or killed."
+    },
+    {
+      "name": "switchai",
+      "description": "Boolean Field. If equals 1, then monster’s AI can switched, such as by the Assassin’s Mind Blast ability. If equals 0, then the monster AI cannot be switched."
+    },
+    {
+      "name": "noAura",
+      "description": "Boolean Field. If equals 1, then the monster cannot be affected by friendly auras. If equals 0, then the monster can be affected by friendly auras."
+    },
+    {
+      "name": "nomultishot",
+      "description": "Boolean Field. If equals 1, then the monster is not allowed to spawn with the Multi-Shot unique monster modifier (See monumod.txt). If equals 0, then ignore this."
+    },
+    {
+      "name": "neverCount",
+      "description": "Boolean Field. If equals 1, then the monster is not counted on the list of the active monsters in the area, which affects spawning and saving functions. If equals 0, then the monster will be accounted for, and can be part of the active or inactive list functions."
+    },
+    {
+      "name": "petIgnore",
+      "description": "Boolean Field. If equals 1, then pet AI scripts will ignore this monster (See monai.txt). If equals 0, then pet AI will attack this monster."
+    },
+    {
+      "name": "deathDmg",
+      "description": "Boolean Field. If equals 1, then the monster will explode on death. This has special cases for the “bonefetish1” and “siegebeast1” monster classes, otherwise the monster will use a general death damage function to damage nearby units based on the monster’s health percentage. If equals 0, then ignore this."
+    },
+    {
+      "name": "genericSpawn",
+      "description": "Boolean Field. If equals 1, the monster is flagged as a possible selection for the AI generic spawner function. There are defaults for using the If equals 0, then ignore this."
+    },
+    {
+      "name": "zoo",
+      "description": "Boolean Field. If equals 1, then the monster will be flagged as a zoo type monster, which will give it the AI zoo behavior. If equals 0, then ignore this."
+    },
+    {
+      "name": "CannotDesecrate",
+      "description": "Boolean Field. If equals 1, then the monster will not be able to be desecrated when inside a desecrated level. If equals 0, then ignore this."
+    },
+    {
+      "name": "rightArmItemType",
+      "description": "Determines what type of items the monster is allowed to hold in its right arm (see ItemTypes.txt). A blank value means it can hold any item. leftArmItemType – Determines what type of items the monster is allowed to hold in its left arm (see ItemTypes.txt). A blank value means it can hold any item. canNotUseTwoHandedItems – Boolean Field. If equals 1, then the monster can not items marked as two handed (see weapons.txt)"
+    },
+    {
+      "name": "SendSkills",
+      "description": "Determines which of the monster’s skill’s level should be sent to the client. Uses a byte value, where the code tests each bit to determine which of the monster’s skills to check."
+    },
+    {
+      "name": "Skill1 (to Skill8)",
+      "description": "Points to a skill from the “skill” field in the skills.txt file. This gives the monster the skill to use (requires “Sk#mode”)"
+    },
+    {
+      "name": "Sk1mode (to Sk8mode)",
+      "description": "Determines the monster’s animation mode when using the related skill. Outside of the standard animation mode inputs, the field can also point to a “sequence” defined in the monseq.txt file, which handle a specific set of frames to place a sequence animation. Token Description DT NU WL GH A1 A2 BL SC S1 S2 S3 S4 DD GH RN Death / Reset Neutral Walk Get Hit Attack 1 Attack 2 Block Cast Skill 1 Skill 2 Skill 3 Skill 4 Dead Knockback Run"
+    },
+    {
+      "name": "Sk1lvl (to Sk8lvl)",
+      "description": "Controls the base skill level of the related skill on the monster"
+    },
+    {
+      "name": "Drain",
+      "description": "Controls the monster’s overall Life and Mana steal percentage. This can also be affected by the “LifeStealDivisor” and “ManaStealDivisor” fields from the difficultylevels.txt file. If equals 0, then the monster will not have Life or Mana steal."
+    },
+    {
+      "name": "coldeffect",
+      "description": "Sets the percentage change in movement speed and attack rate when the monster if chilled by a cold effect. If this equals 0, then the monster will be immune to the cold effect."
+    },
+    {
+      "name": "ResDm",
+      "description": "Sets the monster’s Physical Damage Resistance stat"
+    },
+    {
+      "name": "ResMa",
+      "description": "Sets the monster’s Magic Resistance stat"
+    },
+    {
+      "name": "ResFi",
+      "description": "Sets the monster’s Fire Resistance stat"
+    },
+    {
+      "name": "ResLi",
+      "description": "Sets the monster’s Lightning Resistance stat"
+    },
+    {
+      "name": "ResCo",
+      "description": "Sets the monster’s Cold Resistance stat"
+    },
+    {
+      "name": "ResPo",
+      "description": "Sets the monster’s Poison Resistance stat"
+    },
+    {
+      "name": "DamageRegen",
+      "description": "Controls the monster’s Life regeneration per frame. This is calculated based on the monster’s maximum life: Regeneration Rate = (Life * “DamageRegen”) / 16"
+    },
+    {
+      "name": "SkillDamage",
+      "description": "Points to a skill from the “skill” field in the skills.txt file. This changes the monster’s min physical damage, max physical damage, and Attack Rating to be based off the values from the linked skill and its current level from the monster’s owner (usually the player who summoned the monster)."
+    },
+    {
+      "name": "noRatio",
+      "description": "Boolean Field. If equals 1, then use this file’s fields to determine the monster’s baseline stats (“minHP”, “maxHP”, “AC”, “Exp”, “A1MinD”, “A1MaxD”, “A1TH”, “A2MinD”, “A2MaxD”, “A2TH”, “S1MinD”, “S1MaxD”, “S1TH”). If equals 0, then use the MonLvl.txt file to determine the monster’s baseline stats."
+    },
+    {
+      "name": "ShieldBlockOverride",
+      "description": "If equals 1, then the monster can block without a shield (the block chance stat will take effect even without a shield equipped). If equals 2, then the monster cannot block at all, even with a shield equipped. If equals 0, then ignore this."
+    },
+    {
+      "name": "ToBlock",
+      "description": "The monster’s percent chance to block an attack"
+    },
+    {
+      "name": "Crit",
+      "description": "The percent chance for the monster to score a critical hit when attacking an enemy, which causes the attack to deal double damage"
+    },
+    {
+      "name": "minHP",
+      "description": "The monster’s minimum amount of Life when spawned"
+    },
+    {
+      "name": "maxHP",
+      "description": "The monster’s maximum amount of Life when spawned"
+    },
+    {
+      "name": "AC",
+      "description": "The monster’s Defense value"
+    },
+    {
+      "name": "Exp",
+      "description": "The amount of Experience that is rewarded to the player when the monster is killed"
+    },
+    {
+      "name": "A1MinD",
+      "description": "The minimum damage dealt by the monster when it is using the Attack 1 (A1) animation mode"
+    },
+    {
+      "name": "A1MaxD",
+      "description": "The maximum damage dealt by the monster when it is using the Attack 1 (A1) animation mode"
+    },
+    {
+      "name": "A1TH",
+      "description": "The monster’s Attack Rating when it is using the Attack 1 (A1) animation mode"
+    },
+    {
+      "name": "A2MinD",
+      "description": "The minimum damage dealt by the monster when it is using the Attack 2 (A2) animation mode"
+    },
+    {
+      "name": "A2MaxD",
+      "description": "The maximum damage dealt by the monster when it is using the Attack 2 (A2) animation mode"
+    },
+    {
+      "name": "A2TH",
+      "description": "The monster’s Attack Rating when it is using the Attack 2 (A2) animation mode"
+    },
+    {
+      "name": "S1MinD",
+      "description": "The minimum damage dealt by the monster when it is using the Skill 1 (S1) animation mode"
+    },
+    {
+      "name": "S1MaxD",
+      "description": "The maximum damage dealt by the monster when it is using the Skill 1 (S1) animation mode"
+    },
+    {
+      "name": "S1TH",
+      "description": "The monster’s Attack Rating when it is using the Skill 1 (S1) animation mode"
+    },
+    {
+      "name": "El1Mode (to El3Mode)",
+      "description": "Determines which animation mode will trigger an additional elemental damage type when used Token DT NU WL GH A1 A2 BL SC S1 S2 S3 S4 DD GH xx RN Description Death / Reset Neutral Walk Get Hit Attack 1 Attack 2 Block Cast Skill 1 Skill 2 Skill 3 Skill 4 Dead Knockback Sequence Run"
+    },
+    {
+      "name": "El1Type (to El3Type)",
+      "description": "Defines the type of elemental damage. This field is used when El#Mode is not null. Code fire ltng mag Description Fire Lightning Magic cold pois life mana stam stun rand burn frze Cold Poison Life Drain Mana Drain Stamina Drain Stun Randomly select between Fire, Lightning, Magic, Cold, or Poison If the related “El#Dur” field equals 0, then default the value to 25 Burning Freeze"
+    },
+    {
+      "name": "El1Pct (to El3Pct)",
+      "description": "Controls the random percent chance (out of 100) that the monster will append the element damage to the attack. This field is used when El#Mode is not null."
+    },
+    {
+      "name": "El1MinD (to El3MinD)",
+      "description": "The minimum element damage applied to the attack. This field is used when El#Mode is not null."
+    },
+    {
+      "name": "El1MaxD (to El3MaxD)",
+      "description": "The maximum element damage applied to the attack. This field is used when El#Mode is not null."
+    },
+    {
+      "name": "El1Dur (to El3Dur)",
+      "description": "Controls the duration of the related element mode in frame lengths (25 Frames = 1 Second). This is only applicable for the Cold, Poison, Stun, Burning, Freeze elements. There are special cases when evaluating the elements, where Poison min and max damage are multiplied by 10, and Poison duration is multiplied by 2. This field is used when El#Mode is not null."
+    },
+    {
+      "name": "TreasureClass",
+      "description": "Defines which Treasure Class is used by the monster when it is killed. Points to the “Treasure Class” field from the TreasureClassEx.txt file. Used for normal monster types."
+    },
+    {
+      "name": "TreasureClassChamp",
+      "description": "Defines which Treasure Class is used by the monster when it is killed. Points to the “Treasure Class” field from the TreasureClassEx.txt file. Used for Champion monster types."
+    },
+    {
+      "name": "TreasureClassUnique",
+      "description": "Defines which Treasure Class is used by the monster when it is killed. Points to the “Treasure Class” field from the TreasureClassEx.txt file. Used for Unique monster types."
+    },
+    {
+      "name": "TreasureClassQuest",
+      "description": "Defines which Treasure Class is used by the monster when it is killed. Points to the “Treasure Class” field from the TreasureClassEx.txt file. Used for quest related monster drops (See “TCQuestId” and “TCQuestCP”)."
+    },
+    {
+      "name": "TreasureClassDesecrated",
+      "description": "Defines which Treasure Class is used by the monster when it is killed while desecrated (Terrorized). Points to the “Treasure Class” field from the TreasureClassEx.txt file. Used for normal monster types."
+    },
+    {
+      "name": "TreasureClassDesecratedChamp",
+      "description": "Defines which Treasure Class is used by the monster when it is killed while desecrated (Terrorized). Points to the “Treasure Class” field from the TreasureClassEx.txt file. Used for Champion monster types."
+    },
+    {
+      "name": "TreasureClassDesecratedUnique",
+      "description": "Defines which Treasure Class is used by the monster when it is killed while desecrated (Terrorized). Points to the “Treasure Class” field from the TreasureClassEx.txt file. Used for Unique monster types."
+    },
+    {
+      "name": "TCQuestId",
+      "description": "Checks to see if the player has does not have a quest flag progress. If not, then use the “TreasureClass4” field, based on the game’s current difficulty. Code 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 Quest Progress Act 1 Prologue Seen Den of Evil Completed Sisters’ Burial Grounds Completed Tools of the Trade Completed The Search for Cain Completed The Forgotten Tower Completed Sisters to the Slaughter Completed Act 1 Traversed Act 2 Prologue Seen Radament’s Lair Completed The Horadric Staff Completed Tainted Sun Completed Arcane Sanctuary Completed The Summoner Completed The Seven Tombs Completed Act 2 Traversed Act 3 Prologue Seen Lam Esen's Tome Completed Khalim's Will Completed Blade of the Old Religion Completed The Golden Bird Completed The Blackened Temple Completed The Guardian Completed Act 3 Traversed Act 4 Prologue Seen The Fallen Angel Completed Terror's End Completed Hell's Forge Completed Act 4 Traversed Rogue Warning Complete Guard in Town Warning Complete Guard in Desert Warning Complete Dark Wanderer Seen Angel Warning Complete Act 5 Prologue Seen Siege on Harrogath Completed Rescue on Mount Arreat Completed Prison of Ice Completed Betrayal of Harrogath Completed 39 40 41 Rite of Passage Completed Eve of Destruction Completed Respecialization from Akara is Completed Code 0 1 2 3 4 5 6 7 8 9 10 11 12 13"
+    },
+    {
+      "name": "TCQuestCP",
+      "description": "Controls which Quest Checkpoint, or current progress within a quest (based on the “TCQuestId” value), is needed to use the “TreasureClass4” field, based on the game’s current difficulty Description History Success History Earned Reward Checkpoint 1 Checkpoint 2 Checkpoint 3 Checkpoint 4 Checkpoint 5 Checkpoint 6 Checkpoint 7 Checkpoint 8 Checkpoint 9 Checkpoint 10 Complete Quest Log Current Game Success Current Game Failure Previous Game 14 15"
+    },
+    {
+      "name": "SplEndDeath",
+      "description": "Controls a special case death handler for the monster that is ran on the server side Code null 1 2 Description Do nothing Spawn the monster type from the “minion1” field after this monster dies Kill the source unit that is related to this monster. Typically this is a mount type unit that the monster is riding when it dies"
+    },
+    {
+      "name": "SplGetModeChart",
+      "description": "Boolean Field. If equals 1, then check special case handlers of certain monsters with specific “BaseId” fields while they are using certain a mode and perform a function. If equals 0, then ignore this. Index 243 333 705 403 “BaseId” “diablo” “diablo clone” “uberdiablo” “trappedsoul1” 543 544 570 709 417 418 “baalthrone” “baalcrab” “baalclone” “uberbaal” “shadowwarrior” “shadowmaster” Description If current mode equals Skill 3 (S3) or Skill 4 (S4), then do a generic attack function If current mode equals Attack 1 (A1), Attack 2 (A2), Skill 1 (S1), or Skill 2 (S2), then do a generic attack function and end it with setting the monster to start the Skill 1 mode and skip the AI pause If the current mode equals Skill 3 (S3), then tell the monster to do its Cast mode (SC) If the current mode equals Skill 3 (S3), then tell the monster to do its Cast mode (SC) If the current mode equals Skill 4 (S4), then tell the monster to do a generic attack function"
+    },
+    {
+      "name": "SplEndGeneric",
+      "description": "Boolean Field. If equals 1, then check special case handlers of monsters with specific “BaseId” fields while they are ending certain modes and perform a function. If equals 0, then ignore this. Index 110 118 136 230 231 247 403 “BaseId” “vulture1” “willowwisp1” “batdemon1” “firebeast” “iceglobe” “frogdemon1” “trappedsoul1” Mode that is ending Skill 1 (S1) Walk (WL) Skill 3 (S3) or Skill 4 (S4) Any mode Description Process the event Run AI Process the event Run AI Process the event Run AI Process the event Run AI Sequence (xx) Any mode Process the event Run AI Process the event Run AI"
+    },
+    {
+      "name": "SplClientEnd",
+      "description": "Boolean Field. If equals 1, then on the client side, check special case handlers of monsters with specific “BaseId” fields while they are ending certain modes and perform a function. If equals 0, then ignore this. Index 110 403 404 “BaseId” “vulture1” “trappedsoul1” “trappedsoul2” 136 136 118 231 497 247 284 “batdemon1” “batdemon1” “willowwisp1” “iceglobe” “catapult1” “frogdemon1” “maggotqueen1” Mode that is ending Skill 1 (S1) Skill 1 (S1) or Skill 2 (S2) or Attack 1 (A1) or Attack 2 (A2) Skill 3 (S3) Skill 4 (S4) Walk (WL) Attack 1 (A1) Sequence (xx) Dead (DD)"
+    }
+  ],
+  "filename": "monstats.txt"
+}

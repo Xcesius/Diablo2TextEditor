@@ -1,0 +1,62 @@
+{
+  "overview": "This file defines the Super Unique monsters and their properties. Super Unique monsters are considered the special boss monsters that have static encounters in the game.  This file uses the following data files: monsounds.txt, monstats.txt, monumod.txt, TreasureClassEx.txt",
+  "data_fields": [
+    {
+      "name": "Superunique",
+      "description": "Defines the unique name ID for the Super Unique monster"
+    },
+    {
+      "name": "Name",
+      "description": "Uses a string for the Super Unique monster’s name"
+    },
+    {
+      "name": "Class",
+      "description": "Defines the baseline monster type for the Super Unique monster, which this monster will use for default values. This uses the “Id” field from the monstats.txt file."
+    },
+    {
+      "name": "hcIdx",
+      "description": "Defines the unique numeric ID for the Super Unique monster. The existing IDs are hardcoded for specific scripts with the specified Super Unique monsters."
+    },
+    {
+      "name": "MonSound",
+      "description": "Defines what set of sounds to use for the Super Unique monster. Uses the “Id” field from the monsounds.txt file. If this field is empty, then the Super Unique monster will default to using the monster class sounds."
+    },
+    {
+      "name": "Mod1 (to Mod3)",
+      "description": "Controls which monster modifier to assign to the Super Unique monster. Uses the “id” field from the monumod.txt file (See that file for details on the available modifiers)."
+    },
+    {
+      "name": "MinGrp",
+      "description": "Controls the min amount of Minion monsters that will spawn with the Super Unique monster."
+    },
+    {
+      "name": "MaxGrp",
+      "description": "Controls the max amount of Minion monsters that will spawn with the Super Unique monster. This value must be equal to or higher than “MinGrp”. If this value is greater than “MinGrp” then a random number will be chosen between the “MinGrp” and “MaxGrp” values."
+    },
+    {
+      "name": "AutoPos",
+      "description": "Boolean Field. If equals 1, then the Super Unique monster will randomly spawn within a radius of its designated position. If equals 0, then the Super Unique monster will spawn at exact coordinates of its designated position."
+    },
+    {
+      "name": "Stacks",
+      "description": "Boolean Field. If equals 1, then this Super Unique monster can spawn more than once in the same game. If equals 0, then this Super Unique monster can only spawn once in the same game."
+    },
+    {
+      "name": "Replaceable",
+      "description": "Boolean Field. If equals 1, then the room where the Super Unique monster spawns in can be replaced during the creation of a level preset. If equals 0, then the room cannot be replaced and will remain static."
+    },
+    {
+      "name": "Utrans & Utrans(N) & UTrans(H)",
+      "description": "Modifies the color transform for the unique monster respectively in Normal, Nightmare, or Hell difficulty. If this value is greater than or equal to 30, then the value will default to 2, which is the monster’s default color palette shift. If the value is 0 or is empty, then a random value will be chosen."
+    },
+    {
+      "name": "TC & TC(N) & TC(H)",
+      "description": "Controls the Treasure Class to use when the Super Unique monster is killed respectively in Normal, Nightmare, or Hell difficulty. This linked to the “Treasure Class” ID from the TreasureClassEx.txt file."
+    },
+    {
+      "name": "TC Desecrated & TC(N) Desecrated & TC(H) Desecrated",
+      "description": "Controls the Treasure Class to use when the Super Unique monster is desecrated (Terrorized) and killed respectively in Normal, Nightmare, or Hell difficulty. This linked to the “Treasure Class” ID from the TreasureClassEx.txt file."
+    }
+  ],
+  "filename": "SuperUniques.txt"
+}

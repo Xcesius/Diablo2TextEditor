@@ -1,0 +1,150 @@
+{
+  "overview": "This file controls a skill’s tooltip description and how it is displayed on the Skill Tree  Used by the following data files: Missiles.txt, Monstats.txt, skills.txt  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "skilldesc",
+      "description": "The name of the skill description, as a reference for associated Data files"
+    },
+    {
+      "name": "SkillPage",
+      "description": "Determines which page on the Skill tree to display the skill Code 0 1 2 3 Description Do not display on any skill tree page Skill Tree Page 1 Skill Tree Page 2 Skill Tree Page 3"
+    },
+    {
+      "name": "SkillRow",
+      "description": "Determines which row on the Skill tree page to display the skill Code 0 1 2 3 4 Description Do not display on the skill tree page Row 1 Row 2 Row 3 Row 4 5 6 Row 5 Row 6"
+    },
+    {
+      "name": "SkillColumn",
+      "description": "Determines which column on the Skill tree page to display the skill Code 0 1 2 3 Description Do not display on any skill tree page Left Column Middle Column Right Column"
+    },
+    {
+      "name": "ListRow",
+      "description": "Determines which row the skill will be listed in, for the skill select UI. Code 0 1 2 3 (Other) Description Common Skill Row Skill Tree 1 Row Skill Tree 2 Row Skill Tree 3 Row Skill will not appear in the Skill Selection UI"
+    },
+    {
+      "name": "IconCel",
+      "description": "Determines the icon asset for displaying the skill. This requires an ID value based on the skillicon files. Class specific skills use their designated class skillicon files (controlled by the “charclass” field in skills.txt), and non-class skills use the global skillicon file. This will use the value as the standard icon to display, and the next value (value + 1) as the button pressed icon display."
+    },
+    {
+      "name": "HireableIconCel",
+      "description": "Determines the icon asset for displaying the skill on a hireable (mercenary). This requires an ID value based on the hireable skillicon files. This will use the value as the standard icon to display, and the next value (value + 1) as the button pressed icon display."
+    },
+    {
+      "name": "str name",
+      "description": "Uses a string to display as the skill name"
+    },
+    {
+      "name": "str short",
+      "description": "Uses a string to display as the skill description in shortcuts or when selecting a skill"
+    },
+    {
+      "name": "str long",
+      "description": "Uses a string to display as the skill description on the Skill Tree"
+    },
+    {
+      "name": "str alt",
+      "description": "Uses a string to display the skill name on the Character Screen when the skill is selected"
+    },
+    {
+      "name": "descdam",
+      "description": "Use a function to calculate a skill’s damage and determine how to display it. These functions sometimes require certain skill fields, especially the damage related fields. Code 0 1 Parameters ddam calc1 ddam calc2 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 ddam calc1 ddam calc2 ddam calc1 ddam calc2 ddam calc1 ddam calc2 Description null Calculates the basic Attack damage (Uses function 7) “ddam calc1” is used as a percent bonus “ddam calc2” is used as a flat number bonus Calculates the character’s kick damage Calculates the character’s throwing weapon damage Calculates the character’s left throwing weapon damage Calculates damage using the equipped weapon damage and the linked skill’s physical and elemental damage Similar to function 5"
+    },
+    {
+      "name": "Calculates the damage of the skill but with carry",
+      "description": "over of elemental damage from the source, such as a missile direct hit and then a missile explosion Calculates the damage of a skill, including damage bonuses “ddam calc1” is used as a percent bonus “ddam calc2” is used as a flat number bonus Calculates the elemental damage of a skill as a periodic damage (every 25 frames = 1 second) “ddam calc1” is used as a multiplier of the damage (If equals 0 then default to 1) “ddam calc2” is used as a divisor of the damage (If equals 0 then default to 1) Calculates the elemental damage of a skill as a periodic damage (every 25 frames = 1 second) The damage is always multiplied by 3 Calculates damage based on the shield equipped and the damage provided by the skill Holy Shield. Also adds a damage percent bonus based on the linked skill’s Param3 & Param4 values, plus the stat bonuses from Strength and Dexterity Calculates damage by obtaining the current weapon damage, and then adds the following: Fire percent damage based on the linked skill’s Calc1 field Cold percent damage based on the linked skill’s Calc2 field Lightning percent damage based on the linked skill’s Calc3 field Calculates a skill’s damage based on the status of the Concentration Aura state If the game is in Expansion, then use the linked skill’s Calc1 field to define the bonus damage when using Concentration If the game is in Classic, then use the Concentration skill’s damage percent increase to define the bonus damage when using Concentration Calculates throwing damage, where it adds a damage percent bonus defined by the linked skill’s Calc1 field Calculates the damage of a skill, and uses the linked skill’s Param5 field as an overall damage percent penalty Calculates the total damage by adding a damage percent bonus from the linked skill’s Param1 & Param2 linear increase calculation, the progressive increase from charges from the linked skill, and the boot damage Calculates the total damage by adding a damage percent bonus from the linked skill’s Calc1 value, the progressive increase from charges from the linked skill, and the boot damage Calculates the damage of a skill and displays the physical damage and the elemental damage separately “ddam calc1” is used as a percent bonus “ddam calc2” is used as a flat number bonus 18 19 20 21 22 23 24 25 26 ddam calc1 ddam calc2 ddam calc1 ddam calc2 ddam calc1 ddam calc2 ddam calc1 ddam calc2 ddam calc1 ddam calc2 Calculates the damage of a skill, including damage bonuses (Uses function 7) “ddam calc1” is used as a percent bonus “ddam calc2” is used as a flat number bonus Calculates the damage of a dual wielding attack. If not dual wielding, then it calculates a normal attack damage “ddam calc1” is used as a percent bonus “ddam calc2” is used as a flat number bonus Same as function 19, but does not add elemental damage Calculates the throwing weapon damage with the linked skill’s elemental damage added Calculates the throwing weapon damage for dual wielding throwing weapons and displays them as two values Calculates the damage of a skill and displays the physical damage and elemental damage separately (Similar to function 17) Calculates damage using the equipped weapon damage and the linked skill’s physical and elemental damage (Similar to function 5) Same as function 5 with a percentage multiplier to min and max. Calculates weapon damage and skill damage as two values."
+    },
+    {
+      "name": "ddam calc1 & ddam calc2",
+      "description": "Integer calc value used as a possible parameter for the descdam function"
+    },
+    {
+      "name": "p1dmelem (to p3dmelem)",
+      "description": "Used for skills that have charge-ups to display the damage on the Character Screen, controls the elemental type for that charge"
+    },
+    {
+      "name": "p1dmmin (to p3dmmin)",
+      "description": "Used for skills that have charge-ups to display the damage on the Character Screen, controls the minimum damage for that charge"
+    },
+    {
+      "name": "p1dmmax (to p3dmmax)",
+      "description": "Used for skills that have charge-ups to display the damage on the Character Screen, controls the maximum damage for that charge"
+    },
+    {
+      "name": "descatt",
+      "description": "Used to display the overall Attack Rating of the skill in the Character Screen Code 0 1 2 3 4 5 Description null Displays the overall Attack Rating the character’s primary weapon If the character can dual wield two weapons, then display the overall Attack Rating for each weapon"
+    },
+    {
+      "name": "Displays the overall Attack Rating for throwing the right",
+      "description": "hand weapon"
+    },
+    {
+      "name": "Displays the overall Attack Rating for throwing the left",
+      "description": "hand weapon Displays the overall Attack Rating for a skill marked with the “finishing” flag"
+    },
+    {
+      "name": "descmissile1 (to descmissile3)",
+      "description": "Links a missile from Missiles.txt to be used as a reference value for calculations"
+    },
+    {
+      "name": "descline1 (to descline6)",
+      "description": "Uses an ID value to select a description function to format the string value. Displays this text as the current level and next level description lines in the skill tooltip. Code 0 (or empty) 13 Parameters Description None desctexta desccalca desccalcb Calculates the Life value of the monster referenced from the “summon” field in the linked skill. Also multiplies this value with [desccalca] as a Life Percent bonus or adds to this value with [desccalcb] as a Life Add bonus. desctexta desctextb desccalca desccalcb desctexta desctexta desctextb desccalca desccalcb desctexta desctextb desccalca 31 34 36 40 56 Inserts this calculated Life value into [desctexta] and output that string Performs the calculation using the “AiCurseDivisor” from difficultylevels.txt based on the current game’s difficulty mode: [desccalca] / [AiCurseDivisor] / [desccalcb] If this value is equals to 1, then insert the calculated value into [desctexta] and output that string If this value is greater than or less than 1, then insert the calculated value into [desctextb] and output that string Calculates the Damage value of the monster referenced from the “summon” field in the linked skill. Then this function inserts that value into [desctexta] and outputs that string Performs the calculation of a value: [desccalca] / [desccalcb] If this value is equals to 1, then insert the value into [desctexta] and output that string If this value is greater than or less than 1, then insert the value into [desctextb] and output that string Use [desccalca] as a code to change the color of the string 0 = White (R=255, G=255, B=255) 1 = Red (R=255, G=77, B=77) 2 = Green (R=0, G=255, B=0) 3 = Blue (R=105, G=105, B=255) 4 = Light Gold (R=199, G=179, B=119) 5 = Grey (R=105, G=105, B=105) 6 = Black (R=0, G=0, B=0) 7 = Dark Gold (R=208, G=194, B=125) 8 = Orange (R=255, G=168, B=0) 9 = Yellow (R=255, G=255, B=100) 10 = Dark Green (R=0, G=128, B=0) 11 = Purple (R=174, G=0, B=255) 12 = Medium Green (R=0, G=200, B=0) Inserts [desctextb] into [desctexta] and outputs that string Gets the quantity of the item that is connected to the linked skill and inserts this value into the “scrollbooktext” string and outputs that string 74 75 76 77 desctexta desccalca desctexta desccalca desccalcb desctexta desctextb desccalca desctexta desctextb desccalca desccalcb Inserts [desccalca] into [desctexta] and outputs that string Inserts [desccalca] and [desccalcb] into [desctexta] and outputs that string Inserts [desctextb] and [desccalca] into [desctexta] and outputs that string Inserts [desctextb], [desccalca], and [desccalcb] into [desctexta] and outputs that string"
+    },
+    {
+      "name": "desctexta1 (to desctexta6)",
+      "description": "String value used as the first possible string parameter for the descline function"
+    },
+    {
+      "name": "desctextb1 (to desctextb6)",
+      "description": "String value used as the second possible string parameter for the descline function"
+    },
+    {
+      "name": "desccalca1 (todesccalca6)",
+      "description": "Integer calculation value used as the first possible numeric parameter for the descline function"
+    },
+    {
+      "name": "desccalcb1 (todesccalcb6)",
+      "description": "Integer calculation value used as the second possible numeric parameter for the descline function"
+    },
+    {
+      "name": "dsc2line1 (to dscline5)",
+      "description": "Uses an ID value to select a description function to format the string value. Displays this text as a pinned line, after the skill description. (Uses the same function codes as descline1)"
+    },
+    {
+      "name": "dsc2texta1 (to dsc2texta5)",
+      "description": "String value used as the first possible string parameter for the dsc2line function"
+    },
+    {
+      "name": "dsc2textb1 (to dsc2textb5)",
+      "description": "String value used as the second possible string parameter for the dsc2line function"
+    },
+    {
+      "name": "dsc2calca1 (to dsc2calca5)",
+      "description": "Integer Calc value used as the first possible numeric parameter for the dsc2line function"
+    },
+    {
+      "name": "dsc2calcb1 (to dsc2calcb5)",
+      "description": "Integer Calc value used as the second possible numeric parameter for the dsc2line function"
+    },
+    {
+      "name": "dsc3line1 (to dsc3line7)",
+      "description": "Uses an ID value to select a description function to format the string value. Displays this text as a pinned line at the bottom of the skill tooltip. (Uses the same function codes as descline1)"
+    },
+    {
+      "name": "dsc3texta1 (to dsc3texta7)",
+      "description": "String value used as the first possible string parameter for the dsc3line function"
+    },
+    {
+      "name": "dsc3textb1 (to dsc3textb7)",
+      "description": "String value used as the second possible string parameter for the dsc3line function"
+    },
+    {
+      "name": "dsc3calca1 (to dsc3calca7)",
+      "description": "Integer Calc value used as the first possible numeric parameter for the dsc3line function"
+    },
+    {
+      "name": "dsc3calcb1 (to dsc3calcb7)",
+      "description": "Integer Calc value used as the second possible numeric parameter for the dsc3line function item proc text – String value used as an override format for when the skill appears as a “chance to cast” property on an item. Can be formatted to include descline1 to descline6 in the string using “%s” entries. Leave blank to ignore and use the string format in ItemStatCost.txt. item proc descline count – Integer value for how many descline entries should be formatted into the “item proc text“ string."
+    }
+  ],
+  "filename": "skilldesc.txt"
+}

@@ -1,0 +1,50 @@
+{
+  "overview": "This file controls the creation of Rune Words and their various modifiers.  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "Name",
+      "description": "Controls the string key that is used to the display the name of the item when the Rune Word is complete"
+    },
+    {
+      "name": "complete",
+      "description": "Boolean field. If equals 1, then the Rune Word can be crafted in-game. If equals 0, then the Rune Word cannot be crafted in-game."
+    },
+    {
+      "name": "firstLadderSeason",
+      "description": "Integer field. The first ladder season the Rune Word can be made on (inclusive). If blank or 0 then it is available in non-ladder."
+    },
+    {
+      "name": "lastLadderSeason",
+      "description": "Integer field. The last ladder season the Rune Word is ladder-only (inclusive). Must be used in conjunction with firstLadderSeason."
+    },
+    {
+      "name": "itype1 (to itype6)",
+      "description": "Controls what item types are allowed for this Rune Word (Uses the ID field from ItemTypes.txt)"
+    },
+    {
+      "name": "etype1 (to etype3)",
+      "description": "Controls what item types are excluded for this Rune Word (Uses the ID field from ItemTypes.txt)"
+    },
+    {
+      "name": "Rune1 (to Rune6)",
+      "description": "Controls what runes are required to make the Rune Word. The order of each of these fields matters. (Uses the ID field from misc.txt)"
+    },
+    {
+      "name": "T1Code1 (to T1Code7)",
+      "description": "Controls the item properties that the Rune Word provides (Uses the “code” field from Properties.txt)"
+    },
+    {
+      "name": "T1Param1 (to T1Param7)",
+      "description": "The stat’s “parameter” value associated with the related property (T1Code). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "T1Min1 (to T1Min7)",
+      "description": "The stat’s “min” value to assign to the related property (T1Code). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "T1Max1 (to T1Max7)",
+      "description": "The stat’s “max” value to assign to the related property (T1Code). Usage depends on the property function (See the “func” field on Properties.txt)"
+    }
+  ],
+  "filename": "Runes.txt"
+}

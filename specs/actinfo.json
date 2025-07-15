@@ -1,0 +1,58 @@
+{
+  "overview": "This file controls global Act functionalities including item levels, monster behaviors, and waypoints  This file uses the wanderingmon.txt file for a modular list of potential wandering units to spawn  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "act",
+      "description": "Defines the ID for the Act"
+    },
+    {
+      "name": "town",
+      "description": "Uses an area level (“Name field” from levels.txt) to define the Act’s town area"
+    },
+    {
+      "name": "start",
+      "description": "Uses an area level (“Name field” from levels.txt) to define where the player starts in the Act"
+    },
+    {
+      "name": "maxnpcitemlevel",
+      "description": "Controls the maximum item level for items sold by the NPC in the Act"
+    },
+    {
+      "name": "classlevelrangestart",
+      "description": "Uses an area level (“Name field” from levels.txt) with its MonLvl values as a global Act minimum monster level. For example, this is used to determine chest levels in an Act."
+    },
+    {
+      "name": "classlevelrangeend",
+      "description": "Uses an area level (“Name field” from levels.txt) with its MonLvl values as a global Act maximum monster level. For example, this is used to determine chest levels in an Act."
+    },
+    {
+      "name": "wanderingnpcstart",
+      "description": "Uses an index to determine which wandering monster class to use when populating areas (See wanderingmmon.txt for a list of possible monsters to spawn)"
+    },
+    {
+      "name": "wanderingnpcrange",
+      "description": "This is a modifier that gets added to the “wanderingnpcstart” value to randomly select an index"
+    },
+    {
+      "name": "commonactcof",
+      "description": "Specifies which “.D2” file to use as for the common Act COF file. This is used to establish the seed when initializing the Act."
+    },
+    {
+      "name": "waypoint1 (to waypoint9)",
+      "description": "Uses an area level (“Name field” from levels.txt) as the designated waypoint selection in the Waypoint UI"
+    },
+    {
+      "name": "wanderingMonsterPopulateChance",
+      "description": "The percent chance (from 0 to 100) to spawn a wandering monster (See wanderingmmon.txt for a list of possible monsters to spawn)"
+    },
+    {
+      "name": "wanderingMonsterRegionTotal",
+      "description": "The maximum number of wandering monsters allowed at once"
+    },
+    {
+      "name": "wanderingPopulateRandomChance",
+      "description": "A secondary percent chance (from 0 to #) to determine whether to attempt populating with monsters. Only fails if random chance selects 0."
+    }
+  ],
+  "filename": "actinfo.txt"
+}

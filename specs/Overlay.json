@@ -1,0 +1,82 @@
+{
+  "overview": "This file controls the overlay graphics related to states, auras, cast animations, curses, and buffs  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "overlay",
+      "description": "Defines the name of the overlay, used in other data files"
+    },
+    {
+      "name": "Filename",
+      "description": "Defines which DCC file to use for the Overlay"
+    },
+    {
+      "name": "version",
+      "description": "Defines which game version to use this Overlay (0 = Classic mode | 100 = Expansion mode)"
+    },
+    {
+      "name": "Character",
+      "description": "Used for name categorizing Overlays for unit translation mapping"
+    },
+    {
+      "name": "PreDraw",
+      "description": "Boolean field. If equals 1, then display the Overlay in front of sprites. If equals 0, then display the Overlay behind sprites."
+    },
+    {
+      "name": "1ofN",
+      "description": "Controls how to randomly display Overlays. This value will randomly add to the current index of the Overlay to possibly use another Overlay that is indexed after this current Overlay. The formula is as follows: Index = Index + RANDOM(0, [“1ofN”]-1)."
+    },
+    {
+      "name": "Xoffset",
+      "description": "Sets the horizontal offset of the overlay on the unit. Positive values move it toward the left and negative values move it towards the right."
+    },
+    {
+      "name": "Yoffset",
+      "description": "Sets the vertical offset of the overlay on the unit. Positive values move it down and negative values move it up."
+    },
+    {
+      "name": "Height1 (to Height4)",
+      "description": "These are additional values added to “Yoffset”. Only 1 of these “Height” fields are added, and which field that gets selected depends on the “OverlayHeight” field value from monstats2.txt (Example: If the “OverlayHeight” value is 4, then use the “Height4” field). If the “OverlayHeight” value is 0, then ignore these “Height” fields and add a default value of 75 to “Yoffset”. Player unit types will always use “Height2”."
+    },
+    {
+      "name": "AnimRate",
+      "description": "Controls the animation frame rate of the Overlay. The value is the number of frames that will update per second."
+    },
+    {
+      "name": "LoopWaitTime",
+      "description": "Controls the number of periodic frames to wait until redrawing the Overlay. This only works with Overlays that are a loop type."
+    },
+    {
+      "name": "Trans",
+      "description": "Controls the alpha mode for how the Overlay is displayed, which can affect transparency and blending Code 0 1 2 3 4 5 6 7 8 Description Transparency at 25% Transparency at 50% Transparency at 75% Black Alpha Transparency White Alpha Transparency No Transparency Dark Transparency (Unused) Highlight Transparency (Used when mousing over the unit) Blended"
+    },
+    {
+      "name": "InitRadius",
+      "description": "Controls the starting Light Radius value for the Overlay (Max = 18)"
+    },
+    {
+      "name": "Radius",
+      "description": "Controls the maximum Light Radius value for the Overlay. This can only be greater than or equal to “InitRadius”. If greater than “InitRadius”, then the Light Radius will increase in size per frame, starting from “InitRadius” until it matches the “Radius” value (Max = 18)"
+    },
+    {
+      "name": "Red",
+      "description": "Controls the Red color gradient of the Light Radius"
+    },
+    {
+      "name": "Green",
+      "description": "Controls the Green color gradient of the Light Radius"
+    },
+    {
+      "name": "Blue",
+      "description": "Controls the Blue color gradient of the Light Radius"
+    },
+    {
+      "name": "NumDirections",
+      "description": "The number of directions in the cell file"
+    },
+    {
+      "name": "LocalBlood",
+      "description": "Controls how to display green blood or VFX on a unit. Code 0 1 2 Quest Progress null Transform the default red blood splatter to green blood Change the monster palette to green"
+    }
+  ],
+  "filename": "Overlay.txt"
+}

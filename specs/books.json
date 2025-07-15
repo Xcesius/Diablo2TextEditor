@@ -1,0 +1,42 @@
+{
+  "overview": "This file controls functionalities of book items (also called Tomes). This includes how they interact with their related scroll items.  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "Name",
+      "description": "This is a reference field to define the book"
+    },
+    {
+      "name": "ScrollSpellCode",
+      "description": "Uses an item’s code to define as the scroll item for the book"
+    },
+    {
+      "name": "BookSpellCode",
+      "description": "Uses an item’s code to define as the book item"
+    },
+    {
+      "name": "pSpell",
+      "description": "Defines the item spell function to use when using the book Code 0 1 2 3 4 5 6 7 8 9 10 11 Description None Identify Town Portal Health Potion (Flat Amount with special bonus for class and Vitality attribute) Health Potion 2 (Flat Amount with no special bonus) Health Potion 3 (Percentage) Antidote Potion (Apply a state that can override other states) Transmogrify (Used to open the Horadric Cube’s UI for transmogrification) Elixir (Modify a stat) Herb (Apply a state using item stats) Skill (Cast the Fireball skill to a target unit) Skill XY (Cast the Fireball skill to a location using X and Y coordinates)"
+    },
+    {
+      "name": "SpellIcon",
+      "description": "Controls which DC6 file to display for the mouse cursor when using the scroll or book (Uses numeric indices to pick the DC6 file. Example: When using Identify, use icon 1 or buysell.DC6)"
+    },
+    {
+      "name": "ScrollSkill",
+      "description": "Defines which Skill to use for the scroll item (uses the “skill” field from skills.txt)"
+    },
+    {
+      "name": "BookSkill",
+      "description": "Defines which Skill to use for the book item (uses the “skill” field from skills.txt)"
+    },
+    {
+      "name": "BaseCost",
+      "description": "The starting gold cost to buy the book from an NPC"
+    },
+    {
+      "name": "CostPerCharge",
+      "description": "The additional gold cost added with the book’s “BaseCost” value, based on how many charges the book has"
+    }
+  ],
+  "filename": "books.txt"
+}

@@ -1,0 +1,66 @@
+{
+  "overview": "This file controls how the Automap in game will display the discovered parts of the area level and store this progress in character save files.  The Automap is composed of many different image files depicted as small icons to convey what part of the area level is being displayed. This file will assign these image files to their related map cells, which will properly build the Automap as the player explores the area.  Not all tiles will have image files assigned to them, and in these cases, those parts of the Automap will remain blank.  Any column field name starting with “*” is considered a comment field and is not used by the game            This file controls the statistics for how belts and their various item slots work.  This file relies on the “belt” field from the armor.txt file. Each belt entry in this file defines a belt type that controls how many slots the belt item provides. Each of these belt types are a possible value that items in the armor.txt file can use in the “belt” field.  The game uses the 3rd entry is defined as the “default” belt, meaning that the player has no belt equipped, and the game will use this entry’s stats to determine how to handle the belt slots.",
+  "data_fields": [
+    {
+      "name": "LevelName",
+      "description": "Uses a string format system to define the Act number and name of the level type. Level types are static defined values that cannot be added. The number at the start of the string defines the Act number, and the word that follows this number defines the level type. This data should stay grouped by level. String Code 1 Town 1 Wilderness 1 Cave 1 Crypt 1 Monestary 1 Courtyard 1 Barracks 1 Jail 1 Cathedral 1 Catacombs 1 Tristram 2 Town 2 Sewer 2 Harem 2 Basement 2 Desert 2 Tomb 2 Lair 2 Arcane 3 Town 3 Jungle 3 Kurast 3 Spider 3 Dungeon 3 Sewer 4 Town 4 Mesa 4 Lava 5 Town 5 Siege 5 Barricade 5 Temple 5 Ice 5 Baal 5 Lava Description Level Type None Level Type 1 Town Level Type 1 Wilderness Level Type 1 Cave Level Type 1 Crypt Level Type 1 Monestary Level Type 1 Courtyard Level Type 1 Barracks Level Type 1 Jail Level Type 1 Cathedral Level Type 1 Catacombs Level Type 1 Tristram Level Type 2 Town Level Type 2 Sewer Level Type 2 Desert Level Type 2 Sewer Level Type 2 Desert Level Type 2 Tomb Level Type 2 Lair Level Type 2 Arcane Level Type 3 Town Level Type 3 Jungle Level Type 3 Kurast Level Type 3 Spider Level Type 3 Dungeon Level Type 3 Sewer Level Type 4 Town Level Type 4 Mesa Level Type 4 Hell Level Type 6 Town Level Type 6 Siege Level Type 6 Barricade Level Type 6 Temple Level Type 5 Ice Caves Level Type 5 Baal Level Type 5 Lava"
+    },
+    {
+      "name": "TileName",
+      "description": "Uses defined string codes to control the tile orientations on the Automap String Code fl wl wr wtlr wtll wtr wbl wbr wld wrd wle wre co sh tr rf ld rd fd fi Description Base Floor Base Left Wall Base Right Wall Base Upper Top Corner Right Base Upper Top Corner Left Base Upper Top Corner Base Lower Bottom Corner Left Base Lower Bottom Corner Right Base Left Door Base Right Door Base Left Exit Base Right Exit Base Column Base Shadow Base Tree Base Roof Base Left Wall Down Base Right Wall Down Base Full Wall Down Base Front Wall Down"
+    },
+    {
+      "name": "Style",
+      "description": "Defines a group numeric ID for the range of cells, meaning that the game will try to use cells that match the same style value, after determining the Level Type and Tile Type. If this value is equal to 255, then the style is ignored in the “Cel#” field selection."
+    },
+    {
+      "name": "StartSequence",
+      "description": "The start index value for valid “Cel#” field to choose for displaying on the Automap. If this value is equal to 255, then both the “StartSequence” and “EndSequence” are ignored in the “Cel#” field selection. If this value is equal to -1, then this field is ignored in the “Cel#” field selection."
+    },
+    {
+      "name": "EndSequence",
+      "description": "The end index value for a valid “Cel#” field to choose for displaying on the Automap. If this value is equal to -1, then this field is ignored in the “Cel#” field selection."
+    },
+    {
+      "name": "Cel1 (to Cel4)",
+      "description": "Determines the unique image frame to use from the MaxiMap.dc6 file that will be used to display on the Automap for that position of the level tile."
+    },
+    {
+      "name": "There are multiple of these fields because they can be randomly chosen to give image variety in the Automap display. If the value equals",
+      "description": "1, then this cell is not valid and will be ignored. If no cell is chosen overall, then nothing will be drawn in this area on the Automap. belts.txt"
+    },
+    {
+      "name": "name",
+      "description": "This is a reference field to define the belt type"
+    },
+    {
+      "name": "numboxes",
+      "description": "This integer field defines the number of item slots in the belt. This is used when inserting items into the belt and also for handling the removal of items when the belt item is unequipped."
+    },
+    {
+      "name": "box1left (to box 16left)",
+      "description": "Specifies the belt slot left side coordinates. This is use for Server verification purposes and does not affect the local box UI in the client."
+    },
+    {
+      "name": "box1right (to box16right)",
+      "description": "Specifies the belt slot right side coordinates. This is use for Server verification purposes and does not affect the local box UI in the client."
+    },
+    {
+      "name": "box1top (to box16top)",
+      "description": "Specifies the belt slot left top coordinates. This is use for Server verification purposes and does not affect the local box UI in the client."
+    },
+    {
+      "name": "box1bottom (to box16bottom)",
+      "description": "Specifies the belt slot bottom side coordinates. This is use for Server verification purposes and does not affect the local box UI in the client."
+    },
+    {
+      "name": "defaultItemTypeCol1 (to defaultItemTypeCol4)",
+      "description": "Specifies the default item type used for the populate belt and auto-use functionality on controller."
+    },
+    {
+      "name": "defaultItemCodeCol1 (to defaultItemCodeCol4)",
+      "description": "Specifies the default item code used for the populate belt and auto-use functionality on controller. Leaving this blank uses no code and instead relies entirely on the item type."
+    }
+  ],
+  "filename": "AutoMap.txt"
+}

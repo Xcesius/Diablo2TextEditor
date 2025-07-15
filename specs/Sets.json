@@ -1,0 +1,66 @@
+{
+  "overview": "This file controls the item modifiers for Set bonus statistics when the player has equipped enough Set Items",
+  "data_fields": [
+    {
+      "name": "index",
+      "description": "Defines the specific Set ID"
+    },
+    {
+      "name": "name",
+      "description": "Uses a string for displaying the Set name in the inventory tooltip"
+    },
+    {
+      "name": "version",
+      "description": "Defines which game version to use this Set bonus (0 = Classic mode | 100 = Expansion mode)"
+    },
+    {
+      "name": "PCode2a (to PCode5a)",
+      "description": "Controls the each of the different pairs of Partial Set item properties. These are applied when the player has equipped the related # of Set items. This is the first part of the pair for each Partial Set bonus. (Uses the “code” field from Properties.txt)"
+    },
+    {
+      "name": "PParam2a (to PParam5a)",
+      "description": "The stat’s “parameter” value associated with the relative property (PCode#a). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "PMin2a (to PMin5a)",
+      "description": "The stat’s “min” value associated with the listed relative (PCode#a). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "PMax2a (to PMax5a)",
+      "description": "The stat’s “max” value to assign to the listed relative (PCode#a). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "PCode2b (to PCode5b)",
+      "description": "Controls the each of the different pairs of Partial Set item properties. These are applied when the player has equipped the related # of Set items. This is the second part of the pair for each Partial Set bonus. (Uses the “code” field from Properties.txt)"
+    },
+    {
+      "name": "PParam2b (to PParam5b)",
+      "description": "The stat’s “parameter” value associated with the relative property (PCode#b). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "PMin2b (to PMin5b)",
+      "description": "The stat’s “min” value associated with the listed relative (PCode#b). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "PMax2b (to PMax5b)",
+      "description": "The stat’s “max” value to assign to the listed relative (PCode#b). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "FCode1 (to FCode8)",
+      "description": "Controls the each of the different Full Set item properties. These are applied when the player has all Set item pieces equipped (Uses the “code” field from Properties.txt)"
+    },
+    {
+      "name": "FParam1 (to FParam8)",
+      "description": "The stat’s “parameter” value associated with the relative property (FCode#b). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "FMin1 (to FMin8)",
+      "description": "The stat’s “min” value associated with the listed relative (FCode#b). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "FMax1 (to FMax8)",
+      "description": "The stat’s “max” value to assign to the listed relative (FCode#b). Usage depends on the property function (See the “func” field on Properties.txt)"
+    }
+  ],
+  "filename": "Sets.txt"
+}

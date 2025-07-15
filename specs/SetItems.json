@@ -1,0 +1,122 @@
+{
+  "overview": "This file controls the item modifiers for each Set item in a Set  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "index",
+      "description": "Links to a string key for displaying the Set item name"
+    },
+    {
+      "name": "set",
+      "description": "Defines the Set to link to this Set Item (must match the “index” field from Sets.txt)"
+    },
+    {
+      "name": "item",
+      "description": "Defines the baseline item code to use for this Set item (must match the “code” field value from weapons.txt, armor.txt, or misc.txt)"
+    },
+    {
+      "name": "rarity",
+      "description": "Modifies the chances that this Unique item will spawn compared to the other Set items. This value acts as a numerator and a denominator. Each “rarity” value gets summed together to give a total denominator, used for the random roll for the item. For example, if there are 3 possible Set items, and their “rarity” values are 3, 5, 7, then their chances to be chosen are 3/15, 5/15, and 7/15 respectively. (The minimum “rarity” value equals 1)"
+    },
+    {
+      "name": "lvl",
+      "description": "The item level for the item, which controls what object or monster needs to be in order to drop this item"
+    },
+    {
+      "name": "lvl req",
+      "description": "The minimum character level required to equip the item"
+    },
+    {
+      "name": "chrtransform",
+      "description": "Controls the color change of the item when equipped on a character or dropped on the ground. If empty, then the item will have the default item color. (Uses Color Codes from the reference file colors.txt) Code Color No color change White Light Grey Dark Grey Black Light Blue Dark Blue Crystal Blue Light Red Dark Red Crystal Red Light Green Dark Green Crystal Green Light Yellow Dark Yellow Light Gold Dark Gold Light Purple Dark Purple Orange Bright White whit lgry dgry blac lblu dblu cblu lred dred cred lgrn dgrn cgrn lyel dyel lgld dgld lpur dpur oran bwht"
+    },
+    {
+      "name": "invtransform",
+      "description": "Controls the color change of the item in the inventory UI. If empty, then the item will have the default item color. (Uses Color Codes from the reference file colors.txt) Code Color No color change White Light Grey Dark Grey Black Light Blue Dark Blue Crystal Blue Light Red Dark Red Crystal Red Light Green Dark Green Crystal Green Light Yellow Dark Yellow Light Gold Dark Gold Light Purple Dark Purple Orange Bright White whit lgry dgry blac lblu dblu cblu lred dred cred lgrn dgrn cgrn lyel dyel lgld dgld lpur dpur oran bwht"
+    },
+    {
+      "name": "invfile",
+      "description": "An override for the “invfile” field from the weapon.txt, armor.txt, or misc.txt files. By default, the Set Item will use what was defined by the baseline item from the “item” field."
+    },
+    {
+      "name": "flippyfile",
+      "description": "An override for the “flippyfile” field from the weapon.txt, armor.txt, or misc.txt files. By default, the Set Item will use what was defined by the baseline item from the “item” field."
+    },
+    {
+      "name": "dropsound",
+      "description": "An override for the “dropsound” field from the weapon.txt, armor.txt, or misc.txt files. By default, the Set Item will use what was defined by the baseline item from the “item” field."
+    },
+    {
+      "name": "dropsfxframe",
+      "description": "An override for the “dropsfxframe” field from the weapon.txt, armor.txt, or misc.txt files. By default, the Set Item will use what was defined by the baseline item from the “item” field."
+    },
+    {
+      "name": "usesound",
+      "description": "An override for the “usesound” field from the weapon.txt, armor.txt, or misc.txt files. By default, the Set Item will use what was defined by the baseline item from the “item” field."
+    },
+    {
+      "name": "cost mult",
+      "description": "Multiplicative modifier for the Set item’s buy, sell, and repair costs"
+    },
+    {
+      "name": "cost add",
+      "description": "Flat integer modification to the Set item’s buy, sell, and repair costs. This is added after the “cost mult” has modified the costs."
+    },
+    {
+      "name": "add func",
+      "description": "Controls how the additional Set item properties (aprop#a & aprob#b) will function on the Set item based on other related set items are equipped Code 0 (or empty) 1 Description Additional Set item properties will function like normal item properties, ignoring the Set Additional Set item properties will be added depending on which specific Set item is equipped. Each Set item has their own index depending on their order in data and the “set” they belong to. For example, if a Set item is defined first in the list, that that it has the index equal to 1, which means this function will make “aprop1a” and “aprop1b” fields only be added to a Set Item when that specific Set item of index 1 is equipped. 2 Additional Set item properties will be added depending the number of related Set items equipped. For example, if 2 Set items are equipped, then the “aprop1a”, “aprop1b”, “aprop2a”, and “aprop2b” fields will be added to the Set item."
+    },
+    {
+      "name": "prop1 (to prop9)",
+      "description": "Controls the item properties that are add baseline to the Set Item (Uses the “code” field from Properties.txt)"
+    },
+    {
+      "name": "par1 (to par9)",
+      "description": "The stat’s “parameter” value associated with the related property (prop#). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "min1 (to min9)",
+      "description": "The stat’s “min” value to assign to the related property (prop#). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "max1 (to max9)",
+      "description": "The stat’s “max” value to assign to the related property (prop#). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "aprop1a (to aprop5a)",
+      "description": "Controls the item properties that are added to the Set Item when other pieces of the Set are also equipped (Uses the “code” field from Properties.txt)"
+    },
+    {
+      "name": "apar1a (to apar5a)",
+      "description": "The stat’s “parameter” value associated with the related property (aprop#a). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "amin1a (to amin5a)",
+      "description": "The stat’s “min” value to assign to the related property (aprop#a). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "amax1a (to amax5a)",
+      "description": "The stat’s “max” value to assign to the related property (aprop#a). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "aprop1b (to aprop5b)",
+      "description": "Controls the item properties that are added to the Set Item when other pieces of the Set are also equipped. Each of these numbered fields are paired with the related “aprop#a” field as an additional item property. (Uses the “code” field from Properties.txt)"
+    },
+    {
+      "name": "apar1b (to apar5b)",
+      "description": "The stat’s “parameter” value associated with the related property (aprop#b). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "amin1b (to amin5b)",
+      "description": "The stat’s “min” value to assign to the related property (aprop#b). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "amax1b (to amax5b)",
+      "description": "The stat’s “max” value to assign to the related property (aprop#b). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "diablocloneweight",
+      "description": "The amount of weight added to the diablo clone progress when this item is sold. When offline, selling this item will instead immediately spawn diablo clone."
+    }
+  ],
+  "filename": "SetItems.txt"
+}

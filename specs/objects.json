@@ -1,0 +1,932 @@
+{
+  "overview": "This file controls the functionalities of all objects found in area levels  The order of each object defined in this file will convey what ID value it has, and thus should not be changed       This file uses the following files: ObjMode.txt, objpreset, ObjType.txt, shrines.txt  Any column field name starting with “*” is considered a comment field and is not used by the game  Objects are always set to be using a specific mode, which controls which fields to use for functionalities. There are 8 possible Object modes, each tied to an ID number. Specific fields are numbered to match each of these modes, meaning that the object will use that specific field number when in a certain mode (See ObjMode.txt) Number 0 1 2 3 4 5 6 7  Object Mode Neutral Operating Opened Special 1 Special 2 Special 3 Special 4 Special 5  Token NU OP ON S1 S2 S3 S4 S5",
+  "data_fields": [
+    {
+      "name": "Class",
+      "description": "Defines the unique type class of the object which is used to reference this object. These are also defined in the objpreset.txt file."
+    },
+    {
+      "name": "Name",
+      "description": "String key. Used as the display name of the object when being highlighted by the player."
+    },
+    {
+      "name": "Token",
+      "description": "Determines what files to use to display the graphics of the object. These are defined by the ObjType.txt file."
+    },
+    {
+      "name": "Selectable0 (to Selectable7)",
+      "description": "Boolean Field. If equals 1, then the object can be selected by the player and highlighted when hovered on by the mouse cursor. If equals 0, then the object cannot be selected and will not highlight when the player hovers the mouse over it. Each field is numbered, correlating to 1 of 8 Object Modes that the object uses (See Overview section, or ObjMode.txt)."
+    },
+    {
+      "name": "SizeX & SizeY",
+      "description": "Controls the amount of sub tiles that the object occupies using X and Y coordinates. This is generally used for measuring the object’s size when trying to spawn objects in rooms and controlling their distances apart."
+    },
+    {
+      "name": "FrameCnt0 (To FrameCnt7)",
+      "description": "Controls the frame length of the object’s mode. If this equals 0, then that mode will be skipped. Each field is numbered, correlating to 1 of 8 Object Modes that the object uses (See Overview section, or ObjMode.txt)."
+    },
+    {
+      "name": "FrameDelta0 (to FrameDelta7)",
+      "description": "Controls the animation frame rate of how many frames to update per delta (Measured in 256ths). Each field is numbered, correlating to 1 of 8 Object Modes that the object uses (See Overview section, or ObjMode.txt)."
+    },
+    {
+      "name": "CycleAnim0 (to CycleAnim7)",
+      "description": "Boolean Field. If equals 1, then the object’s current animation will loop back to play again when it finishes. If equals 0, then the object will generally play the Opened mode after playing the Operating mode. Each field is numbered, correlating to 1 of 8 Object Modes that the object uses (See Overview section, or ObjMode.txt)."
+    },
+    {
+      "name": "Lit0 (to Lit7)",
+      "description": "Controls the Light Radius distance value for the object. If this value equals 0, then the object will not emit a Light Radius. Each field is numbered, correlating to 1 of 8 Object Modes that the object uses (See Overview section, or ObjMode.txt)."
+    },
+    {
+      "name": "BlocksLight0 (to BlocksLight7)",
+      "description": "Boolean Field. If equals 1, then the object will draw a shadow. If equals 0, then the object will not draw a shadow. Each field is numbered, correlating to 1 of 8 Object Modes that the object uses (See Overview section, or ObjMode.txt)."
+    },
+    {
+      "name": "HasCollision0 (to HasCollision7)",
+      "description": "Boolean Field. If equals 1, then the object will have collision. If equals 0, then the object will not have collision, and units can walk through it. Each field is numbered, correlating to 1 of 8 Object Modes that the object uses (See Overview section, or ObjMode.txt)."
+    },
+    {
+      "name": "IsAttackable0",
+      "description": "Boolean Field. If equals 1, then the player can target this object to be attacked, and the player will use the Kick skill when operating the object. If the object has the Class equal to “CompellingOrb” or “SoulStoneForge”, then instead of using the Kick skill, players will use the Attack skill when operating the object. If equals 0, then ignore this, and the player will not use a skill or animation when operating the object."
+    },
+    {
+      "name": "Start0 (to Start7)",
+      "description": "Controls the frame for where the object will start playing the next animation. Each field is numbered, correlating to 1 of 8 Object Modes that the object uses (See Overview section, or ObjMode.txt)."
+    },
+    {
+      "name": "EnvEffect",
+      "description": "Boolean Field. If equals 1, then enable the object to update its mode based on the game’s time of day. This can mean that when the object is spawned, and it is current day time and the object is in Opened or Operating mode, then it will reset back to Neutral mode. Also, if the current time is dusk, night, or dawn and the object is in Neutral mode, then it will change to Operating mode. If equals 0, then the object will not update its mode based on the time of day."
+    },
+    {
+      "name": "IsDoor",
+      "description": "Boolean Field. If equals 1, then the object will be treated as a door when the game handles its collision, animation properties, tooltips, and commands. If equals 0, then ignore this."
+    },
+    {
+      "name": "BlocksVis",
+      "description": "Boolean Field. If equals 1, then the object will block the player’s line of sight to see anything beyond the object. If equals 0, then ignore this. This field relies on the “IsDoor” field being enabled."
+    },
+    {
+      "name": "Orientation",
+      "description": "Determines the object’s orientation type, which can affect mouse selection priority of the object when a unit is being rendered in front of or behind the object (such as a door object covering a unit and how the mouse selection should handle that). This also affects the randomization of the coordinates when spawning the object near the edge of a room. Description Center Code 0 (or other #) 1 2 Right Left"
+    },
+    {
+      "name": "OrderFlag0 (to OrderFlag7)",
+      "description": "Controls how the object’s sprite is drawn, which can affect how it is displayed in Perspective game camera mode. Each field is numbered, correlating to 1 of 8 Object Modes that the object uses (See Overview section, or ObjMode.txt). Code 0 1 2 Description Do nothing Flat floor Wall"
+    },
+    {
+      "name": "PreOperate",
+      "description": "Boolean Field. If equals 1, then enable a random chance that the object will spawn in already in Opened mode. The game will choose a 1/14 chance that this can happen when the object is spawned. If equals 0, then ignore this."
+    },
+    {
+      "name": "Mode0 (to Mode7)",
+      "description": "Boolean Field. If equals 1, then confirm that this object has the correlating mode. If equals 0, then this object will not have the correlating mode. This flag can affect how the object functions work. Each field is numbered, correlating to 1 of 8 Object Modes that the object uses (See Overview section, or ObjMode.txt)."
+    },
+    {
+      "name": "Xoffset & Yoffset",
+      "description": "Controls the offset values in the X and Y directions for the object’s visual graphics. This is measured in game pixels."
+    },
+    {
+      "name": "Draw",
+      "description": "Boolean Field. If equals 1, then draw the object’s shadows. If equal’s 0, then do not draw the object’s shadows."
+    },
+    {
+      "name": "Red",
+      "description": "Controls the Red color gradient of the object’s Light Radius. This field depends on the “Lit#” field having a value greater than 0."
+    },
+    {
+      "name": "Green",
+      "description": "Controls the Green color gradient of the object’s Light Radius. This field depends on the “Lit#” field having a value greater than 0."
+    },
+    {
+      "name": "Blue",
+      "description": "Controls the Blue color gradient of the object’s Light Radius. This field depends on the “Lit#” field having a value greater than 0."
+    },
+    {
+      "name": "HD",
+      "description": "Boolean Field. If equals 1, then the object will be flagged to have a Head composite piece, and the game will use the component system to handle the object’s mouse selection collision box. If equals 0, then ignore this."
+    },
+    {
+      "name": "TR",
+      "description": "Boolean Field. If equals 1, then the object will be flagged to have a Torso composite piece, and the game will use the component system to handle the object’s mouse selection collision box. If equals 0, then ignore this."
+    },
+    {
+      "name": "LG",
+      "description": "Boolean Field. If equals 1, then the object will be flagged to have a Legs composite piece, and the game will use the component system to handle the object’s mouse selection collision box. If equals 0, then ignore this."
+    },
+    {
+      "name": "RA",
+      "description": "Boolean Field. If equals 1, then the object will be flagged to have a Right Arm composite piece, and the game will use the component system to handle the object’s mouse selection collision box. If equals 0, then ignore this."
+    },
+    {
+      "name": "LA",
+      "description": "Boolean Field. If equals 1, then the object will be flagged to have a Left Arm composite piece, and the game will use the component system to handle the object’s mouse selection collision box. If equals 0, then ignore this."
+    },
+    {
+      "name": "RH",
+      "description": "Boolean Field. If equals 1, then the object will be flagged to have a Right Hand composite piece, and the game will use the component system to handle the object’s mouse selection collision box. If equals 0, then ignore this."
+    },
+    {
+      "name": "LH",
+      "description": "Boolean Field. If equals 1, then the object will be flagged to have a Left Hand composite piece, and the game will use the component system to handle the object’s mouse selection collision box. If equals 0, then ignore this."
+    },
+    {
+      "name": "SH",
+      "description": "Boolean Field. If equals 1, then the object will be flagged to have a Shield composite piece, and the game will use the component system to handle the object’s mouse selection collision box. If equals 0, then ignore this."
+    },
+    {
+      "name": "S1 (to S8)",
+      "description": "Boolean Field. If equals 1, then the object will be flagged to have a Special # composite piece, and the game will use the component system to handle the object’s mouse selection collision box. If equals 0, then ignore this."
+    },
+    {
+      "name": "TotalPieces",
+      "description": "Defines the total amount of composite pieces. If this value is greater than 1, then the game will treat the object with the multiple composite piece system, and the player can hover the mouse over and select the object’s different components."
+    },
+    {
+      "name": "SubClass",
+      "description": "Determines the object’s class type by declaring a specific value. This is used by the various functions (“InitFn”, “OperateFn”, “PopulateFn”) for knowing how to handle specific types of objects. Code 0 1 2 4 8 16 32 64 128 Description None Shrine Obelisk Portal (With a source & destination) Trappable Fixed Portal Well Waypoint Hidden"
+    },
+    {
+      "name": "Xspace & Yspace",
+      "description": "Controls the X and Y distance delta values between adjacent objects when they are being populated together. This field is only used by the Populate Function (“PopulateFn”) values 3 and 4, for the Add Barrels and Add Crates functions."
+    },
+    {
+      "name": "NameOffset",
+      "description": "Controls the vertical offset of the name tooltip’s position above the object when the object is being selected. This is measured in pixels."
+    },
+    {
+      "name": "MonsterOK",
+      "description": "Boolean Field. If equals 1, then if a monster operates the object, then the object will run its operate function. If equals 0, then then if a monster operates the object, then the object will not run its operate function."
+    },
+    {
+      "name": "ShrineFunction",
+      "description": "Controls what shrine function to use (See “Code” field in shrines.txt) when the object is told to do its Skill command."
+    },
+    {
+      "name": "Restore",
+      "description": "Boolean Field. If equals 1, the game will restore the object in an inactive state when the area level repopulates after a player loads back into it. If equals 0, then the game will not restore the object."
+    },
+    {
+      "name": "Parm0 (to Parm4)",
+      "description": "Used as possible parameters for various functions for the object"
+    },
+    {
+      "name": "Lockable",
+      "description": "Boolean Field. If equals 1, then the object will have a random chance to spawn with the locked attribute and have a display tooltip name with the “lockedchest” string key. This only works when the object has the Init Function (“InitFn”) value equal to 3. If equals 0, then ignore this."
+    },
+    {
+      "name": "Gore",
+      "description": "Controls if an object should call its Populate function (“PopulateFn”) when it is chosen as an object that can spawn in a room. Objects with a gore value greater than 2 will not be populated in rooms."
+    },
+    {
+      "name": "Sync",
+      "description": "Boolean Field. If equals 1, then the object’s animation rate will always match the “FrameDelta#” field (depending on the object’s mode) which means the client and server will have synced animations. If equals 0, then the animation rate will have random visual variation."
+    },
+    {
+      "name": "Damage",
+      "description": "Controls the amount of damage dealt by the object when it performs an Operate Function (“OperateFn”) that deals damage such as triggering a pulse trap or an explosion."
+    },
+    {
+      "name": "Overlay",
+      "description": "Boolean Field. If equals 1, then add and remove an overlay on the object based on its current mode. If equals 0, then ignore this. This field will only work with specific object Classes and will use specific Overlays for those objects. Object Class SpecialChest100 KhalimHeartChest KhalimEyeChest KhalimBrainChest HoradricCubeChest HoradricScrollChest StaffOfKingsChest ConsolationChest SevenTombsReceptacle TaintedSunShrine Overlay multigleam horadric_light horadric_light"
+    },
+    {
+      "name": "CollisionSubst",
+      "description": "Boolean Field. If equals 1, then the game will handle the bounding box around the object for mouse selection. The game will use the object’s pixel size and “Left”, “Top”, “Width”, “Height” field values to determine the collision size. If equals 0, then ignore this."
+    },
+    {
+      "name": "Left",
+      "description": "Controls the starting X position offset value for drawing the bounding collision box around the object for mouse selection. This field depends on the “CollisionSubst” field being enabled."
+    },
+    {
+      "name": "Top",
+      "description": "Controls the starting Y position offset value for drawing the bounding collision box around the object for mouse selection. This field depends on the “CollisionSubst” field being enabled."
+    },
+    {
+      "name": "Width",
+      "description": "Controls the ending X position offset value for drawing the bounding collision box around the object for mouse selection. This field depends on the “CollisionSubst” field being enabled."
+    },
+    {
+      "name": "Height",
+      "description": "Controls the ending Y position offset value for drawing the bounding collision box around the object for mouse selection. This field depends on the “CollisionSubst” field being enabled."
+    },
+    {
+      "name": "OperateFn",
+      "description": "Defines a function that the game will use when the player clicks on the object Code 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 Description Do nothing"
+    },
+    {
+      "name": "Spawn Item And Maybe Monster",
+      "description": "General function to operate an object, spawn items. Also can randomly spawn a monster and/or trigger a trap."
+    },
+    {
+      "name": "Shrine",
+      "description": "General function for Shrine objects. Uses fields from the shrines.txt file for determining specific Shrine functions."
+    },
+    {
+      "name": "Spawn Item Sometimes",
+      "description": "General function to operate the object and spawn random items. Has a 20% chance to spawn a random item. Can also randomly trigger a trap."
+    },
+    {
+      "name": "Chest Operate",
+      "description": "General function for opening chest objects and spawning random items. Handles key interaction functionality if the chest object is locked"
+    },
+    {
+      "name": "Barrel Operate",
+      "description": "General function for breaking barrel objects and randomly spawning items or possibly a monster"
+    },
+    {
+      "name": "Quest Tome Operate",
+      "description": "Handles updating The Forgotten Tower quest progress"
+    },
+    {
+      "name": "Barrel Exploding Operate",
+      "description": "Explode the object and also explode adjacent Exploding Barrel object Classes"
+    },
+    {
+      "name": "Door Operate",
+      "description": "General function for opening and closing door objects"
+    },
+    {
+      "name": "Quest Cairn Stone Operate",
+      "description": "Handle operating the 5 Cairn Stone objects based on the player’s progress for the Search for Cain quest and if the player has the deciphered Scroll of Inifuss item. Also removes the Scroll of Inifuss item once successfully operated."
+    },
+    {
+      "name": "Quest Gibbet Operate",
+      "description": "Handle operating the object and updating the player’s progress for the Search for Cain quest. This is used for the cage object that Deckard Cain is trapped in."
+    },
+    {
+      "name": "Brazier Operate",
+      "description": "Switch the object from Neutral mode to Operating/Opened mode, or vice versa"
+    },
+    {
+      "name": "Quest Inifuss Operate",
+      "description": "Handle dropping the Bark Scroll item, based on the player’s progress for the Search for Cain quest"
+    },
+    {
+      "name": "Tiki Operate",
+      "description": "Switch the object from Neutral mode to Operating mode, or vice versa"
+    },
+    {
+      "name": "Spawn Item",
+      "description": "General function to operate an object and have it spawn random items. Can also remove the object’s collision and randomly trigger a trap."
+    },
+    {
+      "name": "Town Portal Operate",
+      "description": "Controls the Town Portal functionalities, including how to teleport players back to town or to the current level, and handling how players interact with other player Town Portals"
+    },
+    {
+      "name": "Trap Door Operate",
+      "description": "Open a door type object and then control its level warp capabilities"
+    },
+    {
+      "name": "Obelisk 1",
+      "description": "Use the transaction UI if the player has a gem in their inventory, and operate the object"
+    },
+    {
+      "name": "Secret Door Operate",
+      "description": "Handle operating an object and removing its collision"
+    },
+    {
+      "name": "Armor Rack Operate",
+      "description": "Activate the object to spawn a random armor item"
+    },
+    {
+      "name": "Weapon Rack Operate",
+      "description": "Activate the object to spawn a random weapon item"
+    },
+    {
+      "name": "Quest Malus Operate",
+      "description": "Handle dropping the Horadric Malus item, based on the player’s progress for the Tools of the Trade quest"
+    },
+    {
+      "name": "Well Operate",
+      "description": "Handle healing the player and keeping track of the charges and regeneration of charges for the well object"
+    },
+    {
+      "name": "Waypoint Operate",
+      "description": "Handle activating a waypoint object and using the Waypoint UI when clicking on an activated waypoint object"
+    },
+    {
+      "name": "Quest Tainted Sun Altar Operate",
+      "description": "Create the Amulet of the Viper item and other treasure items based on The Horadric Staff quest progress and the number of players in the game. Also update the progress for the Tainted Sun quest."
+    },
+    {
+      "name": "Quest Seven Tombs Receptacle Operate",
+      "description": "Handle using the Horadric Staff item with the transaction UI to operate the object"
+    },
+    {
+      "name": "Bookshelf Operate",
+      "description": "Randomly create either tomes or scrolls of Identify or Town Portal"
+    },
+    {
+      "name": "Teleport Pad Operate",
+      "description": "Teleport the player to another part of the room"
+    },
+    {
+      "name": "Quest Lam Esens Tome Operate",
+      "description": "Handle dropping the Lam Esen’s Tome item, based on the player’s progress for the Lam Esen’s Tome quest"
+    },
+    {
+      "name": "Breakable Operate",
+      "description": "Animate the object and remove its collision"
+    },
+    {
+      "name": "Exploding",
+      "description": "Create an explosion around the object"
+    },
+    {
+      "name": "Quest Gidbinn Operate",
+      "description": "Handle dropping the Decoy Gidbinn item, based on the player’s progress for the Blade of the Old Religion quest"
+    },
+    {
+      "name": "Player Bank Operate",
+      "description": "Control accessing the Stash UI while in town for the Bank object Class"
+    },
+    {
+      "name": "Wirt Spurt",
+      "description": "Create the Wirt’s leg item and animate the object"
+    },
+    {
+      "name": "Arcane Portal",
+      "description": "Control how the warp object transitions the player from the Palace Cellar Level 3 to the Arcane Sanctuary Return null Return null Return null Return null"
+    },
+    {
+      "name": "Quest Horadric Cube Chest Operate",
+      "description": "Create the Horadric Cube item and other treasure items based on The Horadric Staff quest progress and the number of players in the game"
+    },
+    {
+      "name": "Quest Horadric Scroll Chest Operate",
+      "description": "Create the Horadric Scroll item and other treasure items based on The Horadric Staff quest progress and the number of players in the game"
+    },
+    {
+      "name": "Quest Staff of Kings Chest Operate",
+      "description": "Create the Staff of Kings item and other treasure items based on The Horadric Staff quest progress and the number of players in the game"
+    },
+    {
+      "name": "Quest Arcane Tome Operate",
+      "description": "Handles updating The Arcane Sanctuary quest progress"
+    },
+    {
+      "name": "One Way Portal Operate",
+      "description": "Controls the functionalities of the “DurielPortal” one way warp object"
+    },
+    {
+      "name": "Quest Beneath The City Stairs Operate",
+      "description": "Handles warp object operates based on the Khalim’s Flail quest progress"
+    },
+    {
+      "name": "Quest Beneath The City Lever Operate",
+      "description": "Handles operating an object based on the Khalim’s Flail quest progress"
+    },
+    {
+      "name": "Hell Gate Operate",
+      "description": "Handles how to transition the player to Act 4 based on The Guardian quest progress"
+    },
+    {
+      "name": "Stairs Operate",
+      "description": "Handles how the stairs object opens or warp the player to another level"
+    },
+    {
+      "name": "Jack In The Box Operate",
+      "description": "Handles the operating the object and having it spawn items and set its mode to Special 2."
+    },
+    {
+      "name": "Quest Soulstone Forge Operate",
+      "description": "Handle operating the object based on The Hellforge quest progress and how it spawns items. Also remove the Hellforge Hammer weapon from the player."
+    },
+    {
+      "name": "Quest Mephisto Door Operate",
+      "description": "Handles how the stairs object opens or warp the player to another level"
+    },
+    {
+      "name": "Delay Spawn Operate",
+      "description": "Waits until the object is done operating before updating events"
+    },
+    {
+      "name": "Quest Diablo Seal Operate",
+      "description": "Handle operating a Diablo Seal object while also tracking the progress on the other related Diablo Seal objects (5 in total). 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73"
+    },
+    {
+      "name": "Quest Compelling Orb Operate",
+      "description": "Handle operating the object based on the Khalim’s Flail quest progress and The Blackened Temple progress. Also remove the Khalim’s Flail weapon from the player."
+    },
+    {
+      "name": "Quest Diablo Seal 1 Operate",
+      "description": "Handle operating a Diablo Seal object Class and getting a spawn point for monsters. Also calls function 52."
+    },
+    {
+      "name": "Quest Diablo Seal 3 Operate",
+      "description": "Handle operating a Diablo Seal object Class and getting a spawn point for monsters. Also calls function 52."
+    },
+    {
+      "name": "Quest Diablo Seal 5 Operate",
+      "description": "Handle operating a Diablo Seal object Class and getting a spawn point for monsters. Also calls function 52."
+    },
+    {
+      "name": "Quest Khalim Heart Chest Operate",
+      "description": "Create the Khalim’s Heart item and other treasure items based on the Khalim’s Flail quest progress and the number of players in the game"
+    },
+    {
+      "name": "Quest Khalim Eye Chest Operate",
+      "description": "Create the Khalim’s Eye item and other treasure items based on the Khalim’s Flail quest progress and the number of players in the game"
+    },
+    {
+      "name": "Quest Khalim Brain Chest Operate",
+      "description": "Create the Khalim’s Brain item and other treasure items based on the Khalim’s Flail quest progress and the number of players in the game Return null"
+    },
+    {
+      "name": "Town Gate",
+      "description": "Handles how the gate object opens and closes Handles the modes of one of the Ancient’s statues based on the player’s progress of the Rite of Passage quest Same as function 62 Same as function 62"
+    },
+    {
+      "name": "Quest Ancient Altar Operate",
+      "description": "Handle displaying quest text and disabling the player’s town portals, based on the player’s progress of the Rite of Passage quest."
+    },
+    {
+      "name": "Quest Ancient Gateway Operate",
+      "description": "Handle opening the door object based on the player’s progress of the Rite of Passage quest."
+    },
+    {
+      "name": "Quest Frozen Anya Operate",
+      "description": "Handles the object displaying quest text or validating that the player has the Malah’s Potion item and updating the Prison of Ice quest"
+    },
+    {
+      "name": "Evil Urn",
+      "description": "Handle triggering a trap from the object"
+    },
+    {
+      "name": "Quest Ancient Invisible Operate",
+      "description": "Handle displaying the A5Q6InitAncients string conversation text based on the player’s progress of the Rite of Passage quest."
+    },
+    {
+      "name": "Quest Last Exit Operate",
+      "description": "Handle transitioning the player to the from the Throne of Destruction level to the Worldstone Chamber level"
+    },
+    {
+      "name": "Quest Summit Door Operate",
+      "description": "Handle opening the door object based on the player’s progress of the Rite of Passage quest."
+    },
+    {
+      "name": "Quest Player Last Portal Operate",
+      "description": "Handle transitioning the player to completing the game after completing the Destruction’s End quest"
+    },
+    {
+      "name": "Quest Tyrael Portal To Expansion Operate",
+      "description": "Handle transitioning the player to Act 5 after completing the Act 4 Terror’s End quest"
+    },
+    {
+      "name": "PopulateFn",
+      "description": "Defines a function that the game will use to spawn this object Code 0 1 2 3 4 5 6 7 8 9 Description Do not spawn the object"
+    },
+    {
+      "name": "Add Clumped Group",
+      "description": "Handles creating multiple of these objects randomly in a room, based on the object’s size and Class. This function only handles specific object classes such as caskets, urns, and baskets."
+    },
+    {
+      "name": "Add Single Shrine",
+      "description": "Handles the creation of a shrine object"
+    },
+    {
+      "name": "Add Simple Objects",
+      "description": "Handles randomly spawning the object in a room, based on the object’s size."
+    },
+    {
+      "name": "Add Barrels",
+      "description": "Handle creating multiple barrel or exploding barrel Class objects in a room."
+    },
+    {
+      "name": "Add Crates",
+      "description": "Handle creating multiple crate or urn Class objects in a room."
+    },
+    {
+      "name": "Add Corpse",
+      "description": "Use function 3 to handle spawning the object. Also call a random chance to spawn the “Flies” object class on top of the objects that spawn."
+    },
+    {
+      "name": "Add Staked Corpses",
+      "description": "Handles how to specifically spawn the “RogueCorpse1” and “RogueCorpse2” objects, based on their sizes and the locations in the room. Also call a random chance to spawn the “Flies” object class on top of the objects that spawn."
+    },
+    {
+      "name": "Add Well",
+      "description": "Handles the creation of one of these objects randomly in a room based on the object’s size. A level can have a maximum of 4 these objects that spawn."
+    },
+    {
+      "name": "Add One",
+      "description": "Handles the creation of one of these objects randomly in a room based on the object’s size."
+    },
+    {
+      "name": "InitFn",
+      "description": "Defines a function to control how the object works while active and when initially activated by a player Code 0 1 Description Do nothing"
+    },
+    {
+      "name": "ObjectInitShrine",
+      "table": [
+        {
+          "·": "·",
+          "If equals 0, default to health shrine": "If equals 1, then use Health Shrine"
+        },
+        {
+          "·": "·",
+          "If equals 0, default to health shrine": "If equals 2, then use Mana Shrine"
+        },
+        {
+          "·": "·",
+          "If equals 0, default to health shrine": "If equals 3, then pick a random stats shrine with a 10% chance to spawn a surprise shrine"
+        }
+      ],
+      "description": "General function for determining which type of Shrine function to pick for the Shrine object. (See shrines.txt file for a list of shrine types) This also uses the “Parm0” field to define the Shrine Type 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17"
+    },
+    {
+      "name": "ObjectInitTrappable",
+      "description": "Handle a random chance to give the object 1 of the 9 random traps. This random chance depends on the area level’s monster level."
+    },
+    {
+      "name": "ObjectInitChest",
+      "description": "Run function 1, and also determine if the object should be Locked or not. The random chance to make the object Locked depends on the area level’s monster level."
+    },
+    {
+      "name": "QuestObjectTowerTomeInit",
+      "description": "If The Forgotten Tower quest is active, then set the object to run in Special 0 Mode. Do nothing"
+    },
+    {
+      "name": "QuestObjectStoneInit",
+      "description": "Sets the object’s mode to be Opened or Neutral, depending on the progress with the Portal to Tristram for the Search for Cain quest."
+    },
+    {
+      "name": "QuestObjectGibbetInit",
+      "description": "Sets the object’s mode, depending on the progress with Cain’s Cage for the Search for Cain quest."
+    },
+    {
+      "name": "ObjectInitDungeonTorch",
+      "description": "Sets the object’s mode to Opened"
+    },
+    {
+      "name": "Quest Object Inifuss Init",
+      "description": "Sets the object’s mode, depending on the progress with the Tree for the Search for Cain quest."
+    },
+    {
+      "name": "ObjectInitBonfire",
+      "description": "If the current level is Act 1 Rogue Encampment, then tell the object to do a periodic skill, otherwise set the object mode to Opened."
+    },
+    {
+      "name": "ObjectInitTownPortal",
+      "description": "Initializes the object’s mode and adds the level ID as an attribute to keep track of."
+    },
+    {
+      "name": "ObjectInitPermanentPortal",
+      "description": "Handles specific level transitions for permanent portals found throughout the game"
+    },
+    {
+      "name": "QuestObjectStoneSoundInit",
+      "description": "Attaches the object to the Search for Cain quest functions"
+    },
+    {
+      "name": "ObjectInitDungeonTorch2",
+      "description": "Sets the object’s mode to Operating"
+    },
+    {
+      "name": "QuestObjectMalusInit",
+      "description": "Attaches the object to the Tools of the Trade quest functions"
+    },
+    {
+      "name": "ObjectInitWell",
+      "description": "Sets the object’s attributes for a well including amount of charges This also uses the “Parm2” field to define the amount of Life healed"
+    },
+    {
+      "name": "ObjectInitWaypoint",
+      "description": "Handles setting up the waypoint mechanic to the object for the current area level 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79"
+    },
+    {
+      "name": "QuestObjectJerhyn1Init",
+      "description": "Handle where to place Jerhyn (near the palace entrance) based on Arcane Sanctuary quest progress"
+    },
+    {
+      "name": "QuestObjectJerhyn2Init",
+      "description": "Handle where to place Jerhyn (inside the palace) based on The Seven Tombs quest progress"
+    },
+    {
+      "name": "QuestObjectTaintedSunAltarInit",
+      "description": "Attaches the object to the Tainted Sun quest functions"
+    },
+    {
+      "name": "QuestObjectSevenTombsReceptacleInit",
+      "description": "Setup the object to be a receptacle for the Horadric Staff, based on The Seven Tombs quest progress"
+    },
+    {
+      "name": "ObjectInitFire",
+      "description": "Setup the object to act as fire"
+    },
+    {
+      "name": "QuestObjectLamEsensTomeInit",
+      "description": "Attaches the object to the Lam Esen’s Tome quest functions"
+    },
+    {
+      "name": "ObjectInitTrap1",
+      "description": "Handle setting up the object frame count and making sure it has full stats"
+    },
+    {
+      "name": "QuestObjectGidbinnInit",
+      "description": "Attaches the object to the Blade of the Old Religion quest functions"
+    },
+    {
+      "name": "TestObjectInit",
+      "description": "Sets the object’s mode to Operating"
+    },
+    {
+      "name": "ObjectInitTrappablePoison",
+      "description": "Sets up the random chance of 333/1000 for the object to have a trap that creates a poison nova"
+    },
+    {
+      "name": "ObjectInitGold",
+      "description": "Create a random amount of gold piles (between 1 to 10) in random locations around the object"
+    },
+    {
+      "name": "QuestObjectInitArcanePortal",
+      "description": "Setup the object to link area levels between the Palace Cellar Level 3 and the Arcane Sanctuary"
+    },
+    {
+      "name": "QuestObjectHaremBlockerInit",
+      "description": "Setup the object’s collision based on the Arcane Sanctuary quest progress"
+    },
+    {
+      "name": "QuestObjectHoradricCubeChestInit",
+      "description": "Sets up information about the object"
+    },
+    {
+      "name": "QuestObjectHoradricScrollChestInit",
+      "description": "Sets up information about the object"
+    },
+    {
+      "name": "QuestObjectStaffOfKingsChestInit",
+      "description": "Sets up information about the object"
+    },
+    {
+      "name": "ObjectInitHellTorch",
+      "description": "Randomly set the object’s mode to Operating Return null Return null"
+    },
+    {
+      "name": "QuestObjectDurielPassagewayInit",
+      "description": "Decide between setting the object’s mode to Opened or Neutral, based on the progress of the The Seven Tombs quest"
+    },
+    {
+      "name": "QuestObjectTyraelDoorInit",
+      "description": "Decide between setting the object’s mode to Opened or Neutral, based on the progress of the The Seven Tombs quest"
+    },
+    {
+      "name": "QuestObjectGidbinnTownAltarInit",
+      "description": "Decide between setting the object’s mode to Opened or Neutral, based on the progress of the The Blade of the Old Religion quest Return null"
+    },
+    {
+      "name": "QuestObjectBeneathTheCityStairsInit",
+      "description": "Decide between setting the object’s mode to Opened or Neutral, based on the progress of the Khalim’s Flail quest"
+    },
+    {
+      "name": "QuestObjectBeneathTheCityLeverInit",
+      "description": "If the Khalim’s Flail quest is complete, then set the object’s mode to Opened"
+    },
+    {
+      "name": "QuestObjectDarkWandererInit",
+      "description": "Create the “darkwanderer” monster and order to walk to the object’s location. This depends on the players character save from having witnessed this event before."
+    },
+    {
+      "name": "QuestObjectInitHellGate",
+      "description": "Decide between setting the object’s mode to Opened or Neutral, based on the progress of the The Guardian quest"
+    },
+    {
+      "name": "QuestObjectMephistoBridgeInit",
+      "description": "Decide between setting the object’s mode to Opened or Neutral, based on the progress of the The Guardian quest. If the object is not Opened, then also tell it to do its unique event."
+    },
+    {
+      "name": "ObjectTrappedSoulInit",
+      "description": "Determine where to spawn the “trappedsoul1” and “trappedsoul2” monster classes in the area level."
+    },
+    {
+      "name": "QuestObjectForgottenTowerChestInit",
+      "description": "Decide between setting up the chest object, relying on the Forgotten Tower quest being in progress"
+    },
+    {
+      "name": "QuestObjectSoulstoneForgeInit",
+      "description": "Decide between setting the object’s mode to Opened or Neutral, based on the progress of the Hell’s Forge quest"
+    },
+    {
+      "name": "QuestObjectHratliStartInit",
+      "description": "Handle placing Hratli near the starting point of Act 3, based on the player’s Act 3 prologue progress"
+    },
+    {
+      "name": "QuestObjectHratliEndInit",
+      "description": "Handle placing Hratli near his forge, if the player has progressed past the Act 3 prologue"
+    },
+    {
+      "name": "ObjectJackInTheBoxInit",
+      "description": "If the object is in Opened or Opening mode, then tell the object to do a periodic item skill event"
+    },
+    {
+      "name": "QuestObjectNatalyaInit",
+      "description": "Handle placing Natalya at her location based on the player’s progress of The Guardian quest"
+    },
+    {
+      "name": "QuestObjectMephistoDoorInit",
+      "description": "Handle setting the object to Opened mode based on the player’s progress of destroying the orb for The Blackened Temple quest"
+    },
+    {
+      "name": "QuestObjectCainStartInit",
+      "description": "Handle creating the Cain unit in the Rogue Encampment based on the player’s progress of The Search for Cain quest"
+    },
+    {
+      "name": "QuestObjectDiabloStartInit",
+      "description": "Handle the spawning event of Diablo based on the player’s progress of activating the seal objects in the Chaos Sanctuary"
+    },
+    {
+      "name": "QuestObjectDiabloSealInit",
+      "description": "Do nothing"
+    },
+    {
+      "name": "ObjectInitBetterChest",
+      "description": "Initialize the chest object, and give it the special magical property"
+    },
+    {
+      "name": "ObjectInitFissure",
+      "description": "Tell the object to do a periodic skill event at random times"
+    },
+    {
+      "name": "ObjectVileDoggieInit",
+      "description": "If the object is in Neutral mode, then set the object to Operating mode and tell it to do a unique event"
+    },
+    {
+      "name": "QuestObjectCompellingOrbInit",
+      "description": "Set the object to Opened based on the progress of The Blackened Temple quest"
+    },
+    {
+      "name": "QuestObjectCainPortalInit",
+      "description": "Set the object to Operating mode and tell it to do a unique event"
+    },
+    {
+      "name": "QuestCagedWussie1Init",
+      "description": "Spawn the “act5pow” units based on the player’s progress of the Rescue on Mount Arreat quest"
+    },
+    {
+      "name": "QuestMoeInit",
+      "description": "Setup the Korlic statue object with quest data based on the Right of Passage quest progress"
+    },
+    {
+      "name": "QuestLarryInit",
+      "description": "Setup the Madawc statue object with quest data based on the Right of Passage quest progress"
+    },
+    {
+      "name": "QuestCurlyInit",
+      "description": "Setup the Talic statue object with quest data based on the Right of Passage quest progress"
+    },
+    {
+      "name": "QuestAnyaInsideTownInit",
+      "description": "Handle for creating the Anya NPC in town, based on the progress of the Prison of Ice quest"
+    },
+    {
+      "name": "QuestAnyaOutsideTownInit",
+      "description": "Handle this object during the progress of the Prison of Ice quest and tell it to do its unique event"
+    },
+    {
+      "name": "QuestNihlathakInsideTownInit",
+      "description": "Create the Nihlathak NPC in town, based on the progress of the Prison of Ice quest"
+    },
+    {
+      "name": "QuestNihlathakOutsideTownInit",
+      "description": "Create the “Nihlathak Boss” super unique monster, based on the progress of the Prison of Ice quest"
+    },
+    {
+      "name": "QuestLarzukStartInit",
+      "description": "Do nothing"
+    },
+    {
+      "name": "QuestLarzukEndInit",
+      "description": "Object placeholder to create the “Larzuk” NPC in town"
+    },
+    {
+      "name": "QuestAncientTomeInit",
+      "description": "Set the tome object mode to Opened or Neutral based on the progress of The Rite of Passage quest"
+    },
+    {
+      "name": "QuestAncientGatewayInit",
+      "description": "Set the door object mode to Opened or Neutral based on the progress of The Rite of Passage quest"
+    },
+    {
+      "name": "QuestFrozenAnyaInit",
+      "description": "Handle this object during the progress of the Prison of Ice quest and tell it to do its unique event"
+    },
+    {
+      "name": "QuestLastExitInit",
+      "description": "Set the Throne of Destruction exit object mode to Operating or Opened based on the progress of the Eve of Destruction quest"
+    },
+    {
+      "name": "QuestSummitDoorInit",
+      "description": "Set this door object mode to Operating or Opened based on the progress of the Rite of Passage quest"
+    },
+    {
+      "name": "QuestPlayerLastPortalInit",
+      "description": "Set the last portal object mode to Operating or Opened based on the progress of the Eve of Destruction quest"
+    },
+    {
+      "name": "QuestTyraelPortalToExpansionInit",
+      "description": "Set this object mode to Operating or Opened based on the progress of the Terror’s End quest"
+    },
+    {
+      "name": "QuestZooInit",
+      "description": "Attempt a random chance based on successfully selecting a “zoo” type monster from the entire list of possible monsters (See monstats.txt). If selected, then send the quest update command to all players, based on the Eve of Destruction quest."
+    },
+    {
+      "name": "ClientFn",
+      "description": "Defines a function that runs on the object from the game’s client side. Code 0 1 Description Do nothing"
+    },
+    {
+      "name": "Ambient Sound",
+      "description": "Always return true 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18"
+    },
+    {
+      "name": "Ripple",
+      "description": "Tells the object to randomly play between its Operating animation and loop back to its Neutral animation"
+    },
+    {
+      "name": "Hell Fire",
+      "description": "Same as function 2, except sound will also be processed"
+    },
+    {
+      "name": "Drinker",
+      "description": "Tells the object to randomly play between its Special 0 animation and loop back to its Neutral animation. Also processes sound."
+    },
+    {
+      "name": "Gesturer",
+      "description": "Tells the object to randomly play between its Special 0 / Special 1 animation and loop back to its Neutral animation. Also processes sound."
+    },
+    {
+      "name": "Turner",
+      "description": "Tells the object to randomly play between its Special 0 animation and loop back to its Neutral animation. Uses different tick counts than function 4. Also processes sound."
+    },
+    {
+      "name": "Skeleton",
+      "description": "Tells the object to randomly play between its Operating animation and loop back to its Neutral animation."
+    },
+    {
+      "name": "Duriel Entrance",
+      "description": "If the object is not in Neutral mode then preload the Duriel monster"
+    },
+    {
+      "name": "Client Smoke",
+      "description": "Controls how the object can be removed from the client based on distance to a player and if the object has a specific tick count."
+    },
+    {
+      "name": "Bubbles",
+      "description": "Tells the object to randomly play between its Operating animation and loop back to its Neutral animation. Uses different tick counts than function 7."
+    },
+    {
+      "name": "Floaters",
+      "description": "Always return true"
+    },
+    {
+      "name": "Altar",
+      "description": "If the object is not in Neutral mode then preload the Ancients statues"
+    },
+    {
+      "name": "Invisible Ancient",
+      "description": "If the object is in its Neutral mode and the player operating the object has not completed the Rite of Passage quest, then handle the control of operating the object"
+    },
+    {
+      "name": "Bonfire",
+      "description": "Updates the object’s animation modes based on the time of day"
+    },
+    {
+      "name": "Frozen Anya",
+      "description": "If the object is in Neutral mode then play the “npcalert” overlay."
+    },
+    {
+      "name": "Last Exit",
+      "description": "If the object is in its Operating mode, then modify the animation frames"
+    },
+    {
+      "name": "Zoo",
+      "description": "Handle the creation of monsters if monsters need to be created"
+    },
+    {
+      "name": "Keeper",
+      "description": "Randomly play the “barbarian_grunt_small_1” sound"
+    },
+    {
+      "name": "RestoreVirgins",
+      "description": "Boolean Field. If equals 1, then when the object has been used, the game will not restore the object in an inactive state when the area level repopulates after a player loads back into it. If equals 0, then ignore this."
+    },
+    {
+      "name": "BlockMissile",
+      "description": "Boolean Field. If equals 1, then missiles can collide with this object. If equals 0, then missiles will ignore and fly through this object."
+    },
+    {
+      "name": "DrawUnder",
+      "description": "Controls the targeting priority of the object Code 0 1 2 Description The object will not change its targeting priority The object’s target priority will equal a corpse only when the object is opened The object’s target priority always equals a corpse"
+    },
+    {
+      "name": "OpenWarp",
+      "description": "Boolean Field. If equals 1, then this object will be classified as an object that can be opened to warp to another area, and the UI will be notified to display a tooltip for opening or entering, based on the object’s mode. If equals 0, then ignore this."
+    },
+    {
+      "name": "AutoMap",
+      "description": "Used to display a tile in the Automap to represent the object. Defines which cell number to use in the tile list for the Automap. If this value equals 0, then this object will not display on the Automap. (See Automap.txt)"
+    }
+  ],
+  "filename": "objects.txt"
+}

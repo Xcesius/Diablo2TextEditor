@@ -1,0 +1,306 @@
+{
+  "overview": "This file controls the functionalities for each possible stat on a unit  These defined stats are used to form modifiers for the Properties.txt file  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "Stat",
+      "description": "Defines the unique pointer for this stat, which is used in other files"
+    },
+    {
+      "name": "Send Other",
+      "description": "Boolean Field. If equals 1, then only add the stat to a new monster if the that has no state and has an item mask. If equals 0, then ignore this."
+    },
+    {
+      "name": "Signed",
+      "description": "Boolean Field. If equals 1, then the stat will be treated as a signed integer, meaning that it can be either a positive or negative value. If equals 0, then stat will be treated as an unsigned integer, meaning that it can only be a positive value. This only affects stats with state bits."
+    },
+    {
+      "name": "Send Bits",
+      "description": "Controls how many bits of data for the stat to send to the game client, essentially controlling the max value possible for the stat. Signed values should have less than 32 bits, otherwise they will be treated as unsigned values."
+    },
+    {
+      "name": "Send Param Bits",
+      "description": "Controls how many bits of data for the stat’s parameter value to send to the client for a unit. This value is always treated as a signed integer."
+    },
+    {
+      "name": "UpdateAnimRate",
+      "description": "Boolean Field. If equals 1, then the stat will notify that game to handle and adjust the speed of the unit when the stat changes. If equals 0, then ignore this. This is only checked for stats with states or for specific skill server functions including 30, 61, 71."
+    },
+    {
+      "name": "Saved",
+      "description": "Boolean Field. If equals 1, then this state will be inserted in the change list to be stored in the Character Save file. If equals 0, then ignore this."
+    },
+    {
+      "name": "CSvSigned",
+      "description": "Boolean Field. If equals 1, then the stat will be saved as a signed integer in the Character Save file. If equals 0, then the stat will be saved as an unsigned integer in the Character Save file. This is only used if the “Saved” field is enabled."
+    },
+    {
+      "name": "CSvBits",
+      "description": "Controls how many bits of data for the stat to send to save in the Character Save file. Signed values should have less than 32 bits, otherwise they will be treated as unsigned values. This is only used if the “Saved” field is enabled."
+    },
+    {
+      "name": "CSvParam",
+      "description": "Controls how many bits of data for the stat’s parameter value to save in the Character Save file. This value is always treated as a signed integer. This is only used if the “Saved” field is enabled."
+    },
+    {
+      "name": "fCallback",
+      "description": "Boolean Field. If equals 1, then any changes to the stat will call the Callback function which will update thgecharacter’s states, skills, or item events based on the changed stat value. If equals 0, then ignore this."
+    },
+    {
+      "name": "fMin",
+      "description": "Boolean Field. If equals 1, then the stat will have a minimum value that cannot be reduced further than that value (See “MinAccr” field). If equals 0, then ignore this."
+    },
+    {
+      "name": "MinAccr",
+      "description": "The minimum value of a stat. This is only used if the “fMin” field is enabled."
+    },
+    {
+      "name": "Encode",
+      "description": "Controls how the stat will modify an item’s buy, sell, and repair costs. This field uses a code value to select a function to handle the calculations. This field relies on the “Add”, “Multiply” and “ValShift” fields. The baseline Stat Value is first modified using the “ValShift” field to shift the bits. This Stat Value is then used in the calculations by one of the selected functions. Code 0 (or empty) Parameters Add Multiply 1 2 3 4 Add Multiply Description Buy Cost += [Stat Value] * [“Multiply”] / 1024 + [“Add”] Sell Cost += [Stat Value] * [“Multiply”] / 1024 + [“Add”] Repair Cost += [Stat Value] * [“Multiply”] / 1024 + [“Add”] Use the stat’s parameter value to determine the skill ID used. Use the stat’s value to determine the skill level. Obtain the “cost mult” and “cost add” values from the skill linked in this stat’s parameter (see skills.txt). The Stat Value is considered the skill’s level. Buy Cost += [Stat Value] * [“cost mult”] / 1024 + [“cost add”] Sell Cost += [Stat Value] * [“cost mult”] / 4096 + [“cost add”] Repair Cost += [Stat Value] * [“cost mult”] / 1024 + [“cost add”] Use the stat’s parameter value to determine both the skill ID and skill level. Obtain the “cost mult” and “cost add” values from the determined skill ID (see skills.txt). Buy Cost += [Stat Value] * [“cost mult”] / 1024 + [“cost add”] Sell Cost += [Stat Value] * [“cost mult”] / 4096 + [“cost add”] Repair Cost += [Stat Value] * [“cost mult”] / 1024 + [“cost add”] Same as function 2 Obtains the stat’s min and max values based on the By Time bit masks and uses them to calculate the average value or Baseline stat value. Buy Cost += [Baseline] * [“Multiply”] / 1024 + [“Add”] Sell Cost += [Baseline] * [“Multiply”] / 1024 + [“Add”] Repair Cost += [Baseline] * [“Multiply”] / 1024 + [“Add”]"
+    },
+    {
+      "name": "Add",
+      "description": "Used as a possible parameter value for the “Encode” function. Flat integer modification to the Unique item’s buy, sell, and repair costs. This is added after the “Multiply” field has modified the costs."
+    },
+    {
+      "name": "Multiply",
+      "description": "Used as a possible parameter value for the “Encode” function. Multiplicative modifier for the item’s buy, sell, and repair costs. The way this value is used depends on the Encode function selected."
+    },
+    {
+      "name": "ValShift",
+      "description": "Used to shift the stat’s input value by a number of bits to obtain the actual value when performing calculations (such as for the “Encode” function)."
+    },
+    {
+      "name": "1.09",
+      "description": "Save Bits - Controls how many bits of data are allocated for the overall size of the stat when saving/reading an item from a Character Save. This value can be treated as a signed or unsigned integer, depending on the stat. This field is only used for items saved in a game version of Patch 1.09d or older."
+    },
+    {
+      "name": "1.09",
+      "description": "Save Add - Controls how many bits of data are allocated for the stat’s value when saving/reading an item from a Character Save. This value is treated as a signed integer. This field is only used for items saved in a game version of Patch 1.09d or older."
+    },
+    {
+      "name": "Save Bits",
+      "description": "Controls how many bits of data are allocated for the overall size of the stat when saving/reading an item from a Character Save. This value can be treated as a signed or unsigned integer, depending on the stat."
+    },
+    {
+      "name": "Save Add",
+      "description": "Controls how many bits of data are allocated for the stat’s value when saving/reading an item from a Character Save. This value is treated as a signed integer."
+    },
+    {
+      "name": "Save Param Bits",
+      "description": "Controls how many bits of data for the stat’s parameter value to use when saving/reading an item from a Character Save. This value is always treated as an unsigned integer."
+    },
+    {
+      "name": "keepzero",
+      "description": "Boolean Field. If equals 1, then this stat will remain on the stat change list, when being updated, even if that stat value is 0. If equals 0, then ignore this."
+    },
+    {
+      "name": "op",
+      "description": "This is the stat operator, used for advanced stat modification when calculating the value of a stat. This can involves using this stat and its value to modify another stat’s value. This use a function ID to determine what to calculate. Code 0 (or empty) 1 2 3 4 5 6 7 8 9 10 11 12 13 Parameters Description No Operator. Just add the stat normally op stat1 op stat2 op stat3 op param op base op stat1 op stat2 op stat3 op param op base op stat1 op stat2 op stat3 op param op base op stat1 op stat2 op stat3 op param op base op stat1 op stat2 op stat3 op stat1 op stat2 op stat3 op stat1 op stat2 op stat3 op stat1 op stat2 op stat3 op stat1 op stat2 op stat3 op stat1 op stat2 op stat3 op stat1 op stat2 op stat3 Percent Operator. Gets the value of “op stat#” and multiplies it by a percentage increase equal to this stat’s value: [“op stat#”] += [“op stat#”] * value / 100 By Level Operator. Gets value of “op stat#” and uses it as a multiplier with “op param” as the divisor: [“op stat#”] += [“op stat#”] * [“op base”] << [“op param”] By Level Percent Operator. Gets value of “op stat#” and uses it as a multiplier with “op param” as the divisor. Then it uses this value as a percentage increase to “op stat#”: percent = [“op stat#”] * [“op base”] << [“op param”] [“op stat#”] = [“op stat#”] * percent / 100 By Level Source Operator. Gets value of “op stat#” for the item (not the unit) and uses it as a multiplier with “op param” as the divisor: [“op stat#”] += [“op stat#”] * [“op base”] << [“op param”] By Level Source Percent Operator. Gets value of “op stat#” for the item (not the unit) and uses it as a multiplier with “op param” as the divisor. Then it uses this value as a percentage increase to “op stat#”: percent = [“op stat#”] * [“op base”] << [“op param”] [“op stat#”] = [“op stat#”] * percent / 100 By Time Operator. Gets the value of “op stat#” and increases it by a delta value which depends on game’s time of day. The delta is calculated by using the stat’s min and max as a range of increase/decrease and biasing this value with the current progress of game’s time of day [“op stat#”] += [“op stat#”] * [delta] By Time Percent Operator. Gets the value of “op stat#” and multiplies it by a percentage. This percentage is determined by obtaining “op stat#” and a delta value which depends on game’s time of day. The delta is calculated by using the stat’s min and max as a range of increase/decrease and biasing this value with the current progress of game’s time of day percent = [“op stat#”] * [delta] [“op stat#”] = [“op stat#”] * percent / 100 Energy Operator. This will only apply for stats on the player. Gets the value of “op stat#” and multiplies it by the related “ManaPerMagic” field from the charstats.txt file. This is then bit shifted by the baseline Mana bit value, MANA_SHIFT = 8, with the fourths value calculation from the “ManaPerMagic” field. [“op stat#”] = [“op stat#”] * [“ManaPerMagic”] << (MANA_SHIFT - 2) Vitality Operator. This will only apply for stats on the player. If the stat is “maxstamina”, then the operator will get the value of “op stat#” and multiply it by the related “StaminaPerVitality” field from the charstats.txt file. This is then bit shifted by the baseline Stamina bit value, STAMINA_SHIFT = 8, with the fourths value calculation from the “StaminaPerVitality” field: [“op stat#”] = [“op stat#”] * [“StaminaPerVitality”] << (STAMINA_SHIFT - 2) If the stat is not “maxstamina”, then the operator will get the value of “op stat#” and multiply it by the related “LifePerVitality” field from the charstats.txt file. This is then bit shifted by the baseline Life bit value, LIFE_SHIFT = 8, with the fourths value calculation from the “LifePerVitality” field: [“op stat#”] = [“op stat#”] * [“LifePerVitality”] << (LIFE_SHIFT - 2) Currently not being used. Does nothing. Player Percent Operator. This will only apply for stats on units. Gets the value of “op stat#” and multiplies it by a percentage increase equal to this stat’s value: [“op stat#”] += [“op stat#”] * value / 100 Currently not being used. Does nothing. Item Percent Operator. This will only apply for stats on items. Gets the value of “op stat#” and multiplies it by a percentage increase equal to this stat’s value: [“op stat#”] += [“op stat#”] * value / 100"
+    },
+    {
+      "name": "op param",
+      "description": "Used as a possible parameter value for the “op” function."
+    },
+    {
+      "name": "op base",
+      "description": "Used as a possible parameter value for the “op” function."
+    },
+    {
+      "name": "op stat1 (to opstat3)",
+      "description": "Used as a possible parameter value for the “op” function."
+    },
+    {
+      "name": "direct",
+      "description": "Boolean Field. If equals 1, then when the stat is being updated in certain skill functions having to do with state changes, the stat will update in relation to its “maxstat” field to ensure that it never exceeds that value. If equals 0, then ignore this, and the stat will simply update in these cases. This only applies to skills that use skill server function 65, 66, 81, and 82."
+    },
+    {
+      "name": "maxstat",
+      "description": "Controls which stat is associated with this stat to be treated as the maximum version of this stat. This means that 2 stats are essentially linked so that there can be a current version of the stat and a maximum version to control the cap of stat’s value. This is used for Life, Mana, Stamina, and Durability. This field relies on the “direct” field to be enabled unless it is being used for the healing potion item spell."
+    },
+    {
+      "name": "damagerelated",
+      "description": "Boolean Field. If equals 1, then this stat will be exclusive to the item and will not add to the unit. If equals 0, then ignore this, and the stat will always add to the unit. This is typically used for weapons and is important when dual wielding weapons so that when a unit attacks, then one weapon’s stats do not stack with another weapon’s stats."
+    },
+    {
+      "name": "itemevent1 & itemevent2",
+      "description": "Uses an event that will activate the specified function defined by “itemeventfunc#”. This points to the ID of an event defined in the events.txt file. event (empty) hitbymissile damagedinmelee damagedbymissile attackedinmelee doactive domeleedamage domissiledamage domeleeattack domissileattack kill killed absorbdamage levelup death"
+    },
+    {
+      "name": "itemeventfunc1 & itemeventfunc2",
+      "table": [
+        {
+          "·": "·",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "If the target is a player, Champion monster, Unique Monster, Boss, or mercenary, then the max slow value is 50"
+        },
+        {
+          "·": "·",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "If the target is a Super monster, then the max slow value is 75"
+        },
+        {
+          "·": "·",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "Otherwise, the max slow value is 90."
+        },
+        {
+          "·": "Use a skil",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "l against the target after the user is attacks or hits the enemy"
+        },
+        {
+          "·": "Use a skil",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "l against the attacker after the user is hit by an attack. If there is no attacker, then the skill is cast at the user’s location"
+        },
+        {
+          "·": "Applies th",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "e effects of the Necromancer Bone Armor skill, absorbing physical damage taken"
+        },
+        {
+          "·": "·",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "Transfers damage dealt by a pet as healing that is split between the pet and its owner (Used by the Necromancer Blood Golem pet)"
+        },
+        {
+          "·": "·",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "Uses the linked skill’s “calc2” field from the skills.txt file to determine the total healing percentage"
+        },
+        {
+          "·": "·",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "Uses the linked skill’s “calc3” field from the skills.txt file to determine the healing percentage that is split to the pet’s owner"
+        },
+        {
+          "·": "·",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "Absorb a percentage any damage taken and deals that damage to Mana instead of Life (Used by the Sorceress Energy Shield skill)"
+        },
+        {
+          "·": "·",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "Uses the linked skill’s “calc1” and “calc2” fields from the skills.txt file to determine the mana to Damage ratio conversion"
+        },
+        {
+          "·": "Apply the",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "effects of the Druid Cyclone armor skill, absorbing Fire, Cold, and Lightning damage taken"
+        },
+        {
+          "·": "·",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "Transfers damage taken from the pet to its owner (Used by the Necromancer Blood Golem pet)"
+        },
+        {
+          "·": "·",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "The percentage of damage transferred is defined in the linked skill’s “Param5” field from the skills.txt file"
+        },
+        {
+          "·": "·",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "Applies the “item_slow” stat which reduces the target’s attack speed and movement speed (Used by the Necromancer Clay Golem pet)"
+        },
+        {
+          "·": "·",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "If the target is a Champion or Unique monster, then the max slow value is 50. Otherwise, the max slow value is 90."
+        },
+        {
+          "·": "Restores l",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "ife to the user that performed a kill"
+        },
+        {
+          "·": "Applies th",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "e “restinpeace” state which essentially the corpse of a killed monster, making it unusable"
+        },
+        {
+          "·": "Cast a ski",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "ll when the item event occurs, either with without a target"
+        },
+        {
+          "·": "Reanimates",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "the targeted enemy as a pet monster for the user. Only applies on units classified as monsters, and not Champions or Uniques."
+        },
+        {
+          "·": "Use a skil",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "l to deal area radius damage around the user"
+        },
+        {
+          "·": "Use a skil",
+          "Applies the slow state on the target which reduces that target’s attack speed and movement speed": "l’s linked sub-skill from the “sumskill1” in the skills.txt file"
+        }
+      ],
+      "description": "Specifies the function to use after the related item event occurred. Functions are defined by a numeric ID code. This is only applied based on the “itemevent#” field definition. Description Do nothing. Unit is hit by a missile Unit takes damage from a melee attack Unit takes damage from a missile Unit is attacked by a melee attack Unit used a skill Unit dealt damage with a melee attack Unit dealt damage with a missile Unit used a melee attack Unit used a missile attack Unit killed another Unit Unit dies Unit takes damage Unit gained a Level Monster dies Code 0 (or empty) 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 Description Do nothing. Applies the effects of the Sorceress Chilling Armor skill Applies the effects of the Sorceress Frozen Armor skill Applies the effects of the Sorceress Shiver Armor skill Applies the effects of the Necromancer Iron Maiden skill, causing damage taken to be dealt to the attacker Applies the effects of the Necromancer Life Tap skill on monsters. Usable only on monsters when cast by players. Attacker Takes Physical Damage Applies knockback on the target, moving the target backwards from the attacker and being briefly stunned during this time. Chances depend on the “small” and “large” flags from the monstats2.txt file. Applies the effects Barbarian Howl skill on monsters, causing them to run away in fear. Does not work on Champion or Unique monsters. Applies the effects of the Necromancer Dim Vision skill to a target. Effectiveness is reduced from missile attacks. Attacker Takes Lightning Damage Attacker Takes Fire Damage Attacker Takes Cold Damage A percentage of damage taken will also reduce the user’s mana by that amount Applies the Freeze effect on the target. Effectiveness is reduced from missile attacks. Applies Open Wounds damage on the target, which causes life damage over time Applies Crushing Blow damage on the target. Damage depends on if the target is a Player, Mercenary, Boss monster, Unique monster, Champion monster, or normal monster. Restores mana to the user that performed the kill Restores life to the user that performed the kill on a Demon monster"
+    },
+    {
+      "name": "descpriority",
+      "description": "Controls how this stat is sorted in item tooltips. This field is compared to the same field on other stats to determine how to order the stats. The higher the value means that the stat will be sorted higher than other stats. If more than 1 stat has the same “descpriority” value, then they will be listed in the order defined in this data file."
+    },
+    {
+      "name": "descfunc",
+      "table": [
+        {
+          "·": "·",
+          "Uses the stat value as the skill level": "Combines these values into the designated “descstr” string"
+        },
+        {
+          "·": "Non Class",
+          "Uses the stat value as the skill level": "Skill"
+        },
+        {
+          "·": "·",
+          "Uses the stat value as the skill level": "Obtains the “str name” field from skilldesc.txt file"
+        },
+        {
+          "·": "·",
+          "Uses the stat value as the skill level": "Uses the stat value as the skill level"
+        },
+        {
+          "·": "·",
+          "Uses the stat value as the skill level": "Combines these values into the designated “descstr” string"
+        },
+        {
+          "·": "Sprintf nu",
+          "Uses the stat value as the skill level": "m positive"
+        }
+      ],
+      "description": "Controls how the stat is displayed in tooltips. Uses an ID value to select a description function to format the string value. Code 0 1 2 Parameters descval descstrpos descstrneg descval descstrpos Description No display. Do nothing. Plus or Minus 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 descstrneg descval descstrpos descstrneg descval descstrpos descstrneg descval descstrpos descstrneg descval descstrpos descstrneg descstr2 descval descstrpos descstrneg descstr2 descval descstrpos descstrneg descstr2 descval descstrpos descstrneg descstr2 descval descstrpos descstrneg descstr2 descval descstrpos descstrneg String ·         “[value] [descstr]” Plus Percent ·         “+[value]% [descstr]” Percent 128 ·         “+[value * 100 / 128]% [descstr]” Plus or Minus Per Level Percent Per Level ·         “[value]% [descstr] [descstr2]” Plus Percent Per Level ·         “+[value]% [descstr] [descstr2]” String Per Level ·         “[value] [descstr] [descstr2]” Percent 128 Per Level ·         “[value * 100 / 128]% [descstr] [descstr2]” Repair modified descstrpos Proc Skill ·         Gets the skill name, skill level, and chance percent to insert into the “descstrpos” string descstrpos descstrneg Aura ·         Gets the skill name, and uses the stat’s value for the skill level and inserts these values into the designated “descstr” string descstrpos descstrneg Plus Minus By Time ·         Gets the proper value based on the time of day and inserts this value into descstrpos descstrneg descstrpos descstrneg descstr2 descval descstrpos descstrneg descstrpos descstrneg descstr2 descstrpos descstrneg the “descstr” string ·         Uses the following strings for the second part of the description, depending on the time selected: ModStre9d, ModStre9e, ModStre9f, ModStre9g (Same as function 17) Sprintf Num ·         Uses the Sprintf string function with the designated “descstr” string and adds “descstr2” if that value is not empty Minus Percent ·         “[value * -1]% [descstr]” Minus Percent Per Level string Versus Monster Percent descstrpos descstrneg Reanimate ·         Obtains the related “NameStr” string from the monstats.txt file and inserts this string into the designated “descstr” string descstrpos descstrneg Charges ·         Obtains the skill, skill level, max charges, and current charges and inserts descval descstrpos descstrneg descval descstrpos descstrneg these values into the designated “descstr” string Minus Minus Per Level ·         (Same as function 25) 27 28 29 descstr2 descstrpos descstrneg descstrpos descstrneg descstrpos descstrneg descstr2 Single Skill ·         Obtains the “str name” field from skilldesc.txt file and the “StrClassOnly” field from the charstats.txt file ·         Same as function 19, except the it uses the absolute value of [value]"
+    },
+    {
+      "name": "descval",
+      "description": "Used as a possible parameter value for the “descfunc” function. This controls the how the value of the stat is displayed. Code 0 1 2 Description Do not show the value of the stat Shows the value of the stat at the start of its description Shows the value of the stat at the end of its description"
+    },
+    {
+      "name": "descstrpos",
+      "description": "Used as a possible parameter value for the “descfunc” function. This uses a string to display the item stat in a tooltip when its value is positive."
+    },
+    {
+      "name": "descstrneg",
+      "description": "Used as a possible parameter value for the “descfunc” function. This uses a string to display the item stat in a tooltip when its value is negative."
+    },
+    {
+      "name": "descstr2",
+      "description": "Used as a possible parameter value for the “descfunc” function. This uses a string to append to an item stat’s string in a tooltip."
+    },
+    {
+      "name": "dgrp",
+      "description": "Assigns the stat to a group ID value. If all stats with a matching “dgrp” value are applied on the unit, then instead of displaying each stat individually, the group description will be applied instead (see “dgrpfunc” field)"
+    },
+    {
+      "name": "dgrpfunc",
+      "description": "Controls how the shared group of stats is displayed in tooltips. Uses an ID value to select a description function to format the string value. This function IDs are exactly the same as the “descfunc” field, see that description for more details."
+    },
+    {
+      "name": "dgrpval",
+      "description": "Used as a possible parameter value for the “dgrpfunc” function. This controls the how the value of the stat is displayed. (Functions the same as the “descval” field)"
+    },
+    {
+      "name": "dgrpstrpos",
+      "description": "Used as a possible parameter value for the “dgrpfunc” function. This uses a string to display the item stat in a tooltip when its value is positive."
+    },
+    {
+      "name": "dgrpstrneg",
+      "description": "Used as a possible parameter value for the “dgrpfunc” function. This uses a string to display the item stat in a tooltip when its value is negative."
+    },
+    {
+      "name": "dgrpstr2",
+      "description": "Used as a possible parameter value for the “dgrpfunc” function. This uses a string to append to an item stat’s string in a tooltip."
+    },
+    {
+      "name": "stuff",
+      "description": "Used as a bit shift value for handling the conversion of skill IDs and skill levels to bit values for the stat. Controls the numeric range of possible skill IDs and skill levels for charge based items. This value cannot be less than or equal to 0, or greater than 8, otherwise it will default to 6. The row that this value appears in the data file is unrelated, since this is a universally applied value."
+    },
+    {
+      "name": "advdisplay",
+      "description": "Controls how the stat appears in the Advanced Stats UI Code 0 (or empty) 1 2 Description The stat will never appear on the Advanced Stats UI The stat will always show on the Advanced Stats UI The stat will only show on the Advanced Stats UI if the value is greater than 0"
+    }
+  ],
+  "filename": "ItemStatCost.txt"
+}

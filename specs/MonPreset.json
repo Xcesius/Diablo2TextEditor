@@ -1,0 +1,14 @@
+{
+  "overview": "This file controls which monsters are preloaded in a preset, based on the Act number",
+  "data_fields": [
+    {
+      "name": "Act",
+      "description": "Defines the Act number used for each Monster Preset. Uses values between 1 to 5."
+    },
+    {
+      "name": "Place",
+      "description": "Defines either a Super Unique monster from superuniques.txt, or a monster from monstats.txt, or a place from monplace.txt. This defines the Monster Preset which is used for preloading, such as during level transitions"
+    }
+  ],
+  "filename": "MonPreset.txt"
+}

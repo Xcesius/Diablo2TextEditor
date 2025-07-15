@@ -1,0 +1,254 @@
+{
+  "overview": "This file controls the general statistics for each type of item, which is then used for the item type fields in other files  Any column field name starting with “*” is considered a comment field and is not used by the game   This file controls the unit statistics for player mercenaries and their related functions  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "ItemType",
+      "description": "This is a reference field to define the Item Type name"
+    },
+    {
+      "name": "Code",
+      "description": "Defines the unique pointer for this Item Type, which is used by the following files: weapons.txt, armor.txt, misc.txt, cubemain.txt, skills.txt, treasureclassex.txt"
+    },
+    {
+      "name": "Equiv1 & Equiv2",
+      "description": "Points to the index of another Item Type to reference as a parent. This is used to create a hierarchy for Item Types where the parents will have more universal settings shared across the related children"
+    },
+    {
+      "name": "Repair",
+      "description": "Boolean Field. If equals 1, then the item can be repaired by an NPC in the shop UI. If equals 0, then the item cannot be repaired."
+    },
+    {
+      "name": "Body",
+      "description": "Boolean Field. If equals 1, then the item can be equipped by a character (also will require the “BodyLoc1” & “BodyLoc2” fields as parameters). If equals 0, then the item can only be carried in the inventory, stash, or Horadric Cube."
+    },
+    {
+      "name": "BodyLoc1 & BodyLoc2",
+      "description": "These are required parameters if the “Body” field is enabled. These fields specify the inventory slots where the item can be equipped. Description Code (empty) None Head head Neck neck Torso tors Right Arm rarm Left Arm larm rrin lrin belt feet glov Right Ring Left Ring Belt Feet Gloves"
+    },
+    {
+      "name": "Shoots",
+      "description": "Points to the index of another Item Type as the required equipped Item Type to be used as ammo"
+    },
+    {
+      "name": "Quiver",
+      "description": "Points to the index of another Item Type as the required equipped Item Type to be used as this ammo’s weapon"
+    },
+    {
+      "name": "Throwable",
+      "description": "Boolean Field. If equals 1, then it determines that this item is a throwing weapon. If equals 0, then ignore this."
+    },
+    {
+      "name": "Reload",
+      "description": "Boolean Field. If equals 1, then the item (considered ammo in this case) will be automatically transferred from the inventory to the required “BodyLoc” when another item runs out of that specific ammo. If equals 0, then ignore this."
+    },
+    {
+      "name": "ReEquip",
+      "description": "Boolean Field. If equals 1, then the item in the inventory will replace a matching equipped item if that equipped item was destroyed. If equals 0, then ignore this."
+    },
+    {
+      "name": "AutoStack",
+      "description": "Boolean Field. If equals 1, then if the player picks up a matching Item Type, then they will try to automatically stack together. If equals 0, then ignore this."
+    },
+    {
+      "name": "Magic",
+      "description": "Boolean Field. If equals 1, then this item will always have the Magic quality (unless it is a Quest item). If equals 0, then ignore this."
+    },
+    {
+      "name": "Rare",
+      "description": "Boolean Field. If equals 1, then this item can spawn as a Rare quality. If equals 0, then ignore this."
+    },
+    {
+      "name": "Normal",
+      "description": "Boolean Field. If equals 1, then this item will always have the Normal quality. If equals 0, then ignore this."
+    },
+    {
+      "name": "Beltable",
+      "description": "Boolean Field. If equals 1, then this item can be placed in the character’s belt slots. If equals 0, then ignore this."
+    },
+    {
+      "name": "MaxSockets1",
+      "description": "Determines the maximum possible number of sockets that can be spawned on the item when the item level is greater than or equal to 1 and less than or equal to the “MaxSocketsLevelThreshold1” value. The number of sockets is capped by the “gemsockets” value from the weapons.txt/armor.txt/misc.txt file."
+    },
+    {
+      "name": "MaxSocketsLevelThreshold1",
+      "description": "Defines the item level threshold between using the “MaxSockets1” and “MaxSockets2” field"
+    },
+    {
+      "name": "MaxSockets2",
+      "description": "Determines the maximum possible number of sockets that can be spawned on the item when the item level is greater than the “MaxSocketsLevelThreshold1” value and less than or equal to the “MaxSocketsLevelThreshold2”. The number of sockets is capped by the “gemsockets” value from the weapons.txt/armor.txt/misc.txt file."
+    },
+    {
+      "name": "MaxSocketsLevelThreshold2",
+      "description": "Defines the item level threshold between using the “MaxSockets2” and “MaxSockets3” field"
+    },
+    {
+      "name": "MaxSockets3",
+      "description": "Determines the maximum possible number of sockets that can be spawned on the item when the item level is greater than the “MaxSocketsLevelThreshold2” value. The number of sockets capped by the “gemsockets” value from the weapons.txt/armor.txt/misc.txt file."
+    },
+    {
+      "name": "TreasureClass",
+      "description": "Boolean Field. If equals 1, then allow this Item Type to be used in default treasure classes. If equals 0, then ignore this."
+    },
+    {
+      "name": "Rarity",
+      "description": "Determines the chance for the item to spawn with stats, when created as a random Weapon/Armor/Misc item. Used in the following formula: IF RANDOM(0, ([“Rarity”] - [Current Act Level])) > 0, THEN spawn stats"
+    },
+    {
+      "name": "StaffMods",
+      "description": "Determines if the Item Type should have class specific item skill modifiers Code (empty) ama bar pal nec sor dru ass Description No preference Amazon skills Barbarian skills Paladin skills Necromancer skills Sorceress skills Druid skills Assassin skills"
+    },
+    {
+      "name": "Class",
+      "description": "Determines if this item should be useable only by a specific class Code (empty) ama bar pal nec sor dru ass Description Any Class Amazon only Barbarian only Paladin only Necromancer only Sorceress only Druid only Assassin only"
+    },
+    {
+      "name": "VarInvGfx",
+      "description": "Tracks the number of inventory graphics used for this item type. This number much match the number of “InvGfx” fields used."
+    },
+    {
+      "name": "InvGfx1 (to InvGfx6)",
+      "description": "Defines a DC6 file to use for the item’s inventory graphics. The amount of this fields used should match the value used in “VarInvGfx”"
+    },
+    {
+      "name": "StorePage",
+      "description": "Uses a code to determine which UI tab page on the NPC shop UI to display this Item Type, such as after it is sold to the NPC. Code armo weap mag misc Description Armor Page Weapons Page Magic Page Misc Page"
+    },
+    {
+      "name": "dualwieldclass1 (to dualwieldclass7)",
+      "description": "Determines if the weapon can be dual wielded by a defined class. There are 7 fields to potentially allow all 7 classes. Code ama bar pal nec sor dru ass Description Amazon Barbarian Paladin Necromancer Sorceress Druid Assassin hireling.txt"
+    },
+    {
+      "name": "Hireling",
+      "description": "This is a reference field to define the Hireling name"
+    },
+    {
+      "name": "Version",
+      "description": "Defines which game version to use this hireling (0 = Classic mode | 100 = Expansion mode)"
+    },
+    {
+      "name": "Id",
+      "description": "The unique identification number to define each hireling type"
+    },
+    {
+      "name": "Class",
+      "description": "This refers to the “hcIdx” field in MonStats.txt, which defines the base type of unit to use for the hireling"
+    },
+    {
+      "name": "Act",
+      "description": "The Act that the hireling belongs to (values 1 to 5 equal Act 1 to Act 5, respectively)"
+    },
+    {
+      "name": "Difficulty",
+      "description": "The difficulty mode associated with the hireling (1 = Normal | 2 = Nightmare | 3 = Hell)"
+    },
+    {
+      "name": "Level",
+      "description": "The starting level of the unit"
+    },
+    {
+      "name": "Seller",
+      "description": "This refers to the “hcIdx” field in MonStats.txt, which defines the unit NPC that sells this hireling"
+    },
+    {
+      "name": "NameFirst & NameLast",
+      "description": "These fields define a string key which the game uses as a sequential range of string IDs from “NameFirst” to “NameLast” to randomly generate as hireling names. (Max name length is 48 characters)"
+    },
+    {
+      "name": "Gold",
+      "description": "The initial cost of the hireling. This is used in the following calculation to generate the full hire price: Cost = [“Gold”] * (100 + 15 * [Difference of Current Level and “Level”]) / 100 Exp/Lvl - This modifier is used in the following calculation to determine the amount of Experience need for the hireling’s next level: [Current Level] + [Current Level] * [Current Level + 1] * [“Exp/Lvl”]"
+    },
+    {
+      "name": "HP",
+      "description": "The starting amount of Life at base Level HP/Lvl - The amount of Life gained per Level"
+    },
+    {
+      "name": "Defense",
+      "description": "The starting amount of Defense at base Level Def/Lvl - The amount of Defense gained per Level"
+    },
+    {
+      "name": "Str",
+      "description": "The starting amount of Strength at base Level Str/Lvl - The amount of Strength gained per Level (Calculated in 8ths)"
+    },
+    {
+      "name": "Dex",
+      "description": "The starting amount of Dexterity at base Level Dex/Lvl - The amount of Dexterity gained per Level (Calculated in 8ths)"
+    },
+    {
+      "name": "AR",
+      "description": "The starting amount of Attack Rating at base Level AR/Lvl - The amount of Attack Rating gained per Level"
+    },
+    {
+      "name": "Dmg",
+      "description": "Min - The starting amount of minimum Physical Damage for attacks"
+    },
+    {
+      "name": "Dmg",
+      "description": "Max - The starting amount of maximum Physical Damage for attacks Dmg/Lvl - The amount of Physical Damage gained per level, to be added to “Dmg-Min” and “Dmg-Max” (Calculated in 8ths)"
+    },
+    {
+      "name": "ResistFire",
+      "description": "The starting amount of Fire Resistance at base Level ResistFire/Lvl - The amount of Fire Resistance gained per Level (Calculated in 4ths)"
+    },
+    {
+      "name": "ResistCold",
+      "description": "The starting amount of Fire Resistance at base Level ResistCold/Lvl - The amount of Fire Resistance gained per Level (Calculated in 4ths)"
+    },
+    {
+      "name": "ResistLightning",
+      "description": "The starting amount of Fire Resistance at base Level ResistLightning/Lvl - The amount of Fire Resistance gained per Level (Calculated in 4ths)"
+    },
+    {
+      "name": "ResistPoison",
+      "description": "The starting amount of Fire Resistance at base Level ResistPoison/Lvl - The amount of Fire Resistance gained per Level (Calculated in 4ths)"
+    },
+    {
+      "name": "HireDesc",
+      "description": "This accepts a string key, which is used to display as the special description of the hireling in the hire UI window"
+    },
+    {
+      "name": "DefaultChance",
+      "description": "This is the chance for the hireling to attack with his/her weapon instead of using a Skill. All Chance values are summed together as a denominator value for a random roll to determine which skill to use."
+    },
+    {
+      "name": "Skill1 (to Skill6)",
+      "description": "Points to a skill from the “skill” field in the skills.txt file. This gives the hireling the Skill to use (requires “Mode#”, “Chance#”, “ChancePerLvl#”)"
+    },
+    {
+      "name": "Mode1 (to Mode6)",
+      "description": "Uses a monster mode to determine the hireling’s behavior when using the related Skill (Uses the numeric ID of the monster mode, not the Token) ID 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 Description Death / Reset Neutral Walk Get Hit Attack 1 Attack 2 Block Cast Skill 1 Skill 2 Skill 3 Skill 4 Dead Knockback Sequence Run Token DT NU WL GH A1 A2 BL SC S1 S2 S3 S4 DD GH xx RN"
+    },
+    {
+      "name": "Chance1 (to Chance6)",
+      "description": "This is the base chance for the hireling to use the related Skill. All Chance values are summed together as a denominator value for a random roll to determine which skill to use."
+    },
+    {
+      "name": "ChancePerLvl1 (to ChancePerLvl6)",
+      "description": "This is the chance for the hireling to use the related Skill, affected by the difference in the hireling’s current Level and the hireling’s “Level” field. All Chance values are summed together as a denominator value for a random roll to determine which skill to use. Each skill Chance is calculated with the following formula: [“Chance#”] + [“ChancePerLvl#”] * [Difference of Current Level and “Level”] / 4"
+    },
+    {
+      "name": "Level1 (to Level6)",
+      "description": "The starting Level for the related Skill."
+    },
+    {
+      "name": "LvlPerLvl1 (to LvlPerLvl6)",
+      "description": "A modifier to increase the related Skill level for every Level gained. This is used in the following calculated to determine the current skill level: [Current Skill Level] = FLOOR([“Level”] + (([“LvlPerLvl”] * [Difference of Current Level and “Level”]) / 32))"
+    },
+    {
+      "name": "HiringMaxLevelDifference",
+      "description": "This is used to generate a range with this value plus and minus with the player’s current Level. In the hiring UI window, hirelings start with a random Level that is between this range."
+    },
+    {
+      "name": "resurrectcostmultiplier",
+      "description": "A modifier used to calculate the hireling’s current resurrect cost. Used in the following formula: [Resurrect Cost] = [Current Level] * [Current Level] / [“resurrectcostdivisor”] * [“resurrectcostmultiplier”]"
+    },
+    {
+      "name": "resurrectcostdivisor",
+      "description": "A modifier used to calculate the hireling’s current resurrect cost. Used in the following formula: [Resurrect Cost] = [Current Level] * [Current Level] / [“resurrectcostdivisor”] * [“resurrectcostmultiplier”]"
+    },
+    {
+      "name": "resurrectcostmax",
+      "description": "This is the maximum Gold cost to resurrect this hireling equivalentcharclass – Determines what class this hireling is treated like under the hood when calculating skill level bonuses and gear restrictions."
+    }
+  ],
+  "filename": "ItemTypes.txt"
+}

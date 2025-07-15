@@ -1,0 +1,26 @@
+{
+  "overview": "This file controls the sequence table used for specifying events during certain animation frames, such as when using skills. A sequence is divided into multiple lines in this file to define each frame in the animation and to determine which event to use during a specific frame.",
+  "data_fields": [
+    {
+      "name": "sequence",
+      "description": "Establishes the Monster Sequence index. An entire monster sequence can be composed of multiple sequence lines, which means that each line needs to have matching “sequence” fields and must be in contiguous order."
+    },
+    {
+      "name": "mode",
+      "description": "Defines which monster mode animation to use for the sequence Code Description DT NU WL GH A1 A2 BL SC S1 S2 S3 S4 DD GH xx RN Death Neutral Walk Get Hit Attack 1 Attack 2 Block Cast Skill 1 Skill 2 Skill 3 Skill 4 Dead Knockback Sequence Run"
+    },
+    {
+      "name": "frame",
+      "description": "The in-game frame number for the animation. For the first line in the sequence, this value will establish where the starting frame for the animation. These values should be in contiguous order for the sequence."
+    },
+    {
+      "name": "dir",
+      "description": "Defines the numeric animation direction that the frame use. Most animations have between 8 to 64 maximum directions."
+    },
+    {
+      "name": "event",
+      "description": "Defines what type of event will be used when the frame triggers Code 0 1 2 3 4 Description No event, do nothing Do Melee attack Do Missile attack Play a sound Use a Skill"
+    }
+  ],
+  "filename": "monseq.txt"
+}

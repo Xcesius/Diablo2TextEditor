@@ -1,0 +1,30 @@
+{
+  "overview": "This file controls special properties that can be added to a monster, based on the game difficulty       The “(N)” text in field names signifies to use that specific value for games in Nightmare difficulty The “(H)” text in field names signifies to use that specific value for games in Hell difficulty  This file is used by the monstats.txt file",
+  "data_fields": [
+    {
+      "name": "Id",
+      "description": "Defines the monster that should gain the Property. Points to the matching “Id” value in the monstats.txt file."
+    },
+    {
+      "name": "prop1 (to prop6)",
+      "description": "Defines with Property to apply to the monster (Uses the “code field from Properties.txt)"
+    },
+    {
+      "name": "chance1 (to chance6)",
+      "description": "The percent chance that the related property (prop#) will be assigned. If this value equals 0, then the Property will always be applied."
+    },
+    {
+      "name": "par1 (to par6)",
+      "description": "The “parameter” value associated with the related property (prop#). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "min1 (to min6)",
+      "description": "The “min” value to assign to the related property (prop#). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "max1 (to max6)",
+      "description": "The “max” value to assign to the related property (prop#). Usage depends on the property function (See the “func” field on Properties.txt)"
+    }
+  ],
+  "filename": "MonProp.txt"
+}

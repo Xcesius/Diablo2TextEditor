@@ -1,0 +1,62 @@
+{
+  "overview": "This file controls the groups item modifiers for High Quality (Superior) item types.  The game will randomly choose between one of these High Quality groups, if it is allowed for the item type.",
+  "data_fields": [
+    {
+      "name": "mod1code & mod2code",
+      "description": "Controls the item properties that are added to the item (Uses the “code” field from Properties.txt)"
+    },
+    {
+      "name": "mod1param & mod2param",
+      "description": "The stat’s “parameter” value associated with the related property (mod#code). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "mod1min & mod2min",
+      "description": "The stat’s “min” value to assign to the related property (mod#code). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "mod1max mod2max",
+      "description": "The stat’s “max” value to assign to the related property (mod#code). Usage depends on the property function (See the “func” field on Properties.txt)"
+    },
+    {
+      "name": "armor",
+      "description": "Boolean Field. If equals 1, then allow this High Quality (Superior) modifier to be applied on both torso armor and helmet item types. If equals 0, then ignore this."
+    },
+    {
+      "name": "weapon",
+      "description": "Boolean Field. If equals 1, then allow this High Quality (Superior) modifier to be applied on melee weapon item types (except scepters, wands, and staves). If equals 0, then ignore this."
+    },
+    {
+      "name": "shield",
+      "description": "Boolean Field. If equals 1, then allow this High Quality (Superior) modifier to be applied on shield item types. If equals 0, then ignore this."
+    },
+    {
+      "name": "scepter",
+      "description": "Boolean Field. If equals 1, then allow this High Quality (Superior) modifier to be applied on scepter item types. If equals 0, then ignore this."
+    },
+    {
+      "name": "wand",
+      "description": "Boolean Field. If equals 1, then allow this High Quality (Superior) modifier to be applied on wand item types. If equals 0, then ignore this."
+    },
+    {
+      "name": "staff",
+      "description": "Boolean Field. If equals 1, then allow this High Quality (Superior) modifier to be applied on staff item types. If equals 0, then ignore this."
+    },
+    {
+      "name": "bow",
+      "description": "Boolean Field. If equals 1, then allow this High Quality (Superior) modifier to be applied on bow or crossbow item types. If equals 0, then ignore this."
+    },
+    {
+      "name": "boots",
+      "description": "Boolean Field. If equals 1, then allow this High Quality (Superior) modifier to be applied on boots item types. If equals 0, then ignore this."
+    },
+    {
+      "name": "gloves",
+      "description": "Boolean Field. If equals 1, then allow this High Quality (Superior) modifier to be applied on gloves item types. If equals 0, then ignore this."
+    },
+    {
+      "name": "belt",
+      "description": "Boolean Field. If equals 1, then allow this High Quality (Superior) modifier to be applied on belt item types. If equals 0, then ignore this."
+    }
+  ],
+  "filename": "QualityItems.txt"
+}

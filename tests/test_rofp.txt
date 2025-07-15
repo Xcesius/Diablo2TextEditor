@@ -1,0 +1,2 @@
+description	enabled	ladder	version	op	param	value	numinputs	input 1	output	mod 1	mod 1 chance	mod 1 min	mod 1 max
+"add relic factor"	1	2	100	18	509	0	1	"rofp"	useitem	awakennum	100	1	112

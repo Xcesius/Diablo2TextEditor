@@ -1,0 +1,26 @@
+{
+  "overview": "This file controls the sizes of the underground area levels. This file uses the levels from Levels.txt and specifies the sizes for each room, which can mean how many Level Presets to use to build out the entire randomly generated area.",
+  "data_fields": [
+    {
+      "name": "Name",
+      "description": "This is a reference field to describe the area level. Ideally this should match the name of the area level from the Levels.txt file."
+    },
+    {
+      "name": "Level",
+      "description": "This refers to the “Id” field from the Levels.txt file"
+    },
+    {
+      "name": "Rooms & Rooms(N) & Rooms(H)",
+      "description": "Controls the total number of rooms that a Level Maze will generate when playing the game in Normal Difficulty, Nightmare Difficulty, and Hell Difficulty, respectively."
+    },
+    {
+      "name": "SizeX & SizeY",
+      "description": "Controls the length and width sizes of each room (ds1 map files) that is added to the Level Maze. This is measured in tile sizes."
+    },
+    {
+      "name": "Merge",
+      "description": "This value affects the probability that a room gets an adjacent room linked next to it. This is a random chance out of 1000."
+    }
+  ],
+  "filename": "LvlMaze.txt"
+}

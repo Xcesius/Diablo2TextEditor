@@ -1,0 +1,46 @@
+{
+  "overview": "This file controls the functionalities of shrine objects found in area levels  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "Name",
+      "description": "This is a reference field to define the Shrine index"
+    },
+    {
+      "name": "Code",
+      "description": "Code function used to define the Shrine’s function. Uses ID values to define what function to use. Parameter Code ID 0 1 Description None Gain full Life and Mana 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 Arg0 = Life percent consumed Arg1 = Mana percent added Arg0 = Mana percent consumed Arg1 = Life percent added Arg0 = Defense percent Arg0 = Attack Rating percent Arg1 = Physical Damage percent Arg0 = Resist Fire percent Gain full Life Gain full Mana Exchange your current Life to restore Mana Exchange your current Mana to restore Life Increases Defense Increases Physical Damage and Attack Rating Increases Fire Resistance Arg0 = Resist Cold percent Increases Cold Resistance Arg0 = Resist Lightning percent Increases Lightning Resistance Arg0 = Resist Poison percent Increases Poison Resistance Arg0 = Bonus Skill Levels Increases all Skill levels Arg0 = Mana Recharge percent Increases Mana Recharge Rate Arg0 = Stamina percent Arg0 = Bonus Experience percent Arg0 = Life percent damage Arg1 = Range to find units Arg0 = Minimum potions Arg1 = Maximum potions Arg0 = Minimum potions Arg1 = Maximum potions Gain infinite Stamina Temporarily gain bonus Experience from kills Temporarily reverse your character's Name (Not Used) Create a neutral Town Portal back to the current Act Town Randomly select a gem in your inventory and upgrade its level (Otherwise, create a random chipped gem) Release a nova of fireballs that cause any player or monster to lose a percentage of Life Causes the nearest monster to upgrade a Unique or Champion type Deal Fire damage to nearby monsters and create a random number of Exploding Potions Create Poison Gas that damages nearby monsters and create a random number of Choking Gas Potions"
+    },
+    {
+      "name": "Arg0 & Arg1",
+      "description": "Integer value used as a possible parameter for the “Code” function"
+    },
+    {
+      "name": "Duration in frames",
+      "description": "Duration of the effects of the Shrine (Calculated in Frames, where 25 Frames = 1 Second)"
+    },
+    {
+      "name": "reset time in minutes",
+      "description": "Controls the amount of time before the Shrine is available to use again. Each value of 1 equals 1200 Frames or 48 seconds. A value of 0"
+    },
+    {
+      "name": "means that the Shrine is a one",
+      "description": "time use."
+    },
+    {
+      "name": "StringName",
+      "description": "Uses a string to display as the Shrine’s name"
+    },
+    {
+      "name": "StringPhrase",
+      "description": "Uses a string to display as the Shrine’s activation phrase when it is used"
+    },
+    {
+      "name": "effectclass",
+      "description": "Used to define the Shrine’s archetype which is involved with calculating region stats"
+    },
+    {
+      "name": "LevelMin",
+      "description": "Define the earliest area level where the Shrine can spawn. Area levels are determined from levels.txt"
+    }
+  ],
+  "filename": "shrines.txt"
+}

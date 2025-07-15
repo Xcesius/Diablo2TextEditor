@@ -1,0 +1,30 @@
+{
+  "overview": "This file controls how a monster may be created with specific type of inventory equipment items These equipment items are randomly generated on the monster, based on the specified parameters in this file This data relies on the “inventory” field being enabled for the listed monster, found in the monstats.txt file",
+  "data_fields": [
+    {
+      "name": "monster",
+      "description": "Defines the monster that should be equipped. Points to the matching “Id” value in the monstats.txt file. If the monster has multiple defined equipment possibilities, then they should always be grouped together. The game will go through the list in order to match what is best to use for the monster."
+    },
+    {
+      "name": "oninit",
+      "description": "Defines if the monster equipment is added on initialization during the monster’s creation, depending how the monster is spawned. Monsters created by a skill have this value set to 0. Monsters created by a level have this value set to 1."
+    },
+    {
+      "name": "level",
+      "description": "Defines the level requirement for the monster in order to gain this equipment. The game will prefer the highest level allowed, so the order of these equipment should be from highest level to lowest level."
+    },
+    {
+      "name": "item1 (to item3)",
+      "description": "Item that the be equipped on the monster (Uses ID pointer from Weapons.txt, Armor.txt or Misc.txt)"
+    },
+    {
+      "name": "loc1 (to loc3)",
+      "description": "Specifies the inventory slot where the item will be equipped. Once an item is equipped on that body location, then the game will skip any duplicate calls to equipping the same body location. This is another reason why the equipment should be ordered from highest level to lowest level. Code (empty) head neck tors rarm Description None Head Neck Torso Right Arm larm rrin lrin belt feet glov Left Arm Right Ring Left Ring Belt Feet Gloves"
+    },
+    {
+      "name": "mod1 (to mod3)",
+      "description": "Controls the quality level of the related item Description Any Quality (Used for a random quality) Low Quality (Ex: \"Crude\") Normal Quality (Default value if the value is empty) High Quality (Superior) Magic Quality (Uses Magic Prefixes and Suffixes) Set Item Rare Quality Unique (Predetermined stats) Item Quality Code 0 1 2 3 4 5 6 7"
+    }
+  ],
+  "filename": "monequip.txt"
+}

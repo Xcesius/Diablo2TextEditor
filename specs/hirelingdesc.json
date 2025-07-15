@@ -1,0 +1,5 @@
+{
+  "overview": "This file controls attributes about player mercenaries that relate to the monster class but not the specific statblocks.  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [],
+  "filename": "hirelingdesc.txt"
+}

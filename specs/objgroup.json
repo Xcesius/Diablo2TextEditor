@@ -1,0 +1,34 @@
+{
+  "overview": "This file controls what group of possible Objects to spawn in a part of an area level.  This file uses the following files: objects.txt  The order of each Object Group defined in this file will convey what ID value it has, which is referenced by the Levels.txt file The order of these Object Groups should not be changed  Any column field name starting with “*” is considered a comment field and is not used by the game   This file controls which Objects are preloaded in a preset, based on the Act number  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "GroupName",
+      "description": "This is a reference field to define the Object Group name"
+    },
+    {
+      "name": "ID0 (to ID7)",
+      "description": "Uses the “Id” field from objects.txt, which assigns an Object to this Object Group"
+    },
+    {
+      "name": "DENSITY0 (to DENSITY7)",
+      "description": "Controls the number of Objects to spawn in the area level. This is also affected by the Object’s populate function defined by the “PopulateFn” field from the objects.txt file. The maximum value allowed is 128."
+    },
+    {
+      "name": "PROB0 (to PROB7)",
+      "description": "Controls the probability that the Object will spawn in the area level. This is calculated in order so the first probability that is successful will be chosen. This also means that these field values should add up to exactly 100 in total to guarantee that one of the objects spawn. objpreset.txt"
+    },
+    {
+      "name": "Index",
+      "description": "Assigns a unique numeric ID to the Object Preset so that it can be properly referenced"
+    },
+    {
+      "name": "Act",
+      "description": "Defines the Act number used for each Object Preset. Uses values between 1 to 5."
+    },
+    {
+      "name": "ObjectClass",
+      "description": "Uses the “Class” field from objects.txt, which assigns an Object to this Object Preset"
+    }
+  ],
+  "filename": "objgroup.txt"
+}

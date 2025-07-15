@@ -1,0 +1,2 @@
+description	enabled	input 1	input 2	output
+test recipe	1	"t1me,mag"	"runs,qty=1"	"usetype,rar"

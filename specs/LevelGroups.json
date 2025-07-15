@@ -1,0 +1,14 @@
+{
+  "overview": "This file controls how the game groups levels together. This has currently no gameplay purpose and is mainly used for condensing level names in desecrated (terror) zone messaging.",
+  "data_fields": [
+    {
+      "name": "Name",
+      "description": "Defines the unique name pointer for the level group, which is used in other files"
+    },
+    {
+      "name": "Id",
+      "description": "Defines the unique numeric ID for the level group, which is used in other files GroupName – String Field. Used for displaying the name of the level group, such as when all levels in a group have been desecrated."
+    }
+  ],
+  "filename": "LevelGroups.txt"
+}

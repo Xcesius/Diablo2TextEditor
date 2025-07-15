@@ -1,0 +1,1332 @@
+{
+  "overview": "This file controls the different functions for all missiles and their statistics. Missiles are projectiles used throughout the game for attacks, skills, and special effects.  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "Missile",
+      "description": "Defines the unique name ID for the missile, which is how other files can reference the missile. The order of defined missiles will determine their ID numbers, so they should not be reordered."
+    },
+    {
+      "name": "pCltDoFunc",
+      "description": "Uses an ID value to select a function for the missile’s behavior while active every frame on the client side. This is more about handling the local graphics while the missile is moving. Code 0 (or empty) 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 Parameters Description Do nothing"
+    },
+    {
+      "name": "ProcessMissileMode",
+      "description": "Perform the standard client missile move function. This is called in most of the other functions"
+    },
+    {
+      "name": "ProcessBlood",
+      "description": "Kill the missile if it goes off screen. Otherwise, set the number of duration frames for the missile to equal 128 and perform the standard missile move function."
+    },
+    {
+      "name": "PoisonJavelin",
+      "description": "Create a sub missile each frame that the current missile is moving where “CltCalc1” controls the number of subloops for the created sub missile."
+    },
+    {
+      "name": "PoisonCloud",
+      "description": "Create multiple sub missiles randomly in a area where the parameters control the spawn rate, number of sub missiles to spawn per rate, and the spawn radius size, respectively."
+    },
+    {
+      "name": "Firewall",
+      "description": "Create an animation sequence for the missile where the difference of the “SubStart” and “SubStop” fields control the length of the sequence within the animation, and the game will randomly choose a frame within this sequence to loop back to."
+    },
+    {
+      "name": "FirewallMaker",
+      "description": "Randomly create 1 of the 3 possible sub missiles, where the parameter controls the random chance that the sub missile spawns with no light."
+    },
+    {
+      "name": "ProcessGuidedArrow",
+      "description": "Try to retarget the missile on a possible target unit where the parameter controls the rate at which the missile should attempt to retarget again."
+    },
+    {
+      "name": "LightningMaker",
+      "description": "Attempt to create a sub missile where the parameter controls the number of subloops for the sub missile (minimum value equals 1). The sub missile is only created if the current missile’s has existed for greater than or equal to the “InitSteps” value."
+    },
+    {
+      "name": "ProcessMeteorCenter",
+      "description": "Create each sub missile where the parameters control the number of frames, the missile fall rate (Used to calculate the starting height), and the missile slide rate (used to calculated the starting position offset), respectively. Also attempt to play the “ProgSound” sound at 2 frames before the “CltParam1” frame count."
+    },
+    {
+      "name": "ProcessMonBliz",
+      "description": "Randomly create 1 of the 2 sub missiles in an area radius, where the parameters control the baseline radius size (affected by the missile level), the spawn frequency (minimum equals 3 frames, affected by the missile level), and the level divisor (affects the difference in value for the other fields per missile level). The “CltParam1” and “CltParam2” parameters also can control the missile fall distance and fall rate."
+    },
+    {
+      "name": "ProcessHoldLast",
+      "description": "At the end of the missile’s animation, set it to dead and destroy its light. Otherwise, run the ProcessMissileMode function."
+    },
+    {
+      "name": "ProcessScreenShake",
+      "description": "Run the ProcessMissileMode function and also call the camera shaking function. The “CltParam1” field controls the camera shake magnitude, and the “CltParam2” field controls the camera shake duration."
+    },
+    {
+      "name": "ProcessBlizzard",
+      "description": "Randomly create 1 of the 2 missiles in a calculated area every duration. The radius and spawn frequency are controlled by the missile’s linked skill’s “calc1” and “calc2” fields. The “CltParam1” and “CltParam2” parameters control the sub missile fall distance and fall rate."
+    },
+    {
+      "name": "FingerMageSpider2",
+      "description": "Shoot a missile that can be retargeted on a unit. The parameters control the retarget frequency, the retarget distance range, and the retarget position offset (minimum value equals 1), respectively."
+    },
+    {
+      "name": "FingerMageSpider",
+      "description": "Shoot a missile that can be retargeted on a unit and can spawn a sub missile. The parameters control the number of frames to wait before spawning the sub missile (minimum value equals 1), the number of frames to wait before processing the missile, the retarget frequency, the retarget distance range, and the retarget position offset (minimum value equals 1), respectively. CltCalc1 CltSubMissile1 CltParam1 CltParam2 CltParam3 CltSubMissile1 SubStart SubStop CltParam1 CltSubMissile1 CltSubMissile2 CltSubMissile3 CltParam1 CltParam1 CltSubMissile1 InitSteps CltParam1 CltParam2 CltParam3 CltSubMissile1 CltSubMissile2 ProgSound CltParam1 CltParam2 CltParam3 CltSubMissile1 CltSubMissile2 CltParam1 CltParam2 CltParam1 CltParam2 CltSubMissile1 CltSubMissile2 CltParam3 CltParam4 CltParam5 CltParam1 CltParam2 CltParam3 CltParam4 CltParam5 CltSubMissile1 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 CltSubMissile1 CltParam1 CltSubMissile1 CltParam1 CltSubMissile1 InitSteps CltParam1 CltParam2 CltSubMissile1 CltParam1 CltParam2 CltParam1 CltSubMissile1 CltParam1 CltSubMissile1 CltParam1 CltParam2 CltParam3 CltSubMissile1 CltSubMissile2 CltParam1 CltParam2 CltParam3 CltSubMissile1 CltParam1 CltParam2 CltParam3 CltSubMissile1 CltSubMissile2 CltParam1 CltSubMissile1 CltParam1 CltSubMissile1 CltParam1 CltParam2 CltSubMissile1 CltSubMissile2 CltSubMissile3 ProgSound CltParam1 CltParam2 CltParam3 CltSubMissile1"
+    },
+    {
+      "name": "DiabWallMaker",
+      "description": "Shoot a missile using the ProcessMissileMode function where every frame while moving it can create a sub missile that will have a random chance to spawn with no light"
+    },
+    {
+      "name": "ProcessCurse",
+      "description": "Shoot a missile that will create a disc of sub missiles every 3 frames after a specified frame duration controlled by the parameter. The radius and density of the disc of sub missile is controlled by the current missile’s radius value, which is given to the missile by the skill function."
+    },
+    {
+      "name": "SimpleTrailMaker",
+      "description": "Shoot a missile that will create a sub missile after the “InitSteps” frame count, where the parameter controls the sub missile’s subloops. The sub missile will follow the same direction, offset, and path of the current missile."
+    },
+    {
+      "name": "ProcessFrozenOrb",
+      "description": "Shoot a missile that will create sub missiles at a spawn rate and different directions. The “CltParam1” value controls the rate to spawn sub missiles, and the “CltParam2” value controls the direction index increment for looping through which direction the next created sub missile should fire towards."
+    },
+    {
+      "name": "ProcessFrozenOrbNova",
+      "description": "Shoot a missile that will have a delay until processing and then will process its path at a specified rate. The “CltParam1” value controls the activation frame, and the “CltParam2” value controls the periodic rate to process the missile path"
+    },
+    {
+      "name": "BRDeathControl",
+      "description": "Create a sub missile after a periodic delay that can spawn in a random location in a radius controlled by the parameter. The periodic delay can be 25, 10, 3, or 15 frames, depending how many frames the current missile has lasted."
+    },
+    {
+      "name": "BRDeathLightning",
+      "description": "Shoot a missile that will retarget to a randomized direction every periodic frame delay and will create sub missiles while moving."
+    },
+    {
+      "name": "ProcessDOELight",
+      "description": "Run the ProcessMissileMode function and ensure that the missile lasts 500 frames if its frame count is less than 100"
+    },
+    {
+      "name": "ProcessCairnStones",
+      "description": "Create multiple “CltSubMissile1” sub missiles in a radius controlled by “CltParam2” and a spawn frequency controlled by “CltParam3”, lasting a duration controlled by “CltParam1”. The “CltParam1” field also controls the start time for spawning more “CltSubMissile1” sub missiles and “CltSubMissile2” sub missiles every 8 frames if there are any of the “StoneAlpha” to “StoneTheta” objects in the room."
+    },
+    {
+      "name": "ProcessTowerMist",
+      "description": "Shoot a missile that will spawn a sub missile randomly in a defined radius after a periodic delay"
+    },
+    {
+      "name": "SmithDeathControl",
+      "description": "Create “CltSubMissile1” sub missile in a random position in a radius controlled by “CltParam3” where “CltParam1” controls its spawn rate. Create “CltSubMissile2” sub missile as a lobbing missile in a random position in the same radius where “CltParam2” controls its spawn rate. Also the “CltSubMissile2” sub missile’s level is controlled by the following function: 1 + RANDOM(0, 5)"
+    },
+    {
+      "name": "SmithFirewallMaker",
+      "description": "Create the sub missile every frame while moving. The parameter controls the delay until the current missile needs to retarget in a new direction"
+    },
+    {
+      "name": "SmithDoNotDraw",
+      "description": "Create 4 sub missiles in different directions after a delay that is controlled by the parameter."
+    },
+    {
+      "name": "ProcessAndyControl0",
+      "description": "Create “CltSubMissile1” after 10 Frames which subsequently will make its own “CltSubMissile1” where its “CltParam1”, “CltParam2” and “CltParam3” fields control the Z offset, Z Velocity Max, and Z Acceleration, respectively. Create “CltSubMissile2” randomly in a radius equal to 20 and at a periodic rate controlled by “CltParam1”. “CltParam2” controls the duration of the camera shake, which starts after 90 frames. Between frame 115 and 315, create “CltSubMissile3” randomly in a radius equal to 6 where its “CltParam1” and “CltParam2” values control the Z offset and Z velocity."
+    },
+    {
+      "name": "ProcessTowerChestSpawner",
+      "description": "Start creating the sub missile periodically after an initial delay controlled by “CltParam1”. “CltParam2” controls the periodic rate to spawn the sub missile and “CltParam3” controls the radius size to spawn the sub missile randomly in an area."
+    },
+    {
+      "name": "ProcessHoradricStaff",
+      "description": "This function does multiple hardcoded features. Shake the screen after 150 frames. Create 7 “horadriclight” missiles. After 165 frames, create the “horadriclightning” missile at a specific position, direction, and velocity. After 150 frames, create the “dust” missile every other frame."
+    },
+    {
+      "name": "ProcessRadDeath",
+      "description": "Create a “radamenthandofgod” missile at an increasing rate based on the total frame count of the current missile"
+    },
+    {
+      "name": "ProcessTaintedSun",
+      "description": "Create a “taintedsunflash” missile at an increasing rate and at random ranges, based on the total frame count of the current missile. Also add a “horadric_light” overlay on the altar object in the level room."
+    },
+    {
+      "name": "ProcessTaintedSunBall",
+      "description": "The missile will change its path and velocities throughout its life cycle using different mods, to follow a crafted pattern"
+    },
+    {
+      "name": "ProcessQueenDeath",
+      "description": "Every 4 frames, create a “queendeathglob” using a lobbing function in a random position in a defined radius of size 12."
+    },
+    {
+      "name": "ProcessDurielDeath",
+      "description": "Create a “explodingarrowexp” missile at an increasing rate and at random ranges, based on the total frame count of the current missile. Also create a “durieldeathrock” missile at an increasing rate and at random ranges, based on the total frame count of the current missile. Run a camera shake function."
+    },
+    {
+      "name": "ProcessDiabloAppears",
+      "description": "Run a camera shake function and request to play the “monster_diablo_taunt_1” sound"
+    },
+    {
+      "name": "ProcessHellForge",
+      "description": "Create multiple lobbing “hffragment1” missiles at an increasing rate in random directions, based on the total frame count of the current missile. Run a camera shake function."
+    },
+    {
+      "name": "ProcessHFragment1",
+      "description": "If the missile has a source unit, then set the missile frame to 0 and run the ProcessMissileMode function"
+    },
+    {
+      "name": "ProcessHFragment2",
+      "description": "Periodically create a “hfspirit1” missile after a randomized periodic delay."
+    },
+    {
+      "name": "ProcessSoul",
+      "description": "Adjust the animation rate of the missile after certain key frames during the missile’s duration. 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 Param1 Param2 CltSubMissile1 CltParam1 CltParam2 CltParam3 CltSubMissile1 CltParam1 CltSubMissile1 CltParam1 CltSubMissile1 CltSubMissile2 CltSubMissile3 ProgSound CltSubMissile1 CltSubMissile2 CltParam1 CltSubMissile1 CltParam1 CltParam2 CltParam3 CltParam4 CltParam5 CltSubMissile1 CltParam1 CltParam2 CltParam3 CltParam4 CltSubMissile1 CltSubMissile2 ProgSound CltSubMissile1 CltParam1 CltSubMissile1 CltParam1 CltParam2 CltParam3 CltSubMissile1 CltSubMissile2 CltSubMissile3 CltSubMissile1 Param1"
+    },
+    {
+      "name": "ProcessIzualDeath",
+      "description": "Create the “izual mist loop” missile every frame in a random radius of size 10. Create a “izual lightning” missile every frame between the value of the “Param1” and “Param2” fields."
+    },
+    {
+      "name": "ProcessAttached",
+      "description": "Attach the missile follow its source unit’s position. Kill the missile if the unit is dead."
+    },
+    {
+      "name": "ProcessDistraction",
+      "description": "Attach the missile follow its source unit’s position. Create a sub missile while moving."
+    },
+    {
+      "name": "ProcessDistractionFog",
+      "description": "Create a number of sub missiles in an area at a defined rate. “CltParam1” controls the spawn rate, “CltParam2” controls the number of missiles to spawn per rate, and “CltParam3” controls the radius to randomly spawn the sub missiles."
+    },
+    {
+      "name": "ProcessTrailJav",
+      "description": "Create 2 sub missiles per frame while moving with perpendicular directions and a defined number of subloops controlled by the parameter"
+    },
+    {
+      "name": "ProcessMoltenBoulder",
+      "description": "Play the “ProgSound” sound if the missile has a bounce value. Run the FirewallMaker function (Code = 6)."
+    },
+    {
+      "name": "ProcessEruption",
+      "description": "Uses the linked skill’s “calc1” and “calc2” fields to get the spawn radius and spawn frequency for creating the 2 sub missiles. For “CltSubMissile1”, the missile is automatically set to dead mode when it is created."
+    },
+    {
+      "name": "ProcessVines",
+      "description": "Periodically spawn the sub missile in the same direction as the current missile where the parameter controls the spawn rate"
+    },
+    {
+      "name": "ProcessVolcano",
+      "description": "Spawn a sub missile with the lob function at a defined spawn rate at certain frames within the current missile’s duration. “CltParam1” controls the periodic spawn rate, “CltParam2” controls the radius to spawn the sub missile, “CltParam3” controls the starting frame to begin spawning the sub missile, “CltParam4” controls the end frame to stop spawning the sub missile, and “CltParam5” controls the lob start value."
+    },
+    {
+      "name": "ProcessRecycleDelay",
+      "description": "Create “CltSubMissile1” at a frame controlled by “CltParam1” in a radius controlled by “CltParam4” and a spawn count controlled by “CltParam3”. Create “CltSubMissile2” sub missile at a frame controlled by “CltParam2” and also request to play the “ProgSound” at the same time."
+    },
+    {
+      "name": "ProcessMakePerpMissiles",
+      "description": "Create 2 of the same sub missile every frame while moving that face at perpendicular directions"
+    },
+    {
+      "name": "ProcessTigerFury",
+      "description": "Create a sub missile every frame while moving and then run the ProcessGuidedArrow function (Code = 7)."
+    },
+    {
+      "name": "ProcessAnyaCenter",
+      "description": "Create a “anya icemagic” missile every frame until frame 110. Create a decreasing number of “anyasteam1” missiles in a random position and velocity, every frame until frame 110. Perform a camera shake function. Create a “anyasteamvent” missile and a “anyasteam” missile randomly in a radius every 7 frames until frame 200."
+    },
+    {
+      "name": "ProcessAncientDeath",
+      "description": "Create a “ancient death cloud” missile every 3 frames randomly in an area in a random direction"
+    },
+    {
+      "name": "ProcessBaalTaunt",
+      "description": "Randomly choose to spawn one of the 3 sub missiles where each of the parameters control the spawn rate for each of the sub missiles."
+    },
+    {
+      "name": "ProcessBladeShieldCenter",
+      "description": "Attach the current missile to the source unit and after a certain delay, create a sub missile every frame that moves in a missile spiral path"
+    },
+    {
+      "name": "ProcessChaosIce",
+      "description": "Randomly decide to change the path of the missile to a different direction"
+    },
+    {
+      "name": "ProcessWorldstoneChip",
+      "description": "If the current Z offset is too low or too high, then stop the missile"
+    },
+    {
+      "name": "ProcessHurricane",
+      "description": "Every 2 Frames change the missile path to a different direction"
+    },
+    {
+      "name": "ProcessOverseerCtrl",
+      "description": "Randomly create either the “catapult cold ball” missile or “catapult meteor ball” missile at an increasing spawn rate in a random position in a radius."
+    },
+    {
+      "name": "ProcessNihlathak",
+      "description": "This function handles the missile visuals for Nihlathak’s death. ·         Every frame has a random chance to create 2 of the following missiles in a random position: “nehlithakswoosh” “nehlithakdebris1”, “nehlithakdebris2”, “nehlithakdebris3”, nehlithakdebris4”. ·         After frame 60, every 20 frames create a “brdeathlightningbolt” missile in a random direction. ·         At frame 25, create a “nehlithakhole” and “nehlithakholelight” at the missile’s location."
+    },
+    {
+      "name": "ProcessNihlathakHurr",
+      "description": "Update the path of the missile at every frame"
+    },
+    {
+      "name": "ProcessBaalControl",
+      "table": [
+        {
+          "·": "·",
+          "At frame 450, create a “baalfx baal head appear” missile": "At frame 425, create a “baalfx baal head 1” missile"
+        },
+        {
+          "·": "·",
+          "At frame 450, create a “baalfx baal head appear” missile": "At frame 375, create a “baalfx baal head 2” missile"
+        },
+        {
+          "·": "·",
+          "At frame 450, create a “baalfx baal head appear” missile": "At frame 325, create a “baalfx baal head 3” missile"
+        },
+        {
+          "·": "·",
+          "At frame 450, create a “baalfx baal head appear” missile": "After some time and when the “tyrael3” unit is found within the level, then randomly"
+        }
+      ],
+      "description": "This function handles the missile visuals for Baal’s death. ·         Randomly spawn either a “baalfx spirit 1” missile or “baalfx spirit 2” missile at an increasing rate and in a random direction. create either the “baalfx tyreal debris 1”, “baalfx tyreal debris 2”, or “baalfx tyreal debris 3” every frame for a specified duration"
+    },
+    {
+      "name": "ProcessBaalSpirit",
+      "description": "The missile will follow different modes that can change its path and direction, which are controlled by the ProcessBaalControl function (Code = 64) 66 67 68 CltParam1 CltParam2 CltParam3 CltSubMissile1 CltSubMissile2 CltSubMissile3 CltParam1 CltSubMissile1"
+    },
+    {
+      "name": "ProcessWorldstoneShake",
+      "description": "Attach the missile to the source unit. Call the camera shake function at random periodic delays. There is a small chance to randomly create either the “baalfx tyreal debris 1”, “baalfx tyreal debris 2”, or “baalfx tyreal debris 3” at periodic durations."
+    },
+    {
+      "name": "ProcessMissileDelayed",
+      "description": "Create a sub missile at a specified frame at the source unit’s location. Each parameter controls the specific frame to spawn one of the sub missiles."
+    },
+    {
+      "name": "ProcessSucFireBall",
+      "description": "Create a sub missile every frame while the current missile is moving where the number of sub loops for the sub missile is controlled by the parameter"
+    },
+    {
+      "name": "pCltHitFunc",
+      "description": "Uses an ID value to select a specialized function for the missile’s behavior when hitting something on the client side. This is more about handling the local graphics at the moment of missile collision. Description Do nothing Parameters Code 0 (or empty) 1 cHitPar1 cHitPar2 CltHitSubMissile1 cHitPar1 cHitPar2 cHitPar3 CltHitSubMissile1 Param1 Param2 CltHitSubMissile1 CltHitSubMissile2 CltHitSubMissile3 cHitPar1 CltHitSubMissile1 cHitPar1 cHitPar2 cHitPar3 CltHitSubMissile1 ProgOverlay ProgOverlay cHitPar1 cHitPar2 CltHitSubMissile1 CltHitSubMissile2 CltHitSubMissile3 SHitCalc1 Param2 CltHitSubMissile1 CltHitSubMissile2 cHitPar1 ProgOverlay cHitPar1 cHitPar2 cHitPar3 CltHitSubMissile1 CltHitSubMissile2 CltHitSubMissile3 CltHitSubMissile4 CltHitSubMissile1 CltHitSubMissile2 CltHitSubMissile1 cHitPar1 cHitPar2 CltHitSubMissile1 cHitPar1 cHitPar2 CltHitSubMissile1 HitSubMissile1 cHitPar1 CltHitSubMissile1"
+    },
+    {
+      "name": "HitExplodingArrow",
+      "description": "Create a disc of sub missiles with a defined radius and missile count"
+    },
+    {
+      "name": "HitPlagueJavelin",
+      "description": "Create an inner and outer disc of sub missiles with a specified density for each ring. Each sub missile will use its “Param1” and “Param2” fields to define their velocities"
+    },
+    {
+      "name": "HitOilPotion",
+      "description": "Create “CltHitSubMissile1” and then randomly create either “CltHitSubMissile2” or “CltHitSubMissile3”"
+    },
+    {
+      "name": "HitDoNova",
+      "description": "Create a ring of sub missiles with a defined count Do nothing Do nothing Do nothing Do nothing"
+    },
+    {
+      "name": "HitHolyBolt",
+      "description": "Determine whether to impact allies, how that damage is modified by the “dParam1” field based on the unit type hit, and if the missile should be killed on hitting an allowed unit. If impacting a unit then create a sub missile. When hitting an ally, create an overlay."
+    },
+    {
+      "name": "HitLightningOverlay",
+      "description": "Add an overlay on the target unit Do nothing"
+    },
+    {
+      "name": "HitImmolationArrow",
+      "description": "Create a ring of sub missiles with a defined radius and density count. Use “SHitCalc1” to control the range (duration) of the sub missile"
+    },
+    {
+      "name": "HitGuidedArrow",
+      "description": "Control the missile flags to either mark the target, go to the target, or run the missile retarget function"
+    },
+    {
+      "name": "HitFreezingArrow",
+      "description": "Create the “CltHitSubMissile1” sub missile normally, and create “CltHitSubMissile2” sub missile in a random rotation Do nothing"
+    },
+    {
+      "name": "HitChainLightning",
+      "description": "Create duplicate of this missile if there is a valid unit in range and there are still enough chain hits. Add an overlay on the target unit. Do nothing"
+    },
+    {
+      "name": "HitMeteorCenter",
+      "description": "Create a ring of “CltHitSubMissile1” sub missiles where “cHitPar1” controls the density. Create a “CltHitSubMissile2” sub missile where the range is controlled by the linked skill’s “Param3” and “Param4” values from the skills.txt file, and also set the missile’s light radius value to 12. Create a ring of “CltHitSubMissile3” sub missiles where “cHitPar2” controls the density. Create a ring of “CltHitSubMissile4” sub missiles where “cHitPar3” controls the density."
+    },
+    {
+      "name": "HitMonBliz",
+      "description": "Randomly choose between creating one of the sub missiles Do nothing Do nothing Do nothing Do nothing"
+    },
+    {
+      "name": "HitBoneSpear",
+      "description": "Create a sub missile at the target location"
+    },
+    {
+      "name": "HitLightningFury",
+      "description": "Create a sub missile per enemy found in an area, where the radius and the maximum number of possible missiles to spawn are controlled by the parameters"
+    },
+    {
+      "name": "HitFistOfHeavensDelay",
+      "description": "If there is no “HitSubMissile1” sub missile, then do nothing. Otherwise, create a sub missile per enemy found in an area, where the radius and the maximum number of possible missiles to spawn are controlled by the parameters nullptr"
+    },
+    {
+      "name": "HitMonsterRancidGasPotion",
+      "description": "Create a disc of sub missiles with a specified density. Each sub missile will use its “Param1” field to define its velocity. 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 Param1 cHitPar1 CltHitSubMissile1 cHitPar1 CltHitSubMissile1 cHitPar1 cHitPar2 CltHitSubMissile1 CltHitSubMissile2 ProgOverlay cHitPar1 CltHitSubMissile1 Param1 CltHitSubMissile1 cHitPar1 cHitPar2 HitSubMissile1 cHitPar1 cHitPar2 CltHitSubMissile1 CltHitSubMissile2 cHitPar1 cHitPar2 CltHitSubMissile1 CltHitSubMissile2 cHitPar1 cHitPar2 CltHitSubMissile1 cHitPar1 cHitPar2 CltHitSubMissile1 CltHitSubMissile2 CltHitSubMissile3 cHitPar1 cHitPar2 cHitPar3 CltHitSubMissile1 CltHitSubMissile1 CltHitSubMissile1"
+    },
+    {
+      "name": "HitGrimWard",
+      "description": "Create a sub missile with a specified duration and force its direction to be the same as the missile that created it"
+    },
+    {
+      "name": "HitFrozenOrb",
+      "description": "Create a disc of sub missiles with a specified density."
+    },
+    {
+      "name": "HitIceBreak",
+      "table": [
+        {
+          "·": "·",
+          "If “Missile” equals “icebreaksmall” then create “icebreaksmallmelt”": "If “Missile” equals “icebreakmedium” then create “icebreaklargemelt”"
+        },
+        {
+          "·": "·",
+          "If “Missile” equals “icebreaksmall” then create “icebreaksmallmelt”": "If “Missile” equals “icebreaklarge” then create “icebreaklargemelt”"
+        },
+        {
+          "·": "·",
+          "If “Missile” equals “icebreaksmall” then create “icebreaksmallmelt”": "If “Missile” equals “catapult cold explosion” then create “icebreaklargemelt”"
+        }
+      ],
+      "description": "Create a missile with a forced animation rate value of 1, depending on the missile class used."
+    },
+    {
+      "name": "HitFirehead",
+      "description": "Create the “CltHitSubMissile1” sub missile at the target location and create a ring of “CltHitSubMissile2” sub missiles where the parameters control the ring radius and density. Also add an overlay on the source unit."
+    },
+    {
+      "name": "HitFlyingRocks",
+      "description": "Create a random number of sub missiles in a defined area radius controlled by “cHitPar1”"
+    },
+    {
+      "name": "HitSmithDoNotDraw",
+      "description": "Make the source unit invisibile Do nothing"
+    },
+    {
+      "name": "HitHellMeteor",
+      "description": "Do nothing is colliding with a wall. Otherwise, create a disc of randomly selected missiles. The random missiles chosen are either “firewall”, “firesmall”, or “firemedium”. The missile’s “Param1” field controls the disc radius. The duration of each missile created is calculated with the following: Range = 25 + RANDOM(0, 25) - 12"
+    },
+    {
+      "name": "HitRadHandOfGod",
+      "description": "Create a random number of “radamentholybolt” missiles in random positions in a radius"
+    },
+    {
+      "name": "HitTaintedSunFlash",
+      "description": "Create a “taintedsunball” missile"
+    },
+    {
+      "name": "HitQueenDeathGlob",
+      "description": "Randomly create 1 of the next 2 missile’s defined in the missile.txt file after the missile that uses this function. For example, if “Missile” equals “queendeathglob” (ID = 354) and it uses this function, then randomly choose to create “queendeathsplat1” (ID = 355) or “queendeathsplat2” (ID = 356)."
+    },
+    {
+      "name": "HitHealingBolt",
+      "description": "Determine that the target is an allied unit"
+    },
+    {
+      "name": "HitDurielDeathRock",
+      "description": "Create 3 “durieldeathdebris” missiles randomly in a radius value of 6. Create a “durieldeathsmoke” missile at the previous missile’s location."
+    },
+    {
+      "name": "HitSoulStoneFragment1",
+      "description": "Create a “hffragment2” missile on the target unit"
+    },
+    {
+      "name": "HitSoulStoneFragment2",
+      "description": "Create a “hffragment3” missile on the target unit, with 0 velocity, and a random delay between 10 to 45 frames."
+    },
+    {
+      "name": "HitCreateNextMissile",
+      "description": "Create a sub missile and set its direction to match the old missile’s path Do nothing"
+    },
+    {
+      "name": "HitCatapultChargedBall",
+      "description": "Create a disc of sub missiles where the number of missiles created is controlled by the following formula: [“cHitPar1”] + [“cHitPar2”] * ([Missile current level] - 1)"
+    },
+    {
+      "name": "HitCatapultSpikeBag",
+      "description": "Create “CltHitSubMissile1” sub missiles using the lob function where “cHitPar1” and “cHitPar2” are used to calculate the number of missiles in the following formula: MissileCount = [“cHitPar1”] + [“cHitPar2”] 8 ([Missile current level] - 1). The radius is this missile lob function is determined by doing MissileCount / 4. Also create “CltHitSubMissile2” at the location of the old missile."
+    },
+    {
+      "name": "HitCatapultCold",
+      "description": "Create a “freezingarrowexp1” (ID = 88) missile in the center of the previous missile location. Also create 8 different “freezingarrowexp2” (ID = 89) missiles ejected in 8 different directions. Also create 8 different “catapult cold explosion” (ID = 417) missiles that have a randomized range and velocity and use the lob function to launch these missiles which an initial Z offset equal to 30. Do nothing"
+    },
+    {
+      "name": "HitCatapultMeteor",
+      "description": "Run the spray rock function to spawn different missiles. First create multiple “moltenboulder-flyingrocks” (ID = 456) missiles where the “cHitPar1” field controls the number of missiles to spawn and the targeted radius distance to spawn these missiles is equal to this value multiplied by 2. The “cHitPar2” field controls these missiles’ velocity. The “CltHitSubMissile1” sub missile is never spawned, but these “moltenboulder-flyingrocks” will not spawn unless this field has a value. Next create a ring of 18 “CltHitSubMissile2” sub missiles."
+    },
+    {
+      "name": "HitLightJav",
+      "description": "Create a disc of the sub missiles where “cHitPar1” controls the number of sub missiles to spawn and “cHitPar2” acts as a Boolean Field where if enabled, it will cause these spawned sub missiles to have a randomized path."
+    },
+    {
+      "name": "HitMoltenBoulder",
+      "description": "If hitting the target or a monster with the “large” flag enabled, then create “CltHitSubMissile1” sub missile. Also run the spray rock function to spawn different missiles. First create multiple “moltenboulder-flyingrocks” (ID = 456) missiles where the “cHitPar1” field controls the number of missiles to spawn and the targeted radius distance to spawn these missiles is equal to this value multiplied by 2. The “cHitPar2” field controls these missiles’ velocity. The “CltHitSubMissile2” sub missile is never spawned, but these “moltenboulder- flyingrocks” will not spawn unless this field has a value. Next create a ring of 18 “CltHitSubMissile3” sub missiles."
+    },
+    {
+      "name": "CreateRollingBoulder",
+      "description": "Create the sub missile that bounces, where “cHitPar1” controls the number of bounces, “cHitPar2” controls the bounce dampening percentage, and “cHitPar3” controls the number of steps, or the lifetime remaining in ticks (Minimum value equal to 1)."
+    },
+    {
+      "name": "HitVineTrail",
+      "description": "Create the sub missile and force it to get the same direction as the previous missile"
+    },
+    {
+      "name": "HitDebris",
+      "description": "Create all 3 sub missiles at the source unit location 56 57 58 59 60 61 62 63 64 CltHitSubMissile2 CltHitSubMissile3 CltHitSubMissile1 cHitPar1 cHitPar2 CltHitSubMissile1 cHitPar1 CltHitSubMissile1 CltHitSubMissile2 cHitPar1 CltHitSubMissile1 cHitPar1 CltHitSubMissile1 Param1 Param2 cHitPar1 CltHitSubMissile1"
+    },
+    {
+      "name": "HitRecycleVine",
+      "description": "Create the sub missile at the source unit location and force it to get the same direction as the previous missile"
+    },
+    {
+      "name": "HitBaalSpawn",
+      "description": "Create a disc ring of sub missiles where the parameters control the radius and density of the ring, respectively Do nothing Do nothing"
+    },
+    {
+      "name": "HitNihlathak1",
+      "description": "Create the “CltHitSubMissile1” sub missile at the location of the previous missile. Create the “CltHitSubMissile2” sub missile at the same position, but “cHitPar1” controls the z offset of the sub missile."
+    },
+    {
+      "name": "HitWorldstoneShake",
+      "description": "Stop the camera shake"
+    },
+    {
+      "name": "HitBaalRandomBolts",
+      "description": "Create the sub missile where the range is randomized by the parameter (minimum value equals 1) and the target location is also randomized by this range value"
+    },
+    {
+      "name": "HitBaalTauntPoison",
+      "description": "Create a disc of sub missiles where “cHitPar1” controls the ring density (minimum value equals 1). Each sub missile will use its “Param1” and “Param2” fields to define their velocities"
+    },
+    {
+      "name": "HitBladeFury",
+      "description": "Create a disc of sub missiles with the parameter controlling the ring density (minimum value equals 1)"
+    },
+    {
+      "name": "pSrvDoFunc",
+      "description": "Uses an ID value to select a specialized function for the missile’s behavior while active every frame on the server side Code 0 (or empty) 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 Parameters Description Do nothing SrvCalc1 SubMissile1 SubStart SubStop SubMissile1 Param1 Param1 Param2 Param3 SubMissile1 SubMissile1 SubMissile1 Param1 Param2 Param3 SubMissile1 Param1 Param2 Param1 Param2 SubMissile1 Param1 Param2 Param1 Param2 Param3 Param4 Param5 SubMissile1 Param1 Param2 Param3 SubMissile1 Param1 SubMissile1 Param1 SubMissile1 Param1 SubMissile1 SubMissile1"
+    },
+    {
+      "name": "MissileDoArrow",
+      "description": "Perform the standard missile move function. This is called in most of the other functions"
+    },
+    {
+      "name": "MissileDoPoisonJavelin",
+      "description": "Create a sub missile with a specified number of subloops"
+    },
+    {
+      "name": "StillMissileKludge",
+      "description": "Check the missile velocity to determine whether or not to set the collision mask to Missile Do nothing"
+    },
+    {
+      "name": "Firewall",
+      "description": "Create an animation sequence for the missile, set the collision mask to Missile"
+    },
+    {
+      "name": "MissileMakeFirewall",
+      "description": "Create sub missiles based on the count that was passed to this missile"
+    },
+    {
+      "name": "MissileGuidedArrow",
+      "description": "Use the parameter to control the retarget time on the unit"
+    },
+    {
+      "name": "MissileMonBliz",
+      "description": "Create multiple sub missiles, using the parameters as the spawn radius, spawn frequency, and level divisor"
+    },
+    {
+      "name": "MissileMakeBatLightning",
+      "description": "Create a sub missile based on the missile’s path moved"
+    },
+    {
+      "name": "MissileBlizzard",
+      "description": "Create multiple sub missiles, use the linked skill’s “calc1” field for the radius, and the “calc2” field for the sub missile spawn frequency"
+    },
+    {
+      "name": "FingerMageSpider",
+      "description": "Shoot a missile that can be retargeted. Uses the parameters to control the periodic delay between retargeting, the maximum distance to retarget, and the distance delta for where to retarget."
+    },
+    {
+      "name": "MissileDiabWallMaker",
+      "description": "Shoot a missile and have that missile create sub missiles as it is moving"
+    },
+    {
+      "name": "MissileBoneWallMaker",
+      "description": "Shoot a missile and have that missile create pet summons as it is moving, using the linked skill’s “pettype” field from skills.txt"
+    },
+    {
+      "name": "MissileDoGrimWard",
+      "description": "Shoot a missile where every periodic delay, do a function from the “srvdofunc” field in the skills.txt file. “Param1” controls the periodic frame delay, and “Param2” controls which function code number to use."
+    },
+    {
+      "name": "MissileFrozenOrb",
+      "description": "Shoot a missile and have that missile shoot sub missiles in different directions as it is moving. “Param1” controls the sub missile spawn rate and “Param2” controls the change in direction per sub missile spawn."
+    },
+    {
+      "name": "MissileFrozenOrbNova",
+      "description": "Shoot a missile in a set direction. “Param1” controls the delay until the missile moves and “Param2” controls the periodic frame delay for updating the missile’s target path"
+    },
+    {
+      "name": "MissileDoCairnStones",
+      "description": "Shoot sub missiles in a radius and then after a delay, create a portal to another level. Uses parameters to control the delays between creating sub missiles, the radius to create the sub missiles, which level ID to link the portal to, and the delay before creating the portal."
+    },
+    {
+      "name": "DoTowerChestSpawner",
+      "description": "Open the chest object to spawn items, and create random gold piles in an area"
+    },
+    {
+      "name": "DoRadamentDeath",
+      "description": "Use the Paladin Redemption skill function on nearby corpses in an area"
+    },
+    {
+      "name": "MissileAttachUntilDead",
+      "description": "Shoot the missile and keep it attached to the source until. If the source unit dies, then kill the missile."
+    },
+    {
+      "name": "MissileDoDistraction",
+      "description": "Create a sub missile and run the MissileAttachUntilDead function"
+    },
+    {
+      "name": "ProcessTrailJav",
+      "description": "Shoot the missile and have it create 2 sub missiles every frame while it is moving"
+    },
+    {
+      "name": "ProcessSucFireBall",
+      "description": "Create a sub missile every frame while the missile is moving, where the parameter controls the sub missile’s subloops Duplicate of function 23"
+    },
+    {
+      "name": "MissileEruption",
+      "description": "Shoot the missile and have it create sub missiles in a radius at a periodic rate, which is controlled by the link skill’s “calc1” and “calc2” fields. 26 27 28 29 30 31 32 33 34 35 36 37 Param1 SubMissile1 Param1 Param2 Param1 Param2 Param3 Param4 Param5 SubMissile1 Param1 Param1 Param2 SubMissile1 SubMissile1 SubMissile1 Param1 Param2 SubMissile1 Param1 Param2 Param3 Param4 SubMissile1 SubMissile2 Param1 SubMissile1 SubMissile2 SubMissile3"
+    },
+    {
+      "name": "ProcessVines",
+      "description": "Shoot the missile and have it create sub missiles at a periodic rate, which is controlled by the parameter"
+    },
+    {
+      "name": "MissileTornado",
+      "description": "Shoot the missile and have it deal damage at a periodic rate in a radius, which is controlled by the parameters or by the linked skill’s “calc4” and “aurarangecalc” fields"
+    },
+    {
+      "name": "ProcessVolcano",
+      "description": "Shoot the missile and have it periodically create sub missiles in a lobbing pattern. Use parameters to control the periodic frame delay for spawning sub missiles, the radius to spawn the sub missiles, the start and stop frame count for when to spawn and stop spawning sub missiles, and the lob start value for the sub missiles"
+    },
+    {
+      "name": "ProcessRecycleDelay",
+      "description": "Shoot the missile and after a certain delay, process any life steal or mana steal, based on the linked skill’s “calc1” and “calc2” fields"
+    },
+    {
+      "name": "MissileRabiesPlague",
+      "description": "Shoot the missile, have it attached to the source unit, and have it periodically spawn sub missiles in a radius"
+    },
+    {
+      "name": "ProcessMakePerpMissiles",
+      "description": "Shoot the missile and have it create 2 sub missiles that are fired in perpendicular directions"
+    },
+    {
+      "name": "MissileTigerFuryPath",
+      "description": "Shoot the missile using the MissileGuidedArrow function and have it create a sub missile"
+    },
+    {
+      "name": "ProcessRecycleManaDelay",
+      "description": "Shoot the missile and after a certain delay, process any mana steal, based on the linked skill’s “calc1” field, and create a sub missile after another certain delay"
+    },
+    {
+      "name": "ProcessBaalTaunt",
+      "description": "Randomly choose one of the 4 parameters to select a delay and randomly spawn one of the sub missiles"
+    },
+    {
+      "name": "MissileDoChaosIce",
+      "description": "Shoot the missile and have it repath in a perpendicular direction after a periodic delay"
+    },
+    {
+      "name": "MissileDoBaalDeathControl",
+      "description": "Shoot the missile and spawn the Tyrael unit"
+    },
+    {
+      "name": "ProcessMissileDelayed",
+      "description": "Shoot the missile and have it create 1 of each sub missile"
+    },
+    {
+      "name": "pSrvHitFunc",
+      "description": "Uses an ID value to select a specialized function for the missile’s behavior when hitting something on the server side Code 0 (or empty) 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 Parameters Description Do nothing sHitPar1 sHitPar1 sHitPar2 HitSubMissile1 sHitPar1 sHitPar1 HitSubMissile1 HitSubMissile2 HitSubMissile3 HitSubMissile4 sHitPar1 HitSubMissile1 sHitPar1 sHitPar2 sHitPar1 sHitPar2 sHitPar3 dParam1 sHitPar1 sHitCalc1 HitSubMissile1 sHitPar1 HitSubMissile1 HitSubMissile2 HitSubMissile3 HitSubMissile4 sHitPar1 sHitPar1 sHitPar2 sHitPar1 sHitPar2 HitSubMissile1 HitSubMissile1"
+    },
+    {
+      "name": "RadialFireDamage",
+      "description": "Deal elemental damage in an area where the parameter controls the damage radius"
+    },
+    {
+      "name": "HitPlagueJavelin",
+      "description": "Kill the missile while dealing its damage, and also deal radial poison damage in an area by creating sub missiles in a defined radius for a specified number of loops"
+    },
+    {
+      "name": "NoTargetRadialDamage",
+      "description": "Deal the missile damage in a defined area radius"
+    },
+    {
+      "name": "HitCreateMissile",
+      "description": "Determine whether to kill this missile on hit or not, and then create 1 of each hit sub missile"
+    },
+    {
+      "name": "HitDoNova",
+      "description": "Create a certain number of sub missiles and shoot them outwards in an equalized distance from the location of this missile"
+    },
+    {
+      "name": "HitSummon",
+      "description": "Create a monster in a specific starting mode at the missile’s location. The “sHitPar1” field controls the monster ID to use, and the “sHitPar2” field controls which mode to set on the monster."
+    },
+    {
+      "name": "HitHolyBolt",
+      "description": "Determine whether to impact allies, how that damage is modified by the “dParam1” field based on the unit type hit, and if the missile should be killed on hitting an allowed unit"
+    },
+    {
+      "name": "HitBlaze",
+      "description": "The missile will deal damage if the source unit has the “blaze” state"
+    },
+    {
+      "name": "HitImmolationArrow",
+      "description": "Deal radius damage and create sub missiles with specified range values in a defined radius. If there is a freeze length or cold length from the elemental damage, then set it to 0."
+    },
+    {
+      "name": "HitGuidedArrow",
+      "description": "Control if the missile should be redirected on a target when possible, or if it should be destroyed"
+    },
+    {
+      "name": "HitCreateMissileNoDmg",
+      "description": "Kill this missile on hit and create 1 of each hit sub missile"
+    },
+    {
+      "name": "HitChainLightning",
+      "description": "Create duplicate of this missile if there is a valid unit in range and there are still enough chain hits"
+    },
+    {
+      "name": "HitGlacialSpike",
+      "description": "Deal elemental damage in a specified radius with a specified elemental duration, if applicable"
+    },
+    {
+      "name": "HitMeteorCenter",
+      "description": "Deal damage in a specified radius and create a ring of hit sub missiles (controlled by a count) and define the duration of these sub missiles based on the linked skill’s “Param3” and “Param4” values"
+    },
+    {
+      "name": "HitSpiderLay",
+      "description": "Kill the missile and create a sub missile at the location"
+    },
+    {
+      "name": "HitSpiderGoo",
+      "description": "Apply the state from the linked skill’s “auratargetstate” field with a duration defined by the linked skill’s “calc4” field 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59"
+    },
+    {
+      "name": "HitHowl",
+      "description": "Use the linked skill’s “auratargetstate”, “calc2”, “calc3”, and “Param2” fields to apply a state (with a defined level and duration) to units in a defined radius. Also call the AIScare function."
+    },
+    {
+      "name": "HitShout",
+      "description": "Kill the missile and call the AddShout function on hit allied units, which applies the “aurastate” state defined in the linked skill"
+    },
+    {
+      "name": "HitFingerMageSpiderHit",
+      "description": "Kill the missile and apply the “auratargetstate” defined in the linked skill"
+    },
+    {
+      "name": "HitLightningFury",
+      "description": "Kill the missile and create a specified number of sub missiles in a radius, per unit targeted in that radius"
+    },
+    {
+      "name": "HitBattleCry",
+      "description": "Kill the missile and apply the “auratargetstate” state on the target unit, defined in the linked skill"
+    },
+    {
+      "name": "HitFistOfHeavensDelay",
+      "description": "Kill the missile and create a specified number of sub missiles in a defined radius, per filtered unit targeted in that radius"
+    },
+    {
+      "name": "HitMissileSkill",
+      "description": "Kill the missile and do a function from the “srvdofunc” field in the skills.txt file, where the “sHitPar1” field controls the function ID to use"
+    },
+    {
+      "name": "RadialMissileDamage",
+      "description": "Kill the missile and damage in an area controlled by a defined radius"
+    },
+    {
+      "name": "HitMonsterRancidGasPotion",
+      "description": "Kill the missile and deal radial poison damage in an area by creating sub missiles in a defined radius for a specified number of loops"
+    },
+    {
+      "name": "HitGrimWardStart",
+      "description": "Kill the missile and create a sub missile with a specified duration"
+    },
+    {
+      "name": "HitKillMissile",
+      "description": "Kill the missile"
+    },
+    {
+      "name": "HitGrimWardScare",
+      "description": "Kill the missile and apply the AiScare function to all monsters in a radius controlled by the “calc2” field from the linked skill with a distance and duration value controlled by the “Param5” and “Param6” values from the linked skill."
+    },
+    {
+      "name": "HitFrozenOrb",
+      "description": "Kill the missile and create specified number sub missiles in a circular outwards direction from that location"
+    },
+    {
+      "name": "RadialStunDamage",
+      "description": "Kill the missile and do stun damage in a defined radius with a defined stun length"
+    },
+    {
+      "name": "HitFirehead",
+      "description": "Kill the missile and deal elemental damage directly to the target unit’s life, ignoring resistances"
+    },
+    {
+      "name": "MissileHitCairnStones",
+      "description": "Create a portal linked to a specified level area ID"
+    },
+    {
+      "name": "HitTowerChest",
+      "description": "Set the dungeon room to untile Do nothing"
+    },
+    {
+      "name": "OrbMistHit",
+      "description": "Kill the missile. Set the missile’s tracked object’s dungeon room to untile and set that object’s mode from Neutral to Operating."
+    },
+    {
+      "name": "HitCreateNextMissile",
+      "description": "Kill the missile and create a sub missile with parameters copied over"
+    },
+    {
+      "name": "HitBladeCreeper",
+      "description": "If this hits a target unit then deal damage"
+    },
+    {
+      "name": "HitCatapultChargedBall",
+      "description": "Kill the missile and create a specified number of sub missiles in a ring"
+    },
+    {
+      "name": "HitImpSpawnMonsters",
+      "description": "Kill the missile and spawn an appropriate monster, based on the allowed monsters in the area level"
+    },
+    {
+      "name": "HitCatapultSpikeBag",
+      "description": "Kill the missile and create a specified number of sub missiles that are lobbed outwards in a radius Do nothing Do nothing"
+    },
+    {
+      "name": "HitHealing",
+      "description": "Use the linked skill’s physical damage as the amount of healing done to the target unit. Determine whether to kill the missile or not, based on the “CollideKill” field"
+    },
+    {
+      "name": "RadialDamage",
+      "description": "Kill the missile and deal damage in a specified radius"
+    },
+    {
+      "name": "HitLightJav",
+      "description": "Kill the missile and create a number of sub missiles in a disc. Determine whether these sub missiles created should use a random path or not. Do nothing"
+    },
+    {
+      "name": "BoulderExplode",
+      "description": "Kill the missile and create an explosion with a defined radius and a ring of sub missiles with a defined count of missiles"
+    },
+    {
+      "name": "CreateRollingBoulder",
+      "description": "Kill the missile and create a sub missile Do nothing"
+    },
+    {
+      "name": "HitPlagueVines",
+      "description": "If the range of the missile minus the “sHitPar1” parameter is greater than the missile’s current frame, then deal damage"
+    },
+    {
+      "name": "HitDebris",
+      "description": "Kill the missile and create the 3 sub missiles, if possible"
+    },
+    {
+      "name": "HitBladeFury",
+      "description": "Kill the missile and spawn sub missiles in multiple directions depending on the “sHitPar1” value"
+    },
+    {
+      "name": "HitRabiesContagion",
+      "description": "Get the elemental duration from the linked skill and compare that with the duration of the missile to determine to kill the missile or create a new one, depending on the target having the linked skill’s “auratargetstate” state"
+    },
+    {
+      "name": "HitBaalSpawnMonsters",
+      "description": "Kill the missile and spawn a monster in Neutral mode"
+    },
+    {
+      "name": "HitBaalInferno",
+      "description": "Drain a percentage of the target’s mana (from 0 to 100) and deal damage"
+    },
+    {
+      "name": "HitArmageddon",
+      "description": "Kill the missile, deal damage in an area with a defined radius, and create a sub missile"
+    },
+    {
+      "name": "MissileHitBaalDeathControl",
+      "description": "Create the Tyrael unit"
+    },
+    {
+      "name": "HitBaalRandomBolts",
+      "description": "Kill the missile and create a sub missile targeting a random randomized location range controlled by “sHitPar1”"
+    },
+    {
+      "name": "HitBaalTauntPoison",
+      "description": "Kill the missile and create an inner and outer disc of sub missiles with a specified count (using “sHitPar1”) of missiles and with incremental specified velocities (the sub sHitPar1 sHitPar2 HitSubMissile1 sHitPar1 sHitPar2 HitSubMissile1 sHitPar1 sHitPar1 sHitPar1 HitSubMissile1 sHitPar1 HitSubMissile1 sHitPar1 HitSubMissile1 sHitPar1 sHitPar2 Param4 HitSubMissile1 sHitPar1 sHitPar2 HitSubMissile1 sHitPar1 sHitPar2 HitSubMissile1 sHitPar1 sHitPar1 sHitPar2 HitSubMissile1 sHitPar1 sHitPar2 HitSubMissile1 HitSubMissile1 sHitPar1 HitSubMissile1 HitSubMissile2 HitSubMissile3 sHitPar1 HitSubMissile1 sHitPar1 sHitPar1 HitSubMissile1 sHitPar1 HitSubMissile1 sHitPar1 HitSubMissile1 Param1 Param2 missile will use its “Param1” and “Param2” fields)"
+    },
+    {
+      "name": "pSrvDmgFunc",
+      "description": "Uses an ID value to select a specialized function that gets called before damaging a unit on the server side Code 0 (or empty) 1 2 3 4 5 6 7 8 9 10 11 12 13 14 Parameters Description Default DmgCalc1 dParam1 dParam1 dParam1 dParam2 dParam1"
+    },
+    {
+      "name": "DamageFireArrow",
+      "description": "Converts a percentage of physical damage to elemental damage per level"
+    },
+    {
+      "name": "DamageIceArrow",
+      "description": "Converts the Cold Length value to Freeze Length. Uses the parameter value as a percentage increase the Freeze Length"
+    },
+    {
+      "name": "DamageFireWall",
+      "description": "Uses the parameter as a random chance to use an attack result Soft Hit flag"
+    },
+    {
+      "name": "DamageIceBlast",
+      "description": "Converts the Cold Length value to the Freeze Length value"
+    },
+    {
+      "name": "DamageBlessedHammerNew",
+      "description": "Uses “dParam1” as a damage percent multiplier against Undead type monsters. Uses “dParam2” as a damage percent multiplier against Demon type monsters."
+    },
+    {
+      "name": "DamageNoItem",
+      "description": "If the source unit is not a Mercenary, then set the target unit to be unable to drop items when it dies."
+    },
+    {
+      "name": "DamageWarCry",
+      "description": "Uses the parameter as the Stun Length. If the parameter equals 0, then use the source unit’s related skill’s “Calc4” field as the Stun Length value. If the skill is null, then use the missile’s default skill’s Param1 & Param2 values."
+    },
+    {
+      "name": "ProgOverlay DamageEruption",
+      "description": "Create an overlay on the target dParam1"
+    },
+    {
+      "name": "DamageTwister",
+      "description": "Uses the parameter as the Stun Length, and sets the damage Hit Class layer to Stun Layer. If the parameter equals 0, then use the source unit’s related skill’s “Calc2” field as the Stun Length."
+    },
+    {
+      "name": "DamageFreeze",
+      "description": "Checks that the missile has stats and then sets the Freeze Length value to equal the Cold Length value."
+    },
+    {
+      "name": "DoRabiesDamage",
+      "description": "Checks the remaining poison duration on the target unit and if it is less than 10, it will use the linked skill’s Elemental damage and duration length calculation (See skills.txt) to apply a new poison. sDamageLightningJavelin"
+    },
+    {
+      "name": "DamageBlessedHammerOld",
+      "description": "Uses the source units physical damage percent stat as a percentage modifier for the missile’s damage, and then calls the “DamageBlessedHammerNew” function (See function code 5)"
+    },
+    {
+      "name": "DamageMoltenBoulder",
+      "description": "Uses “dParam2” as the percent chance to knockback the target unit. Uses “dParam1” to control how this percent chance is modified. Also relies on the “small” and “large” fields from the monstats2.txt file. dParam1 dParam2 dParam1 dParam2 ·         If the target unit is a player and “dParam1” is greater than or equal to 1, then set the knockback chance to “dParam2” ·         If “dParam1” is less than 1 and the monster is a small size, then set the knockback chance to “dParam2” ·         If “dParam1” equals 1 and the monster is a small size, then set the knockback chance to “dParam2” * 2 ·         If “dParam1” equals 1 and the monster is a large size, then set the knockback chance to “dParam2” ·         If “dParam1” is greater than 1 and the monster is a small size, then set the knockback chance to “dParam2” * 3 ·         If “dParam1” is greater than 1 and the monster is a large size, then set the knockback chance to “dParam2” * 2 ·         If “dParam1” is greater than 1 and the monster is not a small or large size, then set the knockback chance to “dParam2” 15 sHitPar2 dParam1"
+    },
+    {
+      "name": "DamageHolyBolt",
+      "table": [
+        {
+          "o": "o",
+          "If “sHitPar2” equals 0, then modify the damage": "If “sHitPar2” equals 0, then do not modify the damage"
+        }
+      ],
+      "description": "Uses “dParam1” as a percent damage multiplier for the total elemental damage, depending on the use case of “sHitPar2” ·         If the target unit is a monster an Undead type o   If “sHitPar2” equals 2, then only modify the damage if the monster is a Demon type o   If “sHitPar2” equals 3, then only modify the damage if the monster is an Undead or Demon type ·         If the target unit is a player"
+    },
+    {
+      "name": "SrvCalc1",
+      "description": "Numeric calculation field. Used as a parameter for the “pSrvDoFunc” field."
+    },
+    {
+      "name": "Param1 (to Param5)",
+      "description": "Integer field. Used as a parameter for the “pSrvDoFunc” field."
+    },
+    {
+      "name": "CltCalc1",
+      "description": "Numeric calculation field. Used as a parameter for the “pCltDoFunc” field."
+    },
+    {
+      "name": "CltParam1 (to CltParam5)",
+      "description": "Integer field. Used as a parameter for the “pCltDoFunc” field."
+    },
+    {
+      "name": "SHitCalc1",
+      "description": "Numeric calculation field. Used as a parameter for the “pSrvHitFunc” field."
+    },
+    {
+      "name": "sHitPar1 (to sHitPar3)",
+      "description": "Integer field. Used as a parameter for the “pSrvHitFunc” field."
+    },
+    {
+      "name": "CHitCalc1",
+      "description": "Numeric calculation field. Used as a parameter for the “pCltHitFunc” field."
+    },
+    {
+      "name": "cHitPar1 (to cHitPar3)",
+      "description": "Integer field. Used as a parameter for the “pCltHitFunc” field."
+    },
+    {
+      "name": "DmgCalc1",
+      "description": "Numeric calculation field. Used as a parameter for the “pSrvDmgFunc” field."
+    },
+    {
+      "name": "dParam1 & dParam2",
+      "description": "Integer field. Used as a parameter for the “pSrvDmgFunc” field."
+    },
+    {
+      "name": "Vel",
+      "description": "The baseline velocity of the missile, which is the speed at which the missile moves in the game world. This is measured by distance in pixels traveled per frame."
+    },
+    {
+      "name": "MaxVel",
+      "description": "The maximum velocity of the missile. If the missile’s current velocity increases (based on other fields), then this field controls how high the velocity is allowed to go."
+    },
+    {
+      "name": "VelLev",
+      "description": "Adds extra velocity based on the caster unit’s level. Each level gained beyond level 1 will add this value to the baseline “Vel” field."
+    },
+    {
+      "name": "Accel",
+      "description": "Controls the acceleration of the missile’s movement. A positive value will increase the missile’s velocity per frame. A negative value will decrease the missile’s velocity per frame. The bigger positive or negative values will cause the velocity to change faster per frame."
+    },
+    {
+      "name": "Range",
+      "description": "Controls the baseline duration that the missile will exist for after it is created. This is measured in frames where 25 Frames = 1 second."
+    },
+    {
+      "name": "LevRange",
+      "description": "Adds extra duration based on the caster unit’s level. Each level gained beyond level 1 will add this value to the baseline “Range” field."
+    },
+    {
+      "name": "Light",
+      "description": "Controls the missile’s Light Radius size (measured in grid sub-tiles)"
+    },
+    {
+      "name": "Flicker",
+      "description": "If greater than 0, then every 4th frame while the missile is active, the Light Radius will randomly change in size between base size to its base size plus"
+    },
+    {
+      "name": "this value (measured in grid sub",
+      "description": "tiles)"
+    },
+    {
+      "name": "Red",
+      "description": "Controls the red color value of the missile’s Light Radius (Uses a value from 0 to 255)"
+    },
+    {
+      "name": "Green",
+      "description": "Controls the green color value of the monster’s Light Radius (Uses a value from 0 to 255)"
+    },
+    {
+      "name": "Blue",
+      "description": "Controls the blue color value of the monster’s Light Radius (Uses a value from 0 to 255)"
+    },
+    {
+      "name": "InitSteps",
+      "description": "The number of frames the missile needs to be alive until it becomes visible on the game client. If the missile’s current duration in frame count is less than this value, then the missile will appear invisible."
+    },
+    {
+      "name": "Activate",
+      "description": "The number of frames the missile needs to be alive until it becomes active. If the missile’s current duration in frame count is less than this value, then the missile will not collide."
+    },
+    {
+      "name": "LoopAnim",
+      "description": "Boolean Field. If equals 1, then the missile’s animation will repeat once the previous animation finishes. If equals 0, then the missile’s animation will only play once, which can cause the missile to appear invisible at the end of the animation, but it will still be alive."
+    },
+    {
+      "name": "CelFile",
+      "description": "Defines which DCC missile file to use for the visual graphics of the missile"
+    },
+    {
+      "name": "animrate",
+      "description": "Controls the visual speed of the missile’s animation graphics. The overall missile animation rate is calculated as the following: 256 * [“animrate”] / 1024"
+    },
+    {
+      "name": "AnimLen",
+      "description": "Defines the length of the missile’s animation in frames where 25 Frames = 1 second. This field can sometimes be used to calculate the missile animation rate, depending on the missile function used."
+    },
+    {
+      "name": "AnimSpeed",
+      "description": "Controls the visual speed of the missile’s animation graphics on the client side (Measured in 16ths, where 16 equals 1 frame per second). This can be overridden by certain missile functions."
+    },
+    {
+      "name": "RandStart",
+      "description": "If this value is greater than 0, then the missile will start at a random frame between 0 and this value when it begins its animation."
+    },
+    {
+      "name": "SubLoop",
+      "description": "Boolean Field. If equals 1, then the missile will use a specific sequence of its animation while it is alive, depending on its creation. If equals 0, then the missile will not use a sequenced animation."
+    },
+    {
+      "name": "SubStart",
+      "description": "The starting frame of the sequence animation. This requires that the “SubLoop” field is enabled."
+    },
+    {
+      "name": "SubStop",
+      "description": "The ending frame of the sequence animation. After reaching this frame, then the sequenced animation will loop back to the “SubStart” frame. This requires that the “SubLoop” field is enabled."
+    },
+    {
+      "name": "CollideType",
+      "description": "Defines the missile’s collision type, which controls what units, objects, or parts of the environment that the missile can impact Code 0 1 2 3 4 5 6 7 8 Description No collision Player unit collision Monster unit collision Player and Monster unit collision No collision Monster unit collision Barrier collision, such as doors Missile collision Player, Monster, Barrier, and Wall collision"
+    },
+    {
+      "name": "CollideKill",
+      "description": "Boolean Field. If equals 1, then the missile will be destroyed when it collides with something. If equals 0, then the missile will not be destroyed when it collides with something."
+    },
+    {
+      "name": "CollideFriend",
+      "description": "Boolean Field. If equals 1, then the missile can collide with friendly units, including the caster. If equals 0, then the missile will ignore friendly units."
+    },
+    {
+      "name": "LastCollide",
+      "description": "Boolean Field. If equals 1, then the missile will track the last unit that it collided with, which is useful for making sure the missile does not hit the same unit twice. If equals 0, then ignore this."
+    },
+    {
+      "name": "Collision",
+      "description": "Boolean Field. If equals 1, then the missile will have a missile type path placement collision mask when it is initialized or moved. If equals 0, then the missile will have no placement collision mask when it is created or moved."
+    },
+    {
+      "name": "ClientCol",
+      "description": "Boolean Field. If equals 1, then the missile will check collision on the client, depending on the missile’s “CollideType” field. If equals 0, then ignore this."
+    },
+    {
+      "name": "ClientSend",
+      "description": "Boolean Field. If equals 1, then the server will create the missile on the client. This can be used when reloading area levels or transitioning units between areas. If equals 0, then ignore this."
+    },
+    {
+      "name": "NextHit",
+      "description": "Boolean Field. If equals 1, then the missile will use the next delay. If equals 0, then ignore this."
+    },
+    {
+      "name": "NextDelay",
+      "description": "Controls the delay in frame length until the missile is allowed to hit the same unit again. This field relies on the “NextHit” field being enabled."
+    },
+    {
+      "name": "xoffset & yoffset & zoffset",
+      "description": "Specifies the X, Y, and Z location coordinates (measured in pixels) to offset to visually draw the missile based on its actual location. This will only offset the visual graphics of the missile, not the missile itself. The Z axis controls the visual height of the missile."
+    },
+    {
+      "name": "Size",
+      "description": "Defines the diameter in sub-tiles (for both the X and Y axis) that the missile will occupy. This affects how the missile will collide with something or how the game will handle placement for the missile."
+    },
+    {
+      "name": "SrcTown",
+      "description": "Boolean Field. If equals 1, then the missile will be destroyed if the caster unit is located in an act town. If equals 0, then ignore this."
+    },
+    {
+      "name": "CltSrcTown",
+      "description": "If this value is greater than 0 and the “LoopAnim” field is disabled, then this field will control which frame to set the missile’s animation when the player is in town. This value gets subtracted from the “AnimLen” value to determine the frame to set the missile’s animation."
+    },
+    {
+      "name": "CanDestroy",
+      "description": "Boolean Field. If equals 1, then the missile can be attacked and destroyed. If equals 0, then the missile cannot be attacked."
+    },
+    {
+      "name": "ToHit",
+      "description": "Boolean Field. If equals 1, then this missile will use the caster’s Attack Rating stat to determine if the missile should hit its target. If equals 0, then the missile will always hit its target."
+    },
+    {
+      "name": "AlwaysExplode",
+      "description": "Boolean Field. If equals 1, then the missile will always process an explosion when it is killed, which can use a server hit function (See “pSrvHitFunc”) and can use the “HitSound” and “ExplosionMissile” fields on the client side. If equals 0, then the missile will only rely on proper collision hits to process an explosion."
+    },
+    {
+      "name": "Explosion",
+      "description": "Boolean Field. If equals 1, then the missile will be classified as an explosion which will make it use different handlers for finding nearby units and dealing damage. If equals 0, then ignore this."
+    },
+    {
+      "name": "Town",
+      "description": "Boolean Field. If equals 1, then the missile is allowed to be alive when in a town area. If equals 0, then the missile will be immediately destroyed when located within a town area."
+    },
+    {
+      "name": "NoUniqueMod",
+      "description": "Boolean Field. If equals 1, then the missile will not receive bonuses from Unique monster modifiers. If equals 0, then the missile will receive bonuses from Unique monster modifiers."
+    },
+    {
+      "name": "NoMultiShot",
+      "description": "Boolean Field. If equals 1, then the missile will not be affected by the Multi-Shot monster modifier. If equals 0, then the missile will be affected by"
+    },
+    {
+      "name": "the Multi",
+      "description": "Shot monster modifier."
+    },
+    {
+      "name": "Holy",
+      "description": "Controls a bit field flag where each value is a code to allow the missile to damage a certain type of monster Code 0 1 2 4 Description Damage all units Only damage Undead Only damage Demons Only damage Beasts"
+    },
+    {
+      "name": "CanSlow",
+      "description": "Boolean Field. If equals 1, then the missile can be affected by the “slowmissiles” state (See states.txt). If equals 0, then the missile will ignore the “slowmissiles” state."
+    },
+    {
+      "name": "ReturnFire",
+      "description": "Boolean Field. If equals 1, then missile can trigger the Sorceress Chilling Armor event function. If equals 0, then this missile will not trigger that function."
+    },
+    {
+      "name": "GetHit",
+      "description": "Boolean Field. If equals 1, then the missile will cause the target unit to enter the Get Hit mode (GH), which acts as the hit recovery mode. If equals 0, then ignore this."
+    },
+    {
+      "name": "SoftHit",
+      "description": "Boolean Field. If equals 1, then the missile will cause a soft hit on the unit, which can trigger a blood splatter effect, hit flash, and/or a hit sound. If equals 0, then ignore this."
+    },
+    {
+      "name": "KnockBack",
+      "description": "Controls the percentage chance (out of 100) that the target unit will be knocked back when hit by the missile"
+    },
+    {
+      "name": "Trans",
+      "description": "Controls the alpha mode for how the missile is displayed, which can affect transparency and blending Code 0 1 2 Description No Transparency Black Alpha Transparency White Alpha Transparency"
+    },
+    {
+      "name": "Pierce",
+      "description": "Boolean Field. If equals 1, then allow the Pierce modifier function to work with this missile. If equals 0, then do not allow Pierce to work with this missile."
+    },
+    {
+      "name": "MissileSkill",
+      "description": "Boolean Field. If equals 1, then the missile will look up the skill that created it and use that skill’s damage instead of the missile damage. If equals 0, then ignore this."
+    },
+    {
+      "name": "Skill",
+      "description": "Links to the “skill” field from the skills.txt file. This will look up the specified skill’s damage and use it for the missile instead of using the missile’s defined damage."
+    },
+    {
+      "name": "ResultFlags",
+      "description": "Controls different flags that can affect how the target reacts after being hit by the missile. Uses an integer value to check against different bit fields by using the “&” operator. For example, if the value equals 5 (binary = 101) then that returns true for both the 4 (binary = 100) and 1 (binary = 1) bit field values. Bit Field Value 1 2 4 8 16 32 128 256 512 4096 8192 16384 32768 Binary Equivalent Value 0000000000000001 0000000000000010 0000000000000100 0000000000001000 0000000000010000 0000000000100000 0000000010000000 0000000100000000 0000001000000000 0001000000000000 0010000000000000 0100000000000000 1000000000000000 Description Hit Death Get Hit Knockback Block No Passive Dodge Avoid Evade Ignore Friendly Double Damage Soft Hit"
+    },
+    {
+      "name": "Two Hand",
+      "description": "to-Hand Block"
+    },
+    {
+      "name": "HitFlags",
+      "description": "Controls different flags that can affect the damage dealt when the target is hit by the missile. Uses an integer value to check against different bit fields by using the “&” operator. For example, if the value equals 6 (binary = 110) then that returns true for both the 4 (binary = 100) and 2 (binary = 10) bit field values. Bit Field Value 1 2 4 8 16 32 128 256 512 1024 Binary Equivalent Value 00000000001 00000000010 00000000100 00000001000 00000010000 00000100000 00010000000 00100000000 01000000000 10000000000 Description Do not add physical damage Do not add any damage No Life Steal No Mana Steal No Stamina Steal Use Source Damage No Triggered Events Bypass Undead Bypass Demons Bypass Beasts"
+    },
+    {
+      "name": "HitShift",
+      "description": "Controls the percentage modifier for the missile’s damage. This value cannot be less than 0 or greater than 8. This is calculated in 256ths, where 8=256/256, 7=128/256, 6=64/256, 5=32/256, 4=16/256, 3=8/256, 2=4/256, 1=2/256, and 0=1/256."
+    },
+    {
+      "name": "ApplyMastery",
+      "description": "Boolean Field. If equals 1, then apply the caster’s elemental mastery bonus modifiers to the missile’s elemental damage. If equals 0, then ignore this."
+    },
+    {
+      "name": "SrcDamage",
+      "description": "Controls how much of the source unit’s damage should be added to the missile’s damage. This is calculated in 128ths and acts as a percentage modifier for the source unit’s damage that added to the missile. If equals -1 or 0, then the source damage is not included."
+    },
+    {
+      "name": "Half2HSrc",
+      "description": "Boolean Field. If equals 1 and the source unit is currently wielding a 2-Handed weapon, then the source damage (see “SrcDamage”) is reduced by 50%. If equals 0, then ignore this."
+    },
+    {
+      "name": "SrcMissDmg",
+      "description": "If the missile was created by another missile, then this controls how much of the source missile’s damage should be added to this missile’s damage. This is calculated in 128ths and acts as a percentage modifier for the source missile’s damage that added to this missile. If equals 0, then the source damage is not included."
+    },
+    {
+      "name": "MinDamage",
+      "description": "Minimum baseline physical damage dealt by the missile"
+    },
+    {
+      "name": "MinLevDam1 (to MinLevDam5)",
+      "description": "Controls the additional minimum physical damage dealt by the missile, calculated using the leveling formula between 5 level thresholds of the missile’s current level. The level thresholds are levels 2-8, 9-16, 17-22, 23-28, 29 and beyond. These 5 level thresholds correlate to each field."
+    },
+    {
+      "name": "MaxDamage",
+      "description": "Maximum baseline physical damage dealt by the missile"
+    },
+    {
+      "name": "MaxLevDam1 (to MaxLevDam5)",
+      "description": "Controls the additional maximum physical damage dealt by the missile, calculated using the leveling formula between 5 level thresholds of the missile’s current level. The level thresholds are levels 2-8, 9-16, 17-22, 23-28, 29 and beyond. These 5 level thresholds correlate to each field."
+    },
+    {
+      "name": "DmgSymPerCalc",
+      "description": "Calculation Field. Determines the percentage increase to the physical damage dealt by the missile based on specified skill levels."
+    },
+    {
+      "name": "EType",
+      "description": "Defines the type of elemental damage dealt by the missile. If this field is empty, then the related elemental fields below will not be used. Code (empty) fire ltng mag cold pois life mana stam stun rand burn frze Description None Fire Lightning Magic Cold (Uses “ELen”) Poison (Uses “ELen”) Life Drain Mana Drain Stamina Drain Stun (Uses “ELen”) Randomly select between Fire, Lightning, Magic, Cold, or Poison Burning (Uses “ELen”) Freeze (Uses “ELen”)"
+    },
+    {
+      "name": "EMin",
+      "description": "Minimum baseline elemental damage dealt by the missile"
+    },
+    {
+      "name": "MinELev1 (to MinELev5)",
+      "description": "Controls the additional minimum elemental damage dealt by the missile, calculated using the leveling formula between 5 level thresholds of the missile’s current level. The level thresholds are levels 2-8, 9-16, 17-22, 23-28, 29 and beyond. These 5 level thresholds correlate to each field number."
+    },
+    {
+      "name": "EMax",
+      "description": "Maximum baseline elemental damage dealt by the missile"
+    },
+    {
+      "name": "MaxELev1 (MaxELev5)",
+      "description": "Controls the additional maximum elemental damage dealt by the missile, calculated using the leveling formula between 5 level thresholds of the missile’s current level. The level thresholds are levels 2-8, 9-16, 17-22, 23-28, 29 and beyond. These 5 level thresholds correlate to each field."
+    },
+    {
+      "name": "EDmgSymPerCalc",
+      "description": "Calculation Field. Determines the percentage increase to the elemental damage dealt by the missile based on specified skill levels."
+    },
+    {
+      "name": "ELen",
+      "description": "The baseline elemental duration dealt by the missile. This is calculated in frame lengths where 25 Frames = 1 second. These fields only apply to appropriate elemental types with a duration."
+    },
+    {
+      "name": "ELevLen1 (to ELevLen3)",
+      "description": "Controls the additional elemental duration added by the missile, calculated using the leveling formula between 3 level thresholds of the missile’s current level. The level thresholds are levels 2-8, 9-16, 17 and beyond. These 3 level thresholds correlate to each field. These fields only apply to appropriate elemental types with a duration."
+    },
+    {
+      "name": "HitClass",
+      "description": "Defines the missile’s own hit class into the damage routines, mainly used for determining hit sound effects and overlays. This field only handles the hit class layers, so values beyond these defined bits are ignored. Uses an integer value to check against different bit fields by using the “&” operator. For example, if the value equals 6 (binary = 110) then that returns true for both the 4 (binary = 100) and 2 (binary = 10) bit field values. Description Double Layer Fire Layer Cold Layer Lightning Layer Poison Layer Stun Layer Bash Layer Thorns Layer Sanctuary Layer Silent Voice Layer Goo Layer Binary Equivalent Value 00010000 00010100 00011110 01000000 01010000 01100000 01110000 10000000 10010000 10100000 10110000 Bit Field Value 16 32 48 64 80 96 112 128 144 160 176"
+    },
+    {
+      "name": "NumDirections",
+      "description": "The number of directions allowed by the missile, based on the DCC file used (see “CelFile”). This value should be within the power of 2, with a minimum value of 1 or up to a maximum value of 64."
+    },
+    {
+      "name": "LocalBlood",
+      "description": "Boolean Field. If equals 1, then change the color of blood missiles to green. If equals 0, then keep the blood missiles colored the default red."
+    },
+    {
+      "name": "DamageRate",
+      "description": "Controls the “damage_framerate” stat (Calculated in 1024ths), which acts as a percentage multiplier for the physical damage reduction and magic damage reduction stat modifiers, when performing damage resistance calculations. This is only enabled if the value is greater than 0."
+    },
+    {
+      "name": "TravelSound",
+      "description": "Points to a “Sound” field defined in the sounds.txt file. Used when the missile is created and while it is alive."
+    },
+    {
+      "name": "HitSound",
+      "description": "Points to a “Sound” field defined in the sounds.txt file. Used when the collides with a target."
+    },
+    {
+      "name": "ProgSound",
+      "description": "Points to a “Sound” field defined in the sounds.txt file. Used for a programmed special event based on the client function."
+    },
+    {
+      "name": "ProgOverlay",
+      "description": "Points to the “overlay” field defined in the Overlay.txt file. Used for a programmed special event based on the server or client function."
+    },
+    {
+      "name": "ExplosionMissile",
+      "description": "Points to the “Missile” field for another missile. Used for the missile created on the client when this missile explodes."
+    },
+    {
+      "name": "SubMissile1 (to SubMissile3)",
+      "description": "Points to the “Missile” field for another missile. Used for creating a new missile based on the server function used."
+    },
+    {
+      "name": "HitSubMissile1 (to HitSubMissile4)",
+      "description": "Points to the “Missile” field for another missile. Used for a new missile after a collision, based on the server function used."
+    },
+    {
+      "name": "CltSubMissile1 (to CltSubMissile3)",
+      "description": "Points to the “Missile” field for another missile. Used for creating a new missile based on the client function used."
+    },
+    {
+      "name": "CltHitSubMissile1 (to CltHitSubMissile4)",
+      "description": "Points to the “Missile” field for another missile. Used for a new missile after a collision, based on the client function used."
+    }
+  ],
+  "filename": "Missiles.txt"
+}

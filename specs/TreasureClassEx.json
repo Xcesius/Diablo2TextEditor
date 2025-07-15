@@ -1,0 +1,66 @@
+{
+  "overview": "This file controls the Treasure Class linked to a monster drop. Treasure Classes are groups of item types and their chances of dropping from a monster.  This is used by the following data files: monstats.txt, SuperUniques.txt  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "Treasure Class",
+      "description": "Defines the unique Treasure Class ID, that is referenced in other files."
+    },
+    {
+      "name": "group",
+      "description": "Assigns the Treasure Class to a group ID value, which will connect this Treasure Class with other Treasure Classes, as a potential Treasure Class to use for an itemdrop. When determining which Treasure Class to use for an item drop, the game will iterate through all Treasure Classes that share the same group. This field works with the “level” field to determine an ideal Treasure Class to use for the monster drop. Treasure Classes that share the same group should be in contiguous order."
+    },
+    {
+      "name": "level",
+      "description": "Defines the level of a Treasure Class. Monsters who have a Treasure Class will pick the Treasure Class that a level value that is less than or equal to the monster’s level. This is ignored for Boss monsters unless that Boss monster is desecrated."
+    },
+    {
+      "name": "Picks",
+      "description": "Controls how to handle the calculations for item drops. If this value is positive, then this value will control how many item drop chances will be rolled for the Treasure Class using the “Prob#” fields as probability values. If this value is negative, then this value functions as the total guaranteed quantity of item drops from the Treasure Class, and each “Prob#” field now defines the quantity of items generated from its related “Item#” field. If this field is empty, then default to a value of 1."
+    },
+    {
+      "name": "Unique",
+      "description": "Modifies the item ratio drop for a Unique Quality item. A higher value means a better chance of being chosen. (See itemratio.txt for an explanation for how the Item Quality is chosen)"
+    },
+    {
+      "name": "Set",
+      "description": "Modifies the item ratio drop for a Set Quality item. A higher value means a better chance of being chosen. (See itemratio.txt for an explanation for how the Item Quality is chosen)"
+    },
+    {
+      "name": "Rare",
+      "description": "Modifies the item ratio drop for a Rare Quality item. A higher value means a better chance of being chosen. (See itemratio.txt for an explanation for how the Item Quality is chosen)"
+    },
+    {
+      "name": "Magic",
+      "description": "Modifies the item ratio drop for a Magic Quality item. A higher value means a better chance of being chosen. (See itemratio.txt for an explanation for how the Item Quality is chosen)"
+    },
+    {
+      "name": "NoDrop",
+      "description": "Controls the probability of no item dropping by the Treasure Class. The higher this value, then the more likely no item will drop from the monster. This can be automatically be affected by the number of players currently in the game."
+    },
+    {
+      "name": "Item1 (to Item10)",
+      "description": "Defines a potential Item Type (see ItemTypes.txt) or other Treasure Class that can drop from this Treasure Class. Linking another Treasure Class in this field means that there is a chance to use that Treasure Class group of items which the game will then calculate a selection from that Treasure Class, and so on."
+    },
+    {
+      "name": "Prob1 (to Prob10)",
+      "description": "The individual probability for each related “Item#” drop. The higher this value, then the more likely the “Item#” field will be chosen. The chance a drop is picked is calculated by summing all “Prob#” field values and the “NoDrop” value for a total denominator value, and then having each “Prob#” value and the “NoDrop” value rolling their chance out of the total denominator value for a drop."
+    },
+    {
+      "name": "firstLadderSeason",
+      "description": "Integer field. If this has a value, it will only roll in ladder games starting at the season specified (inclusive). If blank or 0 then it will roll in"
+    },
+    {
+      "name": "ladder and non",
+      "description": "ladder."
+    },
+    {
+      "name": "lastLadderSeason",
+      "description": "Integer field. The last ladder season the treasure class is ladder-only (inclusive). Must be used in conjunction with firstLadderSeason."
+    },
+    {
+      "name": "noAlwaysDrop",
+      "description": "Boolean field. If equals 1, then this treasure class will roll normally when being forced to always drop, like with the Find Item skill. If 0 then this treasure class will always drop an item when forced to."
+    }
+  ],
+  "filename": "TreasureClassEx.txt"
+}

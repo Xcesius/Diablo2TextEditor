@@ -1,0 +1,42 @@
+{
+  "overview": "This file controls how each town NPC manipulates their store prices  Any column field name starting with “*” is considered a comment field and is not used by the game",
+  "data_fields": [
+    {
+      "name": "npc",
+      "description": "Points to the matching “Id” value in the monstats.txt file. This should not be changed."
+    },
+    {
+      "name": "buy mult",
+      "description": "Used to calculate the item’s price when it is bought by the NPC from the player. This number is a fraction of 1024 in the following formula: [cost] * [buy mult] / 1024"
+    },
+    {
+      "name": "sell mult",
+      "description": "Used to calculate the item’s price when it is sold by the NPC to the player. This number is a fraction of 1024 in the following formula: [cost] * [sell mult] / 1024"
+    },
+    {
+      "name": "rep mult",
+      "description": "Used to calculate the cost to repair an item. This number is a fraction of 1024 in the following formula: [cost] * [rep mult] / 1024. This is then used to influence the repair cost based on the item durability and charges."
+    },
+    {
+      "name": "questflag A (to questflag C)",
+      "description": "If the player has this quest flag progress, then apply the relative additional price calculations Code 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 Quest Progress Act 1 Prologue Seen Den of Evil Completed Sisters’ Burial Grounds Completed Tools of the Trade Completed The Search for Cain Completed The Forgotten Tower Completed Sisters to the Slaughter Completed Act 1 Traversed Act 2 Prologue Seen Radament’s Lair Completed The Horadric Staff Completed Tainted Sun Completed Arcane Sanctuary Completed The Summoner Completed The Seven Tombs Completed Act 2 Traversed Act 3 Prologue Seen Lam Esen's Tome Completed Khalim's Will Completed Blade of the Old Religion Completed The Golden Bird Completed The Blackened Temple Completed The Guardian Completed Act 3 Traversed Act 4 Prologue Seen The Fallen Angel Completed Terror's End Completed Hell's Forge Completed Act 4 Traversed Rogue Warning Complete Guard in Town Warning Complete Guard in Desert Warning Complete Dark Wanderer Seen Angel Warning Complete Act 5 Prologue Seen Siege on Harrogath Completed Rescue on Mount Arreat Completed Prison of Ice Completed Betrayal of Harrogath Completed Rite of Passage Completed Eve of Destruction Completed Respecialization from Akara is Completed"
+    },
+    {
+      "name": "questbuymult A (to questbuymult C)",
+      "description": "Same functionality as the “buy mult” field, except this relies on the “questflag” field and applies after the “buy mult” field calculation"
+    },
+    {
+      "name": "questsellmult A (to questsellmult C)",
+      "description": "Same functionality as the “sell mult” field, except this relies on the “questflag” field and applies after the “sell mult” field calculation"
+    },
+    {
+      "name": "questrepmult A (to questrepmult C)",
+      "description": "Same functionality as the “rep mult” field, except this relies on the “questflag” field and applies after the “rep mult” field calculation"
+    },
+    {
+      "name": "max buy & max buy (N) & max buy (H)",
+      "description": "Sets the maximum price that the NPC will pay, when the player sells an item in Normal Difficulty, Nightmare Difficulty, and Hell Difficulty, respectively"
+    }
+  ],
+  "filename": "npc.txt"
+}
