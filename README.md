@@ -42,14 +42,6 @@ Diablo2TextEditor/
 ├── *.txt                      # Game data files (CubeMain.txt, Levels.txt, etc.)
 └── *.json                     # Large fingerprint databases
 ```
-
-## Core Files
-
-- **CubeMain.txt** - Main cube recipe data file
-- **CubeMainWorking.txt** - Verified working version (reference)
-- **CubeMainNotWorking.txt** - Known problematic version
-- **Levels.txt** - Level configuration data
-
 ## Features
 
 - **File Binding System**: Automatic mapping between JSON metadata and text data files
