@@ -63,7 +63,7 @@ Diablo2TextEditor/
 
 3. Run the application:
    ```bash
-   python main.py
+   python main_v2.py
    ```
 
 ## Usage
