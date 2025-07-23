@@ -1,6 +1,16 @@
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenuBar, QFileDialog, QAbstractItemView, QMessageBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QCheckBox, QGridLayout, QListWidget, QListWidgetItem, QTextEdit, QSplitter, QComboBox, QStyledItemDelegate, QInputDialog
-
-
+from PyQt6.QtGui import QAction, QStandardItemModel, QStandardItem, QKeySequence
+from PyQt6.QtCore import Qt, QItemSelection
+from file_parser import open_txt_file, detect_file_type, auto_detect_encoding, save_txt_file, check_for_working_version
+import pandas as pd
+from custom_widgets import CleanTableView
+from column_descriptions import get_description
+from file_bindings import get_binding_manager, DataFileBinding
+import copy
+import os
+import shutil
+from datetime import datetime
+import json
 
 class ComboBoxDelegate(QStyledItemDelegate):
     def __init__(self, parent=None, items=None):
@@ -24,19 +34,6 @@ class ComboBoxDelegate(QStyledItemDelegate):
     def updateEditorGeometry(self, editor, option, index):
         editor.setGeometry(option.rect)
 
-from PyQt6.QtGui import QAction, QStandardItemModel, QStandardItem, QKeySequence
-from PyQt6.QtCore import Qt, QItemSelection
-from file_parser import open_txt_file, detect_file_type, auto_detect_encoding, save_txt_file, check_for_working_version
-import pandas as pd
-from custom_widgets import CleanTableView
-from column_descriptions import get_description
-from file_bindings import get_binding_manager, DataFileBinding
-import copy
-import os
-import shutil
-from datetime import datetime
-import json
-
 class UndoCommand:
     """Represents a single undoable action"""
     def __init__(self, row, col, old_value, new_value):
@@ -55,9 +52,7 @@ class UndoStack:
     def push(self, command):
         """Add a new command to the undo stack"""
         self.undo_stack.append(command)
-        # Clear redo stack when new action is performed
         self.redo_stack.clear()
-        # Maintain max stack size
         if len(self.undo_stack) > self.max_size:
             self.undo_stack.pop(0)
     
@@ -96,24 +91,19 @@ class SearchReplaceDialog(QDialog):
         self.setModal(True)
         self.resize(400, 150)
         
-        # Create layout
         layout = QGridLayout()
         
-        # Search field
         layout.addWidget(QLabel("Search for:"), 0, 0)
         self.search_input = QLineEdit()
         layout.addWidget(self.search_input, 0, 1)
         
-        # Replace field
         layout.addWidget(QLabel("Replace with:"), 1, 0)
         self.replace_input = QLineEdit()
         layout.addWidget(self.replace_input, 1, 1)
         
-        # Options
         self.case_sensitive = QCheckBox("Case sensitive")
         layout.addWidget(self.case_sensitive, 2, 0, 1, 2)
         
-        # Buttons
         button_layout = QHBoxLayout()
         
         self.find_next_btn = QPushButton("Find Next")
@@ -136,7 +126,6 @@ class SearchReplaceDialog(QDialog):
         
         self.setLayout(layout)
         
-        # State tracking
         self.parent_editor = parent
         self.current_row = 0
         self.current_col = 0
@@ -155,7 +144,6 @@ class SearchReplaceDialog(QDialog):
         if not model:
             return
             
-        # Start search from current position
         start_row = self.current_row
         start_col = self.current_col
         
@@ -173,30 +161,22 @@ class SearchReplaceDialog(QDialog):
                         search_term_check = search_term
                         
                     if search_term_check in cell_text:
-                        # Found! Select this cell
                         self.current_row = row
                         self.current_col = col
-                        
-                        # Select the cell in the table
                         index = model.index(row, col)
                         self.parent_editor.tableView.setCurrentIndex(index)
                         self.parent_editor.tableView.scrollTo(index)
-                        
-                        # Move to next position for next search
                         self.current_col += 1
                         if self.current_col >= model.columnCount():
                             self.current_col = 0
                             self.current_row += 1
-                            
                         found = True
                         return
         
-        # If we reach here, nothing found from current position
-        # Try wrapping around to beginning
         if start_row > 0 or start_col > 0:
             self.current_row = 0
             self.current_col = 0
-            self.find_next()  # Recursive call from beginning
+            self.find_next()
         else:
             QMessageBox.information(self, "Search", f"'{search_term}' not found.")
     
@@ -219,7 +199,6 @@ class SearchReplaceDialog(QDialog):
                 
                 if not case_sensitive:
                     if search_term.lower() in cell_text.lower():
-                        # Perform case-insensitive replace
                         import re
                         new_text = re.sub(re.escape(search_term), replace_term, cell_text, flags=re.IGNORECASE)
                         item.setText(new_text)
@@ -275,7 +254,7 @@ class Ui_MainWindow(object):
         
         self.tableView = CleanTableView(self.centralWidget)
         self.tableView.setObjectName("tableView")
-        self.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
         self.verticalLayout.addWidget(self.tableView)
         
         MainWindow.setCentralWidget(self.centralWidget)
@@ -300,10 +279,8 @@ class BoundFileDialog(QDialog):
         
         layout = QVBoxLayout()
         
-        # Create splitter for file list and metadata
         splitter = QSplitter(Qt.Orientation.Horizontal)
         
-        # File list on the left
         file_widget = QWidget()
         file_layout = QVBoxLayout(file_widget)
         
@@ -314,7 +291,6 @@ class BoundFileDialog(QDialog):
         self.file_list.currentItemChanged.connect(self.on_file_selected)
         file_layout.addWidget(self.file_list)
         
-        # Metadata display on the right
         metadata_widget = QWidget()
         metadata_layout = QVBoxLayout(metadata_widget)
         
@@ -331,7 +307,6 @@ class BoundFileDialog(QDialog):
         
         layout.addWidget(splitter)
         
-        # Buttons
         button_layout = QHBoxLayout()
         
         self.open_button = QPushButton("Open File")
@@ -354,9 +329,7 @@ class BoundFileDialog(QDialog):
         bindings = binding_manager.get_all_bindings()
         
         for key, binding in sorted(bindings.items()):
-            # Create display name
             display_name = f"{binding.base_name} ({os.path.basename(binding.txt_path)})"
-            
             item = QListWidgetItem(display_name)
             item.setData(Qt.ItemDataRole.UserRole, binding)
             self.file_list.addItem(item)
@@ -384,24 +357,21 @@ class BoundFileDialog(QDialog):
         display_text += f"<p><strong>Data File:</strong> {os.path.basename(binding.txt_path)}</p>"
         display_text += f"<p><strong>Metadata File:</strong> {os.path.basename(binding.json_path)}</p>"
         
-        # Add description if available
         description = binding.get_description()
         if description and description != "No description available":
             display_text += f"<p><strong>Description:</strong><br>{description}</p>"
         
-        # Add column information
         column_descriptions = binding.get_column_descriptions()
         if column_descriptions:
             display_text += f"<p><strong>Columns ({len(column_descriptions)}):</strong></p>"
             display_text += "<ul>"
-            for col_name, col_desc in list(column_descriptions.items())[:10]:  # Show first 10 columns
+            for col_name, col_desc in list(column_descriptions.items())[:10]:
                 display_text += f"<li><strong>{col_name}:</strong> {col_desc}</li>"
             if len(column_descriptions) > 10:
                 display_text += f"<li><em>... and {len(column_descriptions) - 10} more columns</em></li>"
             display_text += "</ul>"
         
         self.metadata_display.setHtml(display_text)
-
 
 from config_manager import ConfigManager
 
@@ -456,18 +426,15 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         self.create_menus()
         self.data_frame = None
         self.current_file_path = None
-        self.current_binding = None  # Store the current file binding
+        self.current_binding = None
         self.undo_stack = UndoStack()
-        self._tracking_changes = True  # Flag to prevent undo tracking during undo/redo operations
-        self.update_window_title()  # Set initial window title
+        self._tracking_changes = True
+        self.update_window_title()
         self.config_manager = ConfigManager()
-
-        # Load unique column values
         self.unique_column_values = {}
         self.load_unique_column_values()
 
     def create_menus(self):
-        # File Menu
         file_menu = self.menubar.addMenu("&File")
 
         open_action = QAction("&Open...", self)
@@ -490,7 +457,6 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         save_as_action.triggered.connect(self.save_file_as)
         file_menu.addAction(save_as_action)
 
-        # Edit Menu
         edit_menu = self.menubar.addMenu("&Edit")
 
         undo_action = QAction("&Undo", self)
@@ -512,7 +478,6 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
 
         edit_menu.addSeparator()
 
-        # Clipboard operations
         copy_action = QAction("&Copy", self)
         copy_action.setShortcut(QKeySequence.StandardKey.Copy)
         copy_action.triggered.connect(self.copy_selection)
@@ -540,7 +505,6 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         select_all_action.triggered.connect(self.select_all)
         edit_menu.addAction(select_all_action)
 
-        # Settings Menu
         settings_menu = self.menubar.addMenu("&Settings")
         settings_action = QAction("&Settings...", self)
         settings_action.triggered.connect(self.show_settings)
@@ -549,26 +513,18 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Open .txt file", "", "Text Files (*.txt)")
         if file_path:
-           
-            # Auto-detect file type and encoding silently
             file_type, confidence, binding_key = detect_file_type(file_path)
             detected_encoding = auto_detect_encoding(file_path)
             
-            # Try to find and apply binding if detected  
             binding_manager = get_binding_manager()
-            
-            # Force refresh if no bindings loaded (happens after directory reorganization)
             if len(binding_manager.get_all_bindings()) == 0:
                 print("  No metadata loaded, forcing refresh...")
                 binding_manager.refresh_bindings()
             
             applied_binding = None
-            
             if binding_key and confidence in ['high', 'medium']:
-                # Create dynamic binding for the detected file type and current file
                 applied_binding = binding_manager.create_dynamic_binding(binding_key, file_path)
             
-            # Print detection results to console for debugging
             print(f"Auto-detection results:")
             print(f"  File: {os.path.basename(file_path)}")
             print(f"  Type: {file_type} (confidence: {confidence})")
@@ -576,10 +532,8 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             if applied_binding:
                 print(f"  Applied binding: {applied_binding.base_name}")
             
-            # Load the file directly
             self.current_file_path = file_path
             self.current_binding = applied_binding
-            
             data = open_txt_file(file_path)
             if data is not None:
                 print(f"File loaded successfully! Type: {file_type}, Encoding: {detected_encoding}")
@@ -590,22 +544,15 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                 QMessageBox.warning(self, "Load Error", "Failed to load file!")
     
     def show_binding_info(self, binding):
-        """Show information about the applied binding in a non-blocking way."""
         print(f"Applied binding: {binding.base_name}")
         print(f"Description: {binding.get_description()}")
-        
-        # You could add a status bar message here or other non-intrusive feedback
-        # For now, just print to console
 
     def open_bound_file(self):
-        """Open a bound file using the file binding dialog."""
         dialog = BoundFileDialog(self)
         if dialog.exec() == QDialog.DialogCode.Accepted and dialog.selected_binding:
             binding = dialog.selected_binding
             self.current_binding = binding
             self.current_file_path = binding.txt_path
-            
-            # Load the data
             data = binding.load_data()
             if data is not None:
                 print(f"Bound file loaded successfully: {binding.base_name}")
@@ -616,21 +563,18 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                 QMessageBox.warning(self, "Load Error", f"Failed to load bound file: {binding.base_name}")
     
     def update_window_title(self):
-        """Update the window title to show current file and binding info."""
         if self.current_binding:
             title = f"Diablo II .txt Editor - {self.current_binding.base_name} ({os.path.basename(self.current_binding.txt_path)})"
         elif self.current_file_path:
             title = f"Diablo II .txt Editor - {os.path.basename(self.current_file_path)}"
         else:
             title = "Diablo II .txt Editor"
-        
         self.setWindowTitle(title)
 
     def load_unique_column_values(self):
         specs_dir = 'specs'
         if not os.path.exists(specs_dir):
             return
-
         for filename in os.listdir(specs_dir):
             if filename.endswith('.json'):
                 file_path = os.path.join(specs_dir, filename)
@@ -646,46 +590,29 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             for row in range(self.data_frame.shape[0]):
                 for col in range(self.data_frame.shape[1]):
                     value = self.data_frame.iat[row, col]
-                    
                     if pd.isna(value):
                         display_value = ""
                     else:
                         try:
-                            # If it's a float that is a whole number, convert to int
                             if float(value) == int(float(value)):
                                 display_value = str(int(float(value)))
                             else:
                                 display_value = str(value)
                         except (ValueError, TypeError):
-                            # Not a number, just use its string representation
                             display_value = str(value)
-                            
                     item = QStandardItem(display_value)
                     model.setItem(row, col, item)
             
             self.tableView.setModel(model)
-            
-            # Connect to model changes for undo tracking
             model.itemChanged.connect(self.on_item_changed)
             
-            # Connect to header click events (disconnect first to avoid multiple connections)
             header = self.tableView.horizontalHeader()
-            try:
-                header.sectionClicked.disconnect(self.on_header_clicked)
-            except TypeError:
-                pass  # No connection existed
+            header.sectionClicked.connect(self.tableView.select_column)
             header.rightClicked.connect(self.on_header_clicked)
             
-            # Connect context menu signals
             self.connect_context_menu_signals()
-
-            # Connect cell click event
-            
-            
-            # Clear undo stack when loading new file
             self.undo_stack.clear()
 
-            # Set delegates for columns with unique values
             file_name = os.path.splitext(os.path.basename(self.current_file_path))[0]
             if file_name in self.unique_column_values:
                 for col_idx, col_name in enumerate(self.data_frame.columns):
@@ -696,21 +623,14 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             print("Data displayed in table.")
             
     def on_header_clicked(self, logical_index):
-        """Handle clicks on column headers to show descriptions"""
         if self.data_frame is not None and logical_index < len(self.data_frame.columns):
             column_name = self.data_frame.columns[logical_index]
-            
-            # Try to get description from current binding first
             description = "No description available for this column."
             if self.current_binding:
                 column_descriptions = self.current_binding.get_column_descriptions()
                 description = column_descriptions.get(column_name, description)
-            
-            # Fallback to the original column description system
             if description == "No description available for this column.":
                 description = get_description(self.current_file_path if hasattr(self, 'current_file_path') else "", column_name)
-            
-            # Show the description in a message box
             msg = QMessageBox(self)
             msg.setWindowTitle(f"Column Help: {column_name}")
             msg.setText(f"<b>{column_name}</b><br><br>{description}")
@@ -721,7 +641,6 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         model = self.tableView.model()
         if not model:
             return None
-        
         data = []
         for row in range(model.rowCount()):
             row_data = []
@@ -729,66 +648,45 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                 item = model.item(row, col)
                 row_data.append(item.text() if item else "")
             data.append(row_data)
-            
         columns = [model.horizontalHeaderItem(i).text() for i in range(model.columnCount())]
         return pd.DataFrame(data, columns=columns)
 
     def create_backup(self, file_path):
-        """Create a timestamped backup of the file before saving"""
         if not os.path.exists(file_path):
-            return  # No existing file to backup
-            
-        # Get file directory and name
+            return
         dir_path = os.path.dirname(file_path)
         filename = os.path.basename(file_path)
         name, ext = os.path.splitext(filename)
-        
-        # Create timestamp for backup filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_name = f"{name}_{timestamp}.bak"
         backup_path = os.path.join(dir_path, backup_name)
-        
-        # Create the backup
         try:
             shutil.copy2(file_path, backup_path)
             print(f"Backup created: {backup_name}")
-            
-            # Clean up old backups (keep only last 5)
             self.cleanup_old_backups(dir_path, name)
-            
         except Exception as e:
             print(f"Failed to create backup: {e}")
     
     def cleanup_old_backups(self, dir_path, base_name):
-        """Remove old backup files, keeping only the 5 most recent"""
         try:
-            # Find all backup files for this base name
             backup_files = []
             for filename in os.listdir(dir_path):
                 if filename.startswith(f"{base_name}_") and filename.endswith(".bak"):
                     backup_path = os.path.join(dir_path, filename)
-                    # Get modification time
                     mtime = os.path.getmtime(backup_path)
                     backup_files.append((mtime, backup_path, filename))
-            
-            # Sort by modification time (newest first)
             backup_files.sort(reverse=True)
-            
-            # Remove old backups if we have more than 5
             max_backups = 5
             if len(backup_files) > max_backups:
                 for _, backup_path, filename in backup_files[max_backups:]:
                     os.remove(backup_path)
                     print(f"Removed old backup: {filename}")
-                    
         except Exception as e:
             print(f"Failed to cleanup old backups: {e}")
 
     def save_file(self):
         if self.current_file_path:
-            # Create backup before saving
             self.create_backup(self.current_file_path)
-            
             df = self.get_data_from_table()
             if df is not None:
                 success = save_txt_file(df, self.current_file_path)
@@ -802,12 +700,10 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
     def save_file_as(self):
         file_path, _ = QFileDialog.getSaveFileName(self, "Save .txt file", "", "Text Files (*.txt)")
         if file_path:
-            # Create backup if file already exists
             if os.path.exists(file_path):
                 self.create_backup(file_path)
-            
             self.current_file_path = file_path
-            self.current_binding = None  # Clear binding when saving to new file
+            self.current_binding = None
             df = self.get_data_from_table()
             if df is not None:
                 success = save_txt_file(df, file_path)
@@ -818,22 +714,16 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                     QMessageBox.warning(self, "Save Error", "Failed to save file!")
 
     def on_item_changed(self, item):
-        """Handle when an item in the table is changed"""
         if not self._tracking_changes:
-            return  # Don't track changes during undo/redo operations
-            
+            return
         row = item.row()
         col = item.column()
         new_value = item.text()
-        
-        # We need to get the old value from our data frame
         if self.data_frame is not None and row < len(self.data_frame) and col < len(self.data_frame.columns):
-            # Get the old value from the DataFrame
             old_value = self.data_frame.iat[row, col]
             if pd.isna(old_value):
                 old_value = ""
             else:
-                # Format the old value the same way we display it
                 try:
                     if float(old_value) == int(float(old_value)):
                         old_value = str(int(float(old_value)))
@@ -841,62 +731,40 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                         old_value = str(old_value)
                 except (ValueError, TypeError):
                     old_value = str(old_value)
-            
-            # Only track if the value actually changed
             if old_value != new_value:
                 command = UndoCommand(row, col, old_value, new_value)
                 self.undo_stack.push(command)
-                
-                # Update our DataFrame with the new value
                 self.data_frame.iat[row, col] = new_value if new_value != "" else None
 
     def undo(self):
-        """Undo the last change"""
         command = self.undo_stack.undo()
         if command:
-            # Temporarily disable change tracking
             self._tracking_changes = False
-            
-            # Get the model and update the item
             model = self.tableView.model()
             if model:
                 item = model.item(command.row, command.col)
                 if item:
                     item.setText(command.old_value)
-                    # Update the DataFrame
                     self.data_frame.iat[command.row, command.col] = command.old_value if command.old_value != "" else None
-            
-            # Re-enable change tracking
             self._tracking_changes = True
 
     def redo(self):
-        """Redo the last undone change"""
         command = self.undo_stack.redo()
         if command:
-            # Temporarily disable change tracking
             self._tracking_changes = False
-            
-            # Get the model and update the item
             model = self.tableView.model()
             if model:
                 item = model.item(command.row, command.col)
                 if item:
                     item.setText(command.new_value)
-                    # Update the DataFrame
                     self.data_frame.iat[command.row, command.col] = command.new_value if command.new_value != "" else None
-            
-            # Re-enable change tracking
             self._tracking_changes = True
 
     def show_search_replace(self):
-        """Show the search and replace dialog"""
         if not hasattr(self, 'search_dialog') or self.search_dialog is None:
             self.search_dialog = SearchReplaceDialog(self)
-        
-        # Reset search position when opening dialog
         self.search_dialog.current_row = 0
         self.search_dialog.current_col = 0
-        
         self.search_dialog.show()
         self.search_dialog.search_input.setFocus()
 
@@ -905,7 +773,6 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         dialog.exec()
 
     def connect_context_menu_signals(self):
-        """Connect all context menu signals to their handlers"""
         self.tableView.copy_requested.connect(self.copy_selection)
         self.tableView.cut_requested.connect(self.cut_selection)
         self.tableView.paste_requested.connect(self.paste_selection)
@@ -921,12 +788,9 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         self.tableView.select_column_requested.connect(self.select_column)
 
     def copy_selection(self):
-        """Copy selected cells to clipboard in tab-delimited format"""
         selection = self.tableView.selectionModel().selectedIndexes()
         if not selection:
             return
-            
-        # Group selections by row
         rows = {}
         for index in selection:
             row = index.row()
@@ -934,8 +798,6 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             if row not in rows:
                 rows[row] = {}
             rows[row][col] = index
-        
-        # Build tab-delimited text
         clipboard_text = []
         for row in sorted(rows.keys()):
             row_data = []
@@ -946,182 +808,125 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                 cell_text = item.text() if item else ""
                 row_data.append(cell_text)
             clipboard_text.append("\t".join(row_data))
-        
-        # Copy to clipboard
         from PyQt6.QtWidgets import QApplication
         clipboard = QApplication.clipboard()
         clipboard.setText("\n".join(clipboard_text))
         print(f"Copied {len(selection)} cells to clipboard")
 
     def cut_selection(self):
-        """Cut selected cells (copy + clear)"""
         self.copy_selection()
         self.clear_selection()
 
     def paste_selection(self):
-        """Paste from clipboard starting at current selection"""
         from PyQt6.QtWidgets import QApplication
         clipboard = QApplication.clipboard()
         text = clipboard.text()
-        
         if not text:
             return
-            
         current_index = self.tableView.currentIndex()
         if not current_index.isValid():
             return
-            
         model = self.tableView.model()
         if not model:
             return
-            
-        # Parse clipboard data
         lines = text.strip().split('\n')
         start_row = current_index.row()
         start_col = current_index.column()
-        
-        # Temporarily disable change tracking for batch operation
         self._tracking_changes = False
-        
         try:
             for row_offset, line in enumerate(lines):
                 cells = line.split('\t')
                 target_row = start_row + row_offset
-                
-                # Skip if we're beyond table bounds
                 if target_row >= model.rowCount():
                     break
-                    
                 for col_offset, cell_value in enumerate(cells):
                     target_col = start_col + col_offset
-                    
-                    # Skip if we're beyond table bounds
                     if target_col >= model.columnCount():
                         break
-                        
                     item = model.item(target_row, target_col)
                     if item:
-                        # Track the change for undo
                         old_value = item.text()
                         if old_value != cell_value:
                             command = UndoCommand(target_row, target_col, old_value, cell_value)
                             self.undo_stack.push(command)
-                            
-                            # Update the item
                             item.setText(cell_value)
-                            
-                            # Update DataFrame
                             self.data_frame.iat[target_row, target_col] = cell_value if cell_value != "" else None
         finally:
-            # Re-enable change tracking
             self._tracking_changes = True
-            
         print(f"Pasted data at row {start_row}, column {start_col}")
 
     def clear_selection(self):
-        """Clear contents of selected cells"""
         selection = self.tableView.selectionModel().selectedIndexes()
         if not selection:
             return
-            
         model = self.tableView.model()
         if not model:
             return
-            
-        # Temporarily disable change tracking for batch operation
         self._tracking_changes = False
-        
         try:
             for index in selection:
                 item = model.item(index.row(), index.column())
                 if item:
                     old_value = item.text()
-                    if old_value:  # Only track non-empty cells
+                    if old_value:
                         command = UndoCommand(index.row(), index.column(), old_value, "")
                         self.undo_stack.push(command)
-                        
                         item.setText("")
-                        # Update DataFrame
                         self.data_frame.iat[index.row(), index.column()] = None
         finally:
-            # Re-enable change tracking
             self._tracking_changes = True
-            
         print(f"Cleared {len(selection)} cells")
 
     def select_all(self):
-        """Select all cells in the table"""
         self.tableView.selectAll()
 
     def select_column(self, column):
-        """Select all cells in the given column(s)"""
         model = self.tableView.model()
         if not model:
             return
-
         multi_column_select_all = self.config_manager.get_setting("multi_column_select_all_enabled", False)
         ignore_empty = self.config_manager.get_setting("ignore_empty_cells_on_column_select", False)
-
         selection = QItemSelection()
         columns_to_select = [column]
-
         if multi_column_select_all:
             selected_indexes = self.tableView.selectionModel().selectedIndexes()
             if selected_indexes:
                 columns_to_select = sorted(list(set(index.column() for index in selected_indexes)))
-
         for col in columns_to_select:
             for row in range(model.rowCount()):
                 index = model.index(row, col)
                 item = model.itemFromIndex(index)
                 if not ignore_empty or (item and item.text()):
                     selection.select(index, index)
-
         self.tableView.selectionModel().clear()
         self.tableView.selectionModel().select(selection, self.tableView.selectionModel().SelectionFlag.Select)
 
     def insert_row_above(self):
-        """Insert a new row above the current selection"""
         current_index = self.tableView.currentIndex()
         if not current_index.isValid():
             return
-            
         target_row = current_index.row()
         self._insert_row_at_position(target_row)
         
     def insert_row_below(self):
-        """Insert a new row below the current selection"""
         current_index = self.tableView.currentIndex()
         if not current_index.isValid():
             return
-            
         target_row = current_index.row() + 1
         self._insert_row_at_position(target_row)
         
     def _insert_row_at_position(self, row_position):
-        """Helper method to insert a row at the specified position"""
         model = self.tableView.model()
         if not model:
             return
-            
-        # Insert row in the model
         model.insertRow(row_position)
-        
-        # Create empty items for all columns
         for col in range(model.columnCount()):
             item = QStandardItem("")
             model.setItem(row_position, col, item)
-        
-        # Insert corresponding row in DataFrame
         if self.data_frame is not None:
-            # Create a new row of empty values
             new_row = [None] * len(self.data_frame.columns)
-            
-            # Convert to DataFrame and insert
             import pandas as pd
             new_df_row = pd.DataFrame([new_row], columns=self.data_frame.columns)
-            
-            # Split DataFrame and insert new row
             if row_position == 0:
                 self.data_frame = pd.concat([new_df_row, self.data_frame], ignore_index=True)
             elif row_position >= len(self.data_frame):
@@ -1130,23 +935,16 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                 before = self.data_frame.iloc[:row_position]
                 after = self.data_frame.iloc[row_position:]
                 self.data_frame = pd.concat([before, new_df_row, after], ignore_index=True)
-        
         print(f"Inserted new row at position {row_position}")
         
     def delete_row(self):
-        """Delete the currently selected row(s)"""
         selection = self.tableView.selectionModel().selectedIndexes()
         if not selection:
             return
-            
-        # Get unique rows from selection
         selected_rows = sorted(set(index.row() for index in selection), reverse=True)
-        
         model = self.tableView.model()
         if not model:
             return
-            
-        # Confirm deletion for multiple rows
         if len(selected_rows) > 1:
             reply = QMessageBox.question(
                 self,
@@ -1157,42 +955,30 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             )
             if reply != QMessageBox.StandardButton.Yes:
                 return
-        
-        # Delete rows (in reverse order to maintain indices)
         for row in selected_rows:
             model.removeRow(row)
-            
-            # Remove from DataFrame
             if self.data_frame is not None and row < len(self.data_frame):
                 self.data_frame = self.data_frame.drop(self.data_frame.index[row]).reset_index(drop=True)
-        
         print(f"Deleted {len(selected_rows)} row(s)")
         
     def insert_column_left(self):
-        """Insert a new column to the left of the current selection"""
         current_index = self.tableView.currentIndex()
         if not current_index.isValid():
             return
-            
         target_col = current_index.column()
         self._insert_column_at_position(target_col)
         
     def insert_column_right(self):
-        """Insert a new column to the right of the current selection"""
         current_index = self.tableView.currentIndex()
         if not current_index.isValid():
             return
-            
         target_col = current_index.column() + 1
         self._insert_column_at_position(target_col)
         
     def _insert_column_at_position(self, col_position):
-        """Helper method to insert a column at the specified position"""
         model = self.tableView.model()
         if not model:
             return
-            
-        # Prompt for column name
         from PyQt6.QtWidgets import QInputDialog
         column_name, ok = QInputDialog.getText(
             self,
@@ -1200,69 +986,41 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             "Enter column name:",
             text=f"NewColumn{col_position}"
         )
-        
         if not ok or not column_name.strip():
             return
-            
         column_name = column_name.strip()
-        
-        # Insert column in the model
         model.insertColumn(col_position)
-        
-        # Set the header
         model.setHorizontalHeaderItem(col_position, QStandardItem(column_name))
-        
-        # Create empty items for all rows
         for row in range(model.rowCount()):
             item = QStandardItem("")
             model.setItem(row, col_position, item)
-        
-        # Insert corresponding column in DataFrame
         if self.data_frame is not None:
-            # Create new column with empty values
             new_column_data = [None] * len(self.data_frame)
-            
-            # Get column names
             columns = list(self.data_frame.columns)
-            
-            # Insert the new column name at the correct position
             columns.insert(col_position, column_name)
-            
-            # Create new DataFrame with the new column
             new_data = {}
             for i, col_name in enumerate(columns):
                 if i < col_position:
-                    # Columns before insertion point
                     old_col_name = list(self.data_frame.columns)[i]
                     new_data[col_name] = self.data_frame[old_col_name]
                 elif i == col_position:
-                    # New column
                     new_data[col_name] = new_column_data
                 else:
-                    # Columns after insertion point
                     old_col_name = list(self.data_frame.columns)[i - 1]
                     new_data[col_name] = self.data_frame[old_col_name]
-            
             self.data_frame = pd.DataFrame(new_data)
-        
         print(f"Inserted new column '{column_name}' at position {col_position}")
         
     def delete_column(self):
-        """Delete the currently selected column(s)"""
         current_index = self.tableView.currentIndex()
         if not current_index.isValid():
             return
-            
         selected_col = current_index.column()
         model = self.tableView.model()
         if not model:
             return
-            
-        # Get column name for confirmation
         header_item = model.horizontalHeaderItem(selected_col)
         column_name = header_item.text() if header_item else f"Column {selected_col}"
-        
-        # Confirm deletion
         reply = QMessageBox.question(
             self,
             "Delete Column",
@@ -1270,18 +1028,12 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No
         )
-        
         if reply != QMessageBox.StandardButton.Yes:
             return
-        
-        # Delete column from model
         model.removeColumn(selected_col)
-        
-        # Delete column from DataFrame
         if self.data_frame is not None and selected_col < len(self.data_frame.columns):
             column_to_drop = list(self.data_frame.columns)[selected_col]
             self.data_frame = self.data_frame.drop(columns=[column_to_drop])
-        
         print(f"Deleted column '{column_name}'")
 
     def handle_math_action(self, action):
@@ -1290,7 +1042,11 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         if not selection:
             return
 
-        value, ok = QInputDialog.getDouble(self, f"{action.capitalize()} Column", f"Enter value to {action}:")
+        if action in ["increment", "decrement"]:
+            value = 1  # Fixed value for increment/decrement
+            ok = True
+        else:
+            value, ok = QInputDialog.getDouble(self, f"{action.capitalize()} Column", f"Enter value to {action}:")
 
         if ok:
             model = self.tableView.model()
@@ -1303,24 +1059,22 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                             current_value = float(item.text())
                             new_value = 0
                             if action == "multiply":
-                                new_value = current_value * value
+                                new_value = round(current_value * value)  # Round to nearest integer
                             elif action == "divide":
-                                new_value = current_value / value
+                                if value != 0:  # Prevent division by zero
+                                    new_value = round(current_value / value)
                             elif action == "add":
-                                new_value = current_value + value
+                                new_value = round(current_value + value)
                             elif action == "subtract":
-                                new_value = current_value - value
+                                new_value = round(current_value - value)
+                            elif action == "increment":
+                                new_value = round(current_value + 1)
+                            elif action == "decrement":
+                                new_value = round(current_value - 1)
                             
-                            # Format to int if it's a whole number
-                            if new_value == int(new_value):
-                                new_value = int(new_value)
-
                             item.setText(str(new_value))
                             self.data_frame.iat[index.row(), index.column()] = new_value
                         except (ValueError, TypeError):
-                            # Ignore non-numeric cells
                             pass
             finally:
                 self._tracking_changes = True
-
-     
