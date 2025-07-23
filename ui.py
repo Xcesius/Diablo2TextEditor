@@ -1,4 +1,29 @@
-from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenuBar, QFileDialog, QAbstractItemView, QMessageBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QCheckBox, QGridLayout, QListWidget, QListWidgetItem, QTextEdit, QSplitter
+from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenuBar, QFileDialog, QAbstractItemView, QMessageBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QCheckBox, QGridLayout, QListWidget, QListWidgetItem, QTextEdit, QSplitter, QComboBox, QStyledItemDelegate, QInputDialog
+
+
+
+class ComboBoxDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None, items=None):
+        super().__init__(parent)
+        self.items = items or []
+
+    def createEditor(self, parent, option, index):
+        editor = QComboBox(parent)
+        editor.addItems(self.items)
+        editor.setEditable(True)
+        return editor
+
+    def setEditorData(self, editor, index):
+        value = index.model().data(index, Qt.ItemDataRole.EditRole)
+        editor.setCurrentText(str(value))
+
+    def setModelData(self, editor, model, index):
+        value = editor.currentText()
+        model.setData(index, value, Qt.ItemDataRole.EditRole)
+
+    def updateEditorGeometry(self, editor, option, index):
+        editor.setGeometry(option.rect)
+
 from PyQt6.QtGui import QAction, QStandardItemModel, QStandardItem, QKeySequence
 from PyQt6.QtCore import Qt
 from file_parser import open_txt_file, detect_file_type, auto_detect_encoding, save_txt_file, check_for_working_version
@@ -10,6 +35,7 @@ import copy
 import os
 import shutil
 from datetime import datetime
+import json
 
 class UndoCommand:
     """Represents a single undoable action"""
@@ -377,6 +403,37 @@ class BoundFileDialog(QDialog):
         self.metadata_display.setHtml(display_text)
 
 
+from config_manager import ConfigManager
+
+class SettingsDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Settings")
+        self.setModal(True)
+        self.config_manager = ConfigManager()
+
+        layout = QVBoxLayout()
+
+        self.multi_column_selection_checkbox = QCheckBox("Enable multi-column selection")
+        self.multi_column_selection_checkbox.setChecked(self.config_manager.get_setting("multi_column_selection_enabled", False))
+        layout.addWidget(self.multi_column_selection_checkbox)
+
+        button_layout = QHBoxLayout()
+        self.save_button = QPushButton("Save")
+        self.save_button.clicked.connect(self.save_settings)
+        button_layout.addWidget(self.save_button)
+
+        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.clicked.connect(self.reject)
+        button_layout.addWidget(self.cancel_button)
+
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+
+    def save_settings(self):
+        self.config_manager.set_setting("multi_column_selection_enabled", self.multi_column_selection_checkbox.isChecked())
+        self.accept()
+
 class EditorWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(EditorWindow, self).__init__(parent)
@@ -388,6 +445,10 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         self.undo_stack = UndoStack()
         self._tracking_changes = True  # Flag to prevent undo tracking during undo/redo operations
         self.update_window_title()  # Set initial window title
+
+        # Load unique column values
+        self.unique_column_values = {}
+        self.load_unique_column_values()
 
     def create_menus(self):
         # File Menu
@@ -462,6 +523,12 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         select_all_action.setShortcut(QKeySequence.StandardKey.SelectAll)
         select_all_action.triggered.connect(self.select_all)
         edit_menu.addAction(select_all_action)
+
+        # Settings Menu
+        settings_menu = self.menubar.addMenu("&Settings")
+        settings_action = QAction("&Settings...", self)
+        settings_action.triggered.connect(self.show_settings)
+        settings_menu.addAction(settings_action)
 
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Open .txt file", "", "Text Files (*.txt)")
@@ -543,6 +610,18 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         
         self.setWindowTitle(title)
 
+    def load_unique_column_values(self):
+        specs_dir = 'specs'
+        if not os.path.exists(specs_dir):
+            return
+
+        for filename in os.listdir(specs_dir):
+            if filename.endswith('.json'):
+                file_path = os.path.join(specs_dir, filename)
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    self.unique_column_values[os.path.splitext(filename)[0]] = data
+
     def display_data_in_table(self):
         if self.data_frame is not None:
             model = QStandardItemModel(self.data_frame.shape[0], self.data_frame.shape[1])
@@ -579,13 +658,24 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                 header.sectionClicked.disconnect(self.on_header_clicked)
             except TypeError:
                 pass  # No connection existed
-            header.sectionClicked.connect(self.on_header_clicked)
+            header.rightClicked.connect(self.on_header_clicked)
             
             # Connect context menu signals
             self.connect_context_menu_signals()
+
+            # Connect cell click event
+            
             
             # Clear undo stack when loading new file
             self.undo_stack.clear()
+
+            # Set delegates for columns with unique values
+            file_name = os.path.splitext(os.path.basename(self.current_file_path))[0]
+            if file_name in self.unique_column_values:
+                for col_idx, col_name in enumerate(self.data_frame.columns):
+                    if col_name in self.unique_column_values[file_name]:
+                        delegate = ComboBoxDelegate(self.tableView, self.unique_column_values[file_name][col_name])
+                        self.tableView.setItemDelegateForColumn(col_idx, delegate)
             
             print("Data displayed in table.")
             
@@ -794,6 +884,10 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         self.search_dialog.show()
         self.search_dialog.search_input.setFocus()
 
+    def show_settings(self):
+        dialog = SettingsDialog(self)
+        dialog.exec()
+
     def connect_context_menu_signals(self):
         """Connect all context menu signals to their handlers"""
         self.tableView.copy_requested.connect(self.copy_selection)
@@ -807,6 +901,7 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         self.tableView.insert_column_left_requested.connect(self.insert_column_left)
         self.tableView.insert_column_right_requested.connect(self.insert_column_right)
         self.tableView.delete_column_requested.connect(self.delete_column)
+        self.tableView.math_action_requested.connect(self.handle_math_action)
 
     def copy_selection(self):
         """Copy selected cells to clipboard in tab-delimited format"""
@@ -1143,4 +1238,45 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             column_to_drop = list(self.data_frame.columns)[selected_col]
             self.data_frame = self.data_frame.drop(columns=[column_to_drop])
         
-        print(f"Deleted column '{column_name}'") 
+        print(f"Deleted column '{column_name}'")
+
+    def handle_math_action(self, action):
+        """Handle math operations on selected columns"""
+        selection = self.tableView.selectionModel().selectedIndexes()
+        if not selection:
+            return
+
+        value, ok = QInputDialog.getDouble(self, f"{action.capitalize()} Column", f"Enter value to {action}:")
+
+        if ok:
+            model = self.tableView.model()
+            self._tracking_changes = False
+            try:
+                for index in selection:
+                    item = model.item(index.row(), index.column())
+                    if item:
+                        try:
+                            current_value = float(item.text())
+                            new_value = 0
+                            if action == "multiply":
+                                new_value = current_value * value
+                            elif action == "divide":
+                                new_value = current_value / value
+                            elif action == "add":
+                                new_value = current_value + value
+                            elif action == "subtract":
+                                new_value = current_value - value
+                            
+                            # Format to int if it's a whole number
+                            if new_value == int(new_value):
+                                new_value = int(new_value)
+
+                            item.setText(str(new_value))
+                            self.data_frame.iat[index.row(), index.column()] = new_value
+                        except (ValueError, TypeError):
+                            # Ignore non-numeric cells
+                            pass
+            finally:
+                self._tracking_changes = True
+
+     
