@@ -1,0 +1,7 @@
+{
+    "settings": {
+        "multi_column_selection_enabled": true,
+        "ignore_empty_cells_on_column_select": true,
+        "debug_mode_enabled": true
+    }
+}

@@ -25,7 +25,7 @@ class ComboBoxDelegate(QStyledItemDelegate):
         editor.setGeometry(option.rect)
 
 from PyQt6.QtGui import QAction, QStandardItemModel, QStandardItem, QKeySequence
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QItemSelection
 from file_parser import open_txt_file, detect_file_type, auto_detect_encoding, save_txt_file, check_for_working_version
 import pandas as pd
 from custom_widgets import CleanTableView
@@ -418,6 +418,18 @@ class SettingsDialog(QDialog):
         self.multi_column_selection_checkbox.setChecked(self.config_manager.get_setting("multi_column_selection_enabled", False))
         layout.addWidget(self.multi_column_selection_checkbox)
 
+        self.ignore_empty_cells_checkbox = QCheckBox("Ignore empty cells on column select")
+        self.ignore_empty_cells_checkbox.setChecked(self.config_manager.get_setting("ignore_empty_cells_on_column_select", False))
+        layout.addWidget(self.ignore_empty_cells_checkbox)
+
+        self.multi_column_select_all_checkbox = QCheckBox("Enable multi-column select all (Ctrl+R)")
+        self.multi_column_select_all_checkbox.setChecked(self.config_manager.get_setting("multi_column_select_all_enabled", False))
+        layout.addWidget(self.multi_column_select_all_checkbox)
+
+        self.debug_mode_checkbox = QCheckBox("Enable Debug Mode")
+        self.debug_mode_checkbox.setChecked(self.config_manager.get_setting("debug_mode_enabled", False))
+        layout.addWidget(self.debug_mode_checkbox)
+
         button_layout = QHBoxLayout()
         self.save_button = QPushButton("Save")
         self.save_button.clicked.connect(self.save_settings)
@@ -432,6 +444,9 @@ class SettingsDialog(QDialog):
 
     def save_settings(self):
         self.config_manager.set_setting("multi_column_selection_enabled", self.multi_column_selection_checkbox.isChecked())
+        self.config_manager.set_setting("ignore_empty_cells_on_column_select", self.ignore_empty_cells_checkbox.isChecked())
+        self.config_manager.set_setting("multi_column_select_all_enabled", self.multi_column_select_all_checkbox.isChecked())
+        self.config_manager.set_setting("debug_mode_enabled", self.debug_mode_checkbox.isChecked())
         self.accept()
 
 class EditorWindow(QMainWindow, Ui_MainWindow):
@@ -445,6 +460,7 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         self.undo_stack = UndoStack()
         self._tracking_changes = True  # Flag to prevent undo tracking during undo/redo operations
         self.update_window_title()  # Set initial window title
+        self.config_manager = ConfigManager()
 
         # Load unique column values
         self.unique_column_values = {}
@@ -902,6 +918,7 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         self.tableView.insert_column_right_requested.connect(self.insert_column_right)
         self.tableView.delete_column_requested.connect(self.delete_column)
         self.tableView.math_action_requested.connect(self.handle_math_action)
+        self.tableView.select_column_requested.connect(self.select_column)
 
     def copy_selection(self):
         """Copy selected cells to clipboard in tab-delimited format"""
@@ -1035,6 +1052,33 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
     def select_all(self):
         """Select all cells in the table"""
         self.tableView.selectAll()
+
+    def select_column(self, column):
+        """Select all cells in the given column(s)"""
+        model = self.tableView.model()
+        if not model:
+            return
+
+        multi_column_select_all = self.config_manager.get_setting("multi_column_select_all_enabled", False)
+        ignore_empty = self.config_manager.get_setting("ignore_empty_cells_on_column_select", False)
+
+        selection = QItemSelection()
+        columns_to_select = [column]
+
+        if multi_column_select_all:
+            selected_indexes = self.tableView.selectionModel().selectedIndexes()
+            if selected_indexes:
+                columns_to_select = sorted(list(set(index.column() for index in selected_indexes)))
+
+        for col in columns_to_select:
+            for row in range(model.rowCount()):
+                index = model.index(row, col)
+                item = model.itemFromIndex(index)
+                if not ignore_empty or (item and item.text()):
+                    selection.select(index, index)
+
+        self.tableView.selectionModel().clear()
+        self.tableView.selectionModel().select(selection, self.tableView.selectionModel().SelectionFlag.Select)
 
     def insert_row_above(self):
         """Insert a new row above the current selection"""

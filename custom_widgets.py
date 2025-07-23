@@ -45,6 +45,7 @@ class CleanTableView(QTableView):
     insert_column_right_requested = pyqtSignal()
     delete_column_requested = pyqtSignal()
     math_action_requested = pyqtSignal(str)
+    select_column_requested = pyqtSignal(int)
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -67,31 +68,61 @@ class CleanTableView(QTableView):
         self._selection_start_index = None
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton and (event.modifiers() & Qt.KeyboardModifier.ControlModifier):
+        if self.config_manager.get_setting("debug_mode_enabled", False):
+            print(f"[DEBUG] mousePressEvent: button={event.button()}, modifiers={QApplication.keyboardModifiers()}")
+
+        if event.button() == Qt.MouseButton.LeftButton and (QApplication.keyboardModifiers() & Qt.KeyboardModifier.ControlModifier):
+            if self.config_manager.get_setting("debug_mode_enabled", False):
+                print("[DEBUG] Starting column selection")
             self._is_column_selection = True
             self._selection_start_index = self.indexAt(event.pos())
             self.selectionModel().clear()
+            self.setCurrentIndex(self._selection_start_index) # Set current index here
             self.selectionModel().select(self._selection_start_index, self.selectionModel().SelectionFlag.Select)
+            event.accept()
         else:
+            if self.config_manager.get_setting("debug_mode_enabled", False):
+                print("[DEBUG] Not a column selection, calling super().mousePressEvent")
             self._is_column_selection = False
             super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
+        if self.config_manager.get_setting("debug_mode_enabled", False):
+            print(f"[DEBUG] mouseMoveEvent: _is_column_selection={self._is_column_selection}")
+
         if self._is_column_selection:
             current_index = self.indexAt(event.pos())
+            if self.config_manager.get_setting("debug_mode_enabled", False):
+                print(f"[DEBUG] mouseMoveEvent: current_index=({current_index.row()}, {current_index.column()})")
+
             multi_column_enabled = self.config_manager.get_setting("multi_column_selection_enabled", False)
             if multi_column_enabled or current_index.column() == self._selection_start_index.column():
                 selection_range = QItemSelection(self._selection_start_index, current_index)
-                self.selectionModel().select(selection_range, self.selectionModel().SelectionFlag.Select)
+                self.selectionModel().select(selection_range, self.selectionModel().SelectionFlag.ClearAndSelect)
+            event.accept()
         else:
             super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
+        if self.config_manager.get_setting("debug_mode_enabled", False):
+            print(f"[DEBUG] mouseReleaseEvent: _is_column_selection={self._is_column_selection}")
+
         if self._is_column_selection:
             self._is_column_selection = False
             self._selection_start_index = None
+            event.accept()
         else:
+            if self.config_manager.get_setting("debug_mode_enabled", False):
+                print("[DEBUG] Not a column selection, calling super().mouseReleaseEvent")
             super().mouseReleaseEvent(event)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_R and (event.modifiers() & Qt.KeyboardModifier.ControlModifier):
+            current_index = self.currentIndex()
+            if current_index.isValid():
+                self.select_column_requested.emit(current_index.column())
+        else:
+            super().keyPressEvent(event)
         
     def show_context_menu(self, position):
         """Show context menu at the given position"""
@@ -129,6 +160,11 @@ class CleanTableView(QTableView):
         select_all_action.setShortcut(QKeySequence.StandardKey.SelectAll)
         select_all_action.triggered.connect(self.select_all_requested.emit)
         menu.addAction(select_all_action)
+
+        select_column_action = QAction("Select &Column", self)
+        select_column_action.setShortcut(QKeySequence("Ctrl+R"))
+        select_column_action.triggered.connect(lambda: self.select_column_requested.emit(index.column()))
+        menu.addAction(select_column_action)
         
         menu.addSeparator()
 
@@ -207,6 +243,7 @@ class CleanTableView(QTableView):
         
         # Row/column operations are enabled when we have a valid selection
         has_valid_selection = index.isValid()
+        select_row_action.setEnabled(has_valid_selection)
         insert_row_above_action.setEnabled(has_valid_selection)
         insert_row_below_action.setEnabled(has_valid_selection)
         delete_row_action.setEnabled(has_valid_selection)
