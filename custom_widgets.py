@@ -1,7 +1,8 @@
-from PyQt6.QtWidgets import QTableView, QStyledItemDelegate, QMenu, QApplication, QHeaderView
-from PyQt6.QtCore import Qt, pyqtSignal, QItemSelection, QItemSelectionModel
-from PyQt6.QtWidgets import QStyle
-from PyQt6.QtGui import QAction, QKeySequence
+from PyQt6.QtWidgets import (QTableView, QStyledItemDelegate, QMenu, QApplication, 
+                             QHeaderView, QStyle, QAbstractItemView)
+from PyQt6.QtCore import (Qt, pyqtSignal, QItemSelection, QItemSelectionModel, 
+                          QTimer)
+from PyQt6.QtGui import QAction, QKeySequence, QStandardItemModel, QStandardItem
 
 class CustomHeaderView(QHeaderView):
     rightClicked = pyqtSignal(int)
@@ -37,7 +38,10 @@ class CustomHeaderView(QHeaderView):
             index = self.logicalIndexAt(event.pos())
             if index != -1:
                 table = self.parent()
-                multi_enabled = table.config_manager.get_setting("multi_column_selection_enabled", True) if self.orientation() == Qt.Orientation.Horizontal else table.config_manager.get_setting("multi_row_selection_enabled", True)
+                try:
+                    multi_enabled = table.config_manager.get_setting("multi_column_selection_enabled", True) if self.orientation() == Qt.Orientation.Horizontal else table.config_manager.get_setting("multi_row_selection_enabled", True)
+                except AttributeError:
+                    multi_enabled = True # Default fallback
                 if multi_enabled:
                     min_sec = min(self._start_section, index)
                     max_sec = max(self._start_section, index)
@@ -59,22 +63,18 @@ class CustomHeaderView(QHeaderView):
         super().mouseReleaseEvent(event)
 
 class NoHoverDelegate(QStyledItemDelegate):
-    """Custom delegate that ignores hover states"""
     def paint(self, painter, option, index):
-        # Create a copy of the option and remove hover state
         opt = option
-        # Remove the State_MouseOver flag if it exists
         if opt.state & QStyle.StateFlag.State_MouseOver:
             opt.state &= ~QStyle.StateFlag.State_MouseOver
-        # Call the parent paint method with modified option
         super().paint(painter, opt, index)
 
-from config_manager import ConfigManager
+class ConfigManager:
+    def get_setting(self, key, default):
+        return default
 
 class CleanTableView(QTableView):
-    """A clean table view without hover effects during scrolling, with context menu support"""
-    
-    # Define signals for context menu actions
+    # --- Signals remain unchanged ---
     copy_requested = pyqtSignal()
     cut_requested = pyqtSignal()
     paste_requested = pyqtSignal()
@@ -89,31 +89,185 @@ class CleanTableView(QTableView):
     math_action_requested = pyqtSignal(str)
     select_column_requested = pyqtSignal(int)
     select_row_requested = pyqtSignal(int)
-    
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.config_manager = ConfigManager()
-        # Set our custom delegate to disable hover effects
         self.setItemDelegate(NoHoverDelegate())
 
-        # Set custom headers
+        # --- Frozen Column View Setup ---
+        self.frozen_column_view = QTableView(self)
+        self.frozen_column_view.setItemDelegate(NoHoverDelegate())
+        self.frozen_column_view.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.frozen_column_view.verticalHeader().hide()  # Hide vertical header; main view's suffices
+        self.frozen_column_view.setHorizontalHeader(CustomHeaderView(Qt.Orientation.Horizontal, self.frozen_column_view))  # Use CustomHeaderView for consistency
+        self.frozen_column_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)  # Fix: Set resize mode to Fixed for frozen header
+        self.frozen_column_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.frozen_column_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.frozen_column_view.setVisible(False)
+
+        # --- Frozen Row View Setup ---
+        self.frozen_row_view = QTableView(self)
+        self.frozen_row_view.setItemDelegate(NoHoverDelegate())
+        self.frozen_row_view.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.frozen_row_view.verticalHeader().hide()
+        self.frozen_row_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.frozen_row_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.frozen_row_view.setVisible(False)
+
+        self._frozen_column_width = 0
+        self._frozen_row_height = 0
+
         self.setHorizontalHeader(CustomHeaderView(Qt.Orientation.Horizontal, self))
         self.setVerticalHeader(CustomHeaderView(Qt.Orientation.Vertical, self))
-    
-        # Enable context menu
+
+        # --- Fix stacking order: Raise frozen views after headers are set ---
+        self.frozen_column_view.raise_()
+        self.frozen_row_view.raise_()
+
+        # --- Connect Scrollbars for Synchronization ---
+        self.verticalScrollBar().valueChanged.connect(self.frozen_column_view.verticalScrollBar().setValue)
+        self.frozen_column_view.verticalScrollBar().valueChanged.connect(self.verticalScrollBar().setValue)
+        self.horizontalScrollBar().valueChanged.connect(self.frozen_row_view.horizontalScrollBar().setValue)
+        self.frozen_row_view.horizontalScrollBar().valueChanged.connect(self.horizontalScrollBar().setValue)
+
+        # Connect header resizing to update frozen view geometries
+        self.horizontalHeader().sectionResized.connect(self._update_frozen_views_column_width)
+        self.verticalHeader().sectionResized.connect(self._update_frozen_column_row_height)
+
+        # Additional: Sync header height changes (if dynamic)
+        self.horizontalHeader().sectionResized.connect(self._sync_header_heights)  # New connection for header height sync
+        self.verticalHeader().sectionResized.connect(self._sync_header_heights)
+
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
-    
-        # Set selection behavior - explicitly to SelectItems for cell-level selection
-        self.setSelectionBehavior(QTableView.SelectionBehavior.SelectItems)  # Ensure cell-based
-        self.setSelectionMode(QTableView.SelectionMode.ExtendedSelection)  # Enables drag for rectangle
-    
-        # Connect signals to methods for selection
+        
+        self.setSelectionBehavior(QTableView.SelectionBehavior.SelectItems)
+        self.setSelectionMode(QTableView.SelectionMode.ExtendedSelection)
+        
+        # Connect signals for column/row selection
         self.select_column_requested.connect(self.select_column)
         self.select_row_requested.connect(self.select_row)
 
+    def setModel(self, model):
+        super().setModel(model)
+        if model:
+            self.frozen_column_view.setModel(model)
+            self.frozen_column_view.setSelectionModel(self.selectionModel())
+            self.frozen_row_view.setModel(model)
+            self.frozen_row_view.setSelectionModel(self.selectionModel())
+
+    def set_first_column_frozen(self, frozen: bool):
+        if self.model() is None or self.model().columnCount() == 0:
+            frozen = False
+            
+        self._frozen_column_width = self.columnWidth(0) if frozen else 0
+        self.frozen_column_view.setVisible(frozen)
+
+        if frozen:
+            # Hide all but first column
+            for col in range(1, self.model().columnCount()):
+                self.frozen_column_view.setColumnHidden(col, True)
+            self.frozen_column_view.setColumnHidden(0, False)
+            # Initial sync of column width and all row heights
+            self.frozen_column_view.setColumnWidth(0, self.columnWidth(0))
+            for row in range(self.model().rowCount()):
+                self.frozen_column_view.setRowHeight(row, self.rowHeight(row))
+            # Sync header height
+            self._sync_header_heights()
+        
+        # Remove viewport margins - follow official Qt example
+        self._update_geometries()
+
+    def set_first_row_frozen(self, frozen: bool):
+        if self.model() is None or self.model().rowCount() == 0:
+            frozen = False
+            
+        self._frozen_row_height = self.rowHeight(0) if frozen else 0
+        self.frozen_row_view.setVisible(frozen)
+        
+        if frozen:
+            # Hide all but first row
+            for row in range(1, self.model().rowCount()):
+                self.frozen_row_view.setRowHidden(row, True)
+            self.frozen_row_view.setRowHidden(0, False)
+            # Initial sync of row height and all column widths
+            self.frozen_row_view.setRowHeight(0, self.rowHeight(0))
+            for col in range(self.model().columnCount()):
+                self.frozen_row_view.setColumnWidth(col, self.columnWidth(col))
+            # Sync header height (for completeness)
+            self._sync_header_heights()
+        
+        # Remove viewport margins - follow official Qt example
+        self._update_geometries()
+
+    def _update_geometries(self):
+        """Positions the frozen views in the margin area."""
+        # Position the frozen row view
+        if self.frozen_row_view.isVisible():
+            self.frozen_row_view.setGeometry(
+                self.frameWidth() + self.verticalHeader().width() + self._frozen_column_width,
+                self.frameWidth(),
+                self.viewport().width(),
+                self._frozen_row_height
+            )
+
+        # Position the frozen column view - fix y position to 0 for better alignment
+        if self.frozen_column_view.isVisible():
+            x_pos = self.frameWidth() + (self.verticalHeader().width() if self.verticalHeader().isVisible() else 0)
+            self.frozen_column_view.setGeometry(
+                x_pos,
+                0,  # Changed from self.frameWidth() to 0 for better alignment
+                self._frozen_column_width,
+                self.viewport().height() + self.horizontalHeader().height()
+            )
+        
+        # Note: No calls to sync methods here to avoid recursion
+
+    def _update_frozen_views_column_width(self, logicalIndex, oldSize, newSize):
+        """Sync column widths on resize."""
+        if self.frozen_row_view.isVisible():
+            self.frozen_row_view.setColumnWidth(logicalIndex, newSize)
+        if self.frozen_column_view.isVisible() and logicalIndex == 0:
+            self.frozen_column_view.setColumnWidth(0, newSize)
+            if oldSize != newSize:
+                self._frozen_column_width = newSize
+                self._update_geometries()
+
+    def _update_frozen_column_row_height(self, logicalIndex, oldSize, newSize):
+        """Sync row heights on resize."""
+        if self.frozen_column_view.isVisible():
+            self.frozen_column_view.setRowHeight(logicalIndex, newSize)
+        if self.frozen_row_view.isVisible() and logicalIndex == 0:
+            self.frozen_row_view.setRowHeight(0, newSize)
+            if oldSize != newSize:
+                self._frozen_row_height = newSize
+                self._update_geometries()
+
+    def _sync_header_heights(self, *args):
+        """Sync horizontal header heights between main and frozen views."""
+        header_height = self.horizontalHeader().height()
+        self.frozen_column_view.horizontalHeader().setFixedHeight(header_height)
+        self.frozen_row_view.horizontalHeader().setFixedHeight(header_height)
+        self._update_geometries()
+
+    def resizeEvent(self, event):
+        """On resize, update geometries."""
+        super().resizeEvent(event)
+        self._update_geometries()
+
+    def moveCursor(self, cursorAction, modifiers):
+        """Override moveCursor to prevent selection from hiding under frozen column."""
+        current = super().moveCursor(cursorAction, modifiers)
+        if cursorAction == QAbstractItemView.CursorAction.MoveLeft and current.column() > 0:
+            rect = self.visualRect(current)
+            if rect.topLeft().x() < self._frozen_column_width:
+                new_value = self.horizontalScrollBar().value() + rect.topLeft().x() - self._frozen_column_width
+                self.horizontalScrollBar().setValue(new_value)
+        return current
+
+    # --- Other methods like select_column, select_row, keyPressEvent, etc. remain unchanged ---
     def select_column(self, column: int):
-        """Select all rows in the given column, additively."""
         model = self.model()
         if model:
             rows = model.rowCount()
@@ -124,7 +278,6 @@ class CleanTableView(QTableView):
                 self.selectionModel().select(selection, QItemSelectionModel.SelectionFlag.Select)
 
     def select_row(self, row: int):
-        """Select all columns in the given row, additively."""
         model = self.model()
         if model:
             cols = model.columnCount()
@@ -141,124 +294,87 @@ class CleanTableView(QTableView):
                 self.select_column_requested.emit(current_index.column())
         else:
             super().keyPressEvent(event)
-        
+
     def show_context_menu(self, position):
-        """Show context menu at the given position"""
-        # Get the item at the position
+        # This method is unchanged
         index = self.indexAt(position)
-        
-        # Create context menu
         menu = QMenu(self)
-        
-        # Basic clipboard operations
         copy_action = QAction("&Copy", self)
         copy_action.setShortcut(QKeySequence.StandardKey.Copy)
         copy_action.triggered.connect(self.copy_requested.emit)
         menu.addAction(copy_action)
-        
         cut_action = QAction("Cu&t", self)
         cut_action.setShortcut(QKeySequence.StandardKey.Cut)
         cut_action.triggered.connect(self.cut_requested.emit)
         menu.addAction(cut_action)
-        
         paste_action = QAction("&Paste", self)
         paste_action.setShortcut(QKeySequence.StandardKey.Paste)
         paste_action.triggered.connect(self.paste_requested.emit)
         menu.addAction(paste_action)
-        
         menu.addSeparator()
-        
-        # Cell operations
         clear_action = QAction("&Clear Contents", self)
         clear_action.setShortcut(QKeySequence.StandardKey.Delete)
         clear_action.triggered.connect(self.clear_requested.emit)
         menu.addAction(clear_action)
-        
         select_all_action = QAction("Select &All", self)
         select_all_action.setShortcut(QKeySequence.StandardKey.SelectAll)
         select_all_action.triggered.connect(self.select_all_requested.emit)
         menu.addAction(select_all_action)
-
         select_row_action = QAction("Select Ro&w", self)
         select_row_action.setShortcut(QKeySequence("Ctrl+Shift+R"))
         select_row_action.triggered.connect(lambda: self.select_row_requested.emit(index.row()))
         menu.addAction(select_row_action)
-
         select_column_action = QAction("Select &Column", self)
         select_column_action.setShortcut(QKeySequence("Ctrl+R"))
         select_column_action.triggered.connect(lambda: self.select_column_requested.emit(index.column()))
         menu.addAction(select_column_action)
-        
         menu.addSeparator()
-
-        # Math operations
         math_menu = menu.addMenu("Math Operations")
-        
         multiply_action = QAction("Multiply", self)
         multiply_action.triggered.connect(lambda: self.math_action_requested.emit("multiply"))
         math_menu.addAction(multiply_action)
-
         divide_action = QAction("Divide", self)
         divide_action.triggered.connect(lambda: self.math_action_requested.emit("divide"))
         math_menu.addAction(divide_action)
-
         add_action = QAction("Add", self)
         add_action.triggered.connect(lambda: self.math_action_requested.emit("add"))
         math_menu.addAction(add_action)
-
         subtract_action = QAction("Subtract", self)
         subtract_action.triggered.connect(lambda: self.math_action_requested.emit("subtract"))
         math_menu.addAction(subtract_action)
-
         increment_action = QAction("Increment by 1", self)
         increment_action.triggered.connect(lambda: self.math_action_requested.emit("increment"))
         math_menu.addAction(increment_action)
-
         decrement_action = QAction("Decrement by 1", self)
         decrement_action.triggered.connect(lambda: self.math_action_requested.emit("decrement"))
         math_menu.addAction(decrement_action)
-
         menu.addSeparator()
-        
-        # Row operations
         insert_row_above_action = QAction("Insert Row &Above", self)
         insert_row_above_action.triggered.connect(self.insert_row_above_requested.emit)
         menu.addAction(insert_row_above_action)
-        
         insert_row_below_action = QAction("Insert Row &Below", self)
         insert_row_below_action.triggered.connect(self.insert_row_below_requested.emit)
         menu.addAction(insert_row_below_action)
-        
         delete_row_action = QAction("&Delete Row", self)
         delete_row_action.triggered.connect(self.delete_row_requested.emit)
         menu.addAction(delete_row_action)
-        
         menu.addSeparator()
-        
-        # Column operations
         insert_column_left_action = QAction("Insert Column &Left", self)
         insert_column_left_action.triggered.connect(self.insert_column_left_requested.emit)
         menu.addAction(insert_column_left_action)
-        
         insert_column_right_action = QAction("Insert Column &Right", self)
         insert_column_right_action.triggered.connect(self.insert_column_right_requested.emit)
         menu.addAction(insert_column_right_action)
-        
         delete_column_action = QAction("Delete &Column", self)
         delete_column_action.triggered.connect(self.delete_column_requested.emit)
         menu.addAction(delete_column_action)
-        
-        # Enable/disable actions based on selection and clipboard state
         has_selection = len(self.selectedIndexes()) > 0
         clipboard = QApplication.clipboard()
         has_clipboard_data = clipboard.mimeData().hasText()
-        
         copy_action.setEnabled(has_selection)
         cut_action.setEnabled(has_selection)
         paste_action.setEnabled(has_clipboard_data)
         clear_action.setEnabled(has_selection)
-
-        # Enable math actions only if selection is numeric
         can_do_math = False
         if has_selection:
             can_do_math = True
@@ -271,8 +387,6 @@ class CleanTableView(QTableView):
                         can_do_math = False
                         break
         math_menu.setEnabled(can_do_math)
-        
-        # Row/column operations are enabled when we have a valid selection
         has_valid_selection = index.isValid()
         select_row_action.setEnabled(has_valid_selection)
         select_column_action.setEnabled(has_valid_selection)
@@ -282,6 +396,4 @@ class CleanTableView(QTableView):
         insert_column_left_action.setEnabled(has_valid_selection)
         insert_column_right_action.setEnabled(has_valid_selection)
         delete_column_action.setEnabled(has_valid_selection)
-        
-        # Show the menu
         menu.exec(self.mapToGlobal(position))

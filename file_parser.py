@@ -196,7 +196,10 @@ def detect_file_type(file_path):
     
     # Check for partial matches (without .txt extension)
     for known_file, info in known_files.items():
-        if base_name == known_file.replace('.txt', ''):
+        # We need to match the whole base name to avoid partial matches
+        # For example, we don't want 'levels-x5' to match 'levels'
+        known_base = known_file.replace('.txt', '')
+        if base_name == known_base:
             return (info[0], 'medium', info[2])
     
     print(f"Filename detection failed for {file_name}, trying column-based detection...")

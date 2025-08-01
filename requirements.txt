@@ -1,15 +1,11 @@
 # Core dependencies for Diablo II Text Editor
 # Note: tkinter, pathlib, json are usually included with Python
 
-# Testing
-pytest>=7.0.0
-pytest-cov>=4.0.0
-
-# File processing
-chardet>=5.0.0
-
-# Optional: Development tools
-black>=23.0.0
-flake8>=6.0.0
+pytest>=8.4.1
+pytest-cov>=6.2.1
+chardet>=5.2.0
+black>=25.3.0
+flake8>=7.3.0
+PyQt6>=6.9.1
 
 # For PDF processing, install: pip install -r requirements_pdf.txt 

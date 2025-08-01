@@ -20,6 +20,10 @@ class ConfigManager:
         settings.setdefault("multi_column_selection_enabled", False)
         settings.setdefault("ignore_empty_cells_on_column_select", False)
         settings.setdefault("debug_mode_enabled", False)
+        # Add the new setting for the frozen column's header
+        settings.setdefault("show_row_numbers_on_frozen_column", False)
+        # Add the new setting for freezing the first row
+        #settings.setdefault("freeze_first_row_enabled", False)
         config["settings"] = settings
         return config
 

@@ -396,6 +396,15 @@ class SettingsDialog(QDialog):
         self.multi_column_select_all_checkbox.setChecked(self.config_manager.get_setting("multi_column_select_all_enabled", False))
         layout.addWidget(self.multi_column_select_all_checkbox)
 
+        self.show_row_numbers_checkbox = QCheckBox("Show row numbers on frozen column")
+        self.show_row_numbers_checkbox.setChecked(self.config_manager.get_setting("show_row_numbers_on_frozen_column", False))
+        layout.addWidget(self.show_row_numbers_checkbox)
+
+        # Add the new checkbox for freezing the first row
+       # self.freeze_first_row_checkbox = QCheckBox("Enable freezing the first row")
+       # self.freeze_first_row_checkbox.setChecked(self.config_manager.get_setting("freeze_first_row_enabled", False))
+       # layout.addWidget(self.freeze_first_row_checkbox)
+
         self.debug_mode_checkbox = QCheckBox("Enable Debug Mode")
         self.debug_mode_checkbox.setChecked(self.config_manager.get_setting("debug_mode_enabled", False))
         layout.addWidget(self.debug_mode_checkbox)
@@ -416,6 +425,9 @@ class SettingsDialog(QDialog):
         self.config_manager.set_setting("multi_column_selection_enabled", self.multi_column_selection_checkbox.isChecked())
         self.config_manager.set_setting("ignore_empty_cells_on_column_select", self.ignore_empty_cells_checkbox.isChecked())
         self.config_manager.set_setting("multi_column_select_all_enabled", self.multi_column_select_all_checkbox.isChecked())
+        self.config_manager.set_setting("show_row_numbers_on_frozen_column", self.show_row_numbers_checkbox.isChecked())
+        # Save the new setting
+        #self.config_manager.set_setting("freeze_first_row_enabled", self.freeze_first_row_checkbox.isChecked())
         self.config_manager.set_setting("debug_mode_enabled", self.debug_mode_checkbox.isChecked())
         self.accept()
 
@@ -423,108 +435,148 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(EditorWindow, self).__init__(parent)
         self.setupUi(self)
-        self.create_menus()
         self.data_frame = None
         self.current_file_path = None
         self.current_binding = None
         self.undo_stack = UndoStack()
         self._tracking_changes = True
-        self.update_window_title()
         self.config_manager = ConfigManager()
         self.unique_column_values = {}
         self.load_unique_column_values()
+        self.create_menus()
+        self.apply_initial_settings()
+        self.update_window_title()
 
     def create_menus(self):
+        # File Menu
         file_menu = self.menubar.addMenu("&File")
-
         open_action = QAction("&Open...", self)
         open_action.setShortcut(QKeySequence.StandardKey.Open)
         open_action.triggered.connect(self.open_file)
         file_menu.addAction(open_action)
-        
         open_bound_action = QAction("Open &Bound File...", self)
         open_bound_action.setShortcut(QKeySequence("Ctrl+B"))
         open_bound_action.triggered.connect(self.open_bound_file)
         file_menu.addAction(open_bound_action)
-
         save_action = QAction("&Save", self)
         save_action.setShortcut(QKeySequence.StandardKey.Save)
         save_action.triggered.connect(self.save_file)
         file_menu.addAction(save_action)
-
         save_as_action = QAction("Save &As...", self)
         save_as_action.setShortcut(QKeySequence.StandardKey.SaveAs)
         save_as_action.triggered.connect(self.save_file_as)
         file_menu.addAction(save_as_action)
 
+        # Edit Menu
         edit_menu = self.menubar.addMenu("&Edit")
-
         undo_action = QAction("&Undo", self)
         undo_action.setShortcut(QKeySequence.StandardKey.Undo)
         undo_action.triggered.connect(self.undo)
         edit_menu.addAction(undo_action)
-
         redo_action = QAction("&Redo", self)
         redo_action.setShortcut(QKeySequence.StandardKey.Redo)
         redo_action.triggered.connect(self.redo)
         edit_menu.addAction(redo_action)
-
         edit_menu.addSeparator()
-
         find_replace_action = QAction("&Find && Replace...", self)
         find_replace_action.setShortcut(QKeySequence.StandardKey.Find)
         find_replace_action.triggered.connect(self.show_search_replace)
         edit_menu.addAction(find_replace_action)
-
         edit_menu.addSeparator()
-
         copy_action = QAction("&Copy", self)
         copy_action.setShortcut(QKeySequence.StandardKey.Copy)
         copy_action.triggered.connect(self.copy_selection)
         edit_menu.addAction(copy_action)
-
         cut_action = QAction("Cu&t", self)
         cut_action.setShortcut(QKeySequence.StandardKey.Cut)
         cut_action.triggered.connect(self.cut_selection)
         edit_menu.addAction(cut_action)
-
         paste_action = QAction("&Paste", self)
         paste_action.setShortcut(QKeySequence.StandardKey.Paste)
         paste_action.triggered.connect(self.paste_selection)
         edit_menu.addAction(paste_action)
-
         edit_menu.addSeparator()
-
         clear_action = QAction("&Clear Contents", self)
         clear_action.setShortcut(QKeySequence.StandardKey.Delete)
         clear_action.triggered.connect(self.clear_selection)
         edit_menu.addAction(clear_action)
-
         select_all_action = QAction("Select &All", self)
         select_all_action.setShortcut(QKeySequence.StandardKey.SelectAll)
         select_all_action.triggered.connect(self.select_all)
         edit_menu.addAction(select_all_action)
+        
+        # View Menu
+        view_menu = self.menubar.addMenu("&View")
+        self.freeze_col_action = QAction("Freeze First Column", self, checkable=True)
+        self.freeze_col_action.triggered.connect(self.toggle_freeze_first_column)
+        view_menu.addAction(self.freeze_col_action)
+        
+        #self.freeze_row_action = QAction("Freeze First Row", self, checkable=True)
+        #self.freeze_row_action.triggered.connect(self.toggle_freeze_first_row)
+        #view_menu.addAction(self.freeze_row_action)
 
+        # Settings Menu
         settings_menu = self.menubar.addMenu("&Settings")
         settings_action = QAction("&Settings...", self)
         settings_action.triggered.connect(self.show_settings)
         settings_menu.addAction(settings_action)
 
+    def apply_initial_settings(self):
+        """Loads and applies settings from the config manager on startup."""
+        # Freeze Column Setting
+        freeze_col = self.config_manager.get_setting("freeze_first_column_enabled", False)
+        self.freeze_col_action.setChecked(freeze_col)
+        self.tableView.set_first_column_frozen(freeze_col)
+        
+        # Freeze Row Setting
+       # freeze_row = self.config_manager.get_setting("freeze_first_row_enabled", False)
+        #self.freeze_row_action.setChecked(freeze_row)
+        #self.tableView.set_first_row_frozen(freeze_row)
+
+    def toggle_freeze_first_column(self, frozen):
+        """Handles the 'Freeze First Column' menu action."""
+        if self.data_frame is None or self.data_frame.shape[1] == 0:
+            self.freeze_col_action.setChecked(False)
+            return
+            
+        self.tableView.set_first_column_frozen(frozen)
+        self.config_manager.set_setting("freeze_first_column_enabled", frozen)
+        print(f"Freeze first column {'enabled' if frozen else 'disabled'}.")
+
+    def toggle_freeze_first_row(self, frozen):
+        return
+       # """Handles the 'Freeze First Row' menu action."""
+       # if self.data_frame is None or self.data_frame.shape[0] == 0:
+        #    self.freeze_row_action.setChecked(False)
+         #   return
+        
+        #self.tableView.set_first_row_frozen(frozen)
+        #self.config_manager.set_setting("freeze_first_row_enabled", frozen)
+        #print(f"Freeze first row {'enabled' if frozen else 'disabled'}.")
+
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Open .txt file", "", "Text Files (*.txt)")
         if file_path:
+           
+            # Auto-detect file type and encoding silently
             file_type, confidence, binding_key = detect_file_type(file_path)
             detected_encoding = auto_detect_encoding(file_path)
             
+            # Try to find and apply binding if detected  
             binding_manager = get_binding_manager()
+            
+            # Force refresh if no bindings loaded (happens after directory reorganization)
             if len(binding_manager.get_all_bindings()) == 0:
                 print("  No metadata loaded, forcing refresh...")
                 binding_manager.refresh_bindings()
             
             applied_binding = None
+            
             if binding_key and confidence in ['high', 'medium']:
+                # Create dynamic binding for the detected file type and current file
                 applied_binding = binding_manager.create_dynamic_binding(binding_key, file_path)
             
+            # Print detection results to console for debugging
             print(f"Auto-detection results:")
             print(f"  File: {os.path.basename(file_path)}")
             print(f"  Type: {file_type} (confidence: {confidence})")
@@ -532,8 +584,10 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             if applied_binding:
                 print(f"  Applied binding: {applied_binding.base_name}")
             
+            # Load the file directly
             self.current_file_path = file_path
             self.current_binding = applied_binding
+            
             data = open_txt_file(file_path)
             if data is not None:
                 print(f"File loaded successfully! Type: {file_type}, Encoding: {detected_encoding}")
@@ -620,6 +674,8 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                         delegate = ComboBoxDelegate(self.tableView, self.unique_column_values[file_name][col_name])
                         self.tableView.setItemDelegateForColumn(col_idx, delegate)
             
+            # Re-apply freeze settings now that data is loaded
+            self.apply_initial_settings()
             print("Data displayed in table.")
             
     def on_header_clicked(self, logical_index):
@@ -770,7 +826,9 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
 
     def show_settings(self):
         dialog = SettingsDialog(self)
-        dialog.exec()
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            # Re-apply settings that might have changed
+            self.apply_initial_settings()
 
     def connect_context_menu_signals(self):
         self.tableView.copy_requested.connect(self.copy_selection)
