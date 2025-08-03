@@ -32,4 +32,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Diablo2TextEditor-executable
-        path: dist/Diablo2TextEditor.exe
+        path: dist/main_v2.exe
