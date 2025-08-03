@@ -7,5 +7,6 @@ chardet>=5.2.0
 black>=25.1.0
 flake8>=7.3.0
 PyQt6>=6.9.1
+pandas
 
 # For PDF processing, install: pip install -r requirements_pdf.txt 
