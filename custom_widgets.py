@@ -117,6 +117,27 @@ class ConfigManager:
     def get_setting(self, key, default):
         return default
 
+class OverlayTableView(QTableView):
+    """Lightweight QTableView that allows drawing an overlay after normal paint.
+    Used for frozen panes so crosshair lines render reliably on top.
+    """
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._overlay_callback = None
+
+    def setOverlayCallback(self, callback):
+        self._overlay_callback = callback
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        if callable(self._overlay_callback):
+            try:
+                painter = QPainter(self.viewport())
+                self._overlay_callback(painter)
+                painter.end()
+            except Exception:
+                pass
+
 class CleanTableView(QTableView):
     # --- Signals remain unchanged ---
     copy_requested = pyqtSignal()
@@ -157,7 +178,7 @@ class CleanTableView(QTableView):
         self._hover_enabled = True
 
         # --- Frozen Column View Setup ---
-        self.frozen_column_view = QTableView(self)
+        self.frozen_column_view = OverlayTableView(self)
         self.frozen_column_view.setItemDelegate(NoHoverDelegate())
         self.frozen_column_view.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.frozen_column_view.verticalHeader().hide()  # Hide vertical header; main view's suffices
@@ -168,7 +189,7 @@ class CleanTableView(QTableView):
         self.frozen_column_view.setVisible(False)
 
         # --- Frozen Row View Setup ---
-        self.frozen_row_view = QTableView(self)
+        self.frozen_row_view = OverlayTableView(self)
         self.frozen_row_view.setItemDelegate(NoHoverDelegate())
         self.frozen_row_view.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.frozen_row_view.verticalHeader().hide()
@@ -246,6 +267,47 @@ class CleanTableView(QTableView):
                 self.frozen_row_view.viewport().installEventFilter(self)
             except Exception:
                 pass
+            # Overlay callbacks to draw crosshair lines reliably on frozen panes
+            def draw_frozen_col_overlay(p: QPainter):
+                if not self._show_crosshair_guides:
+                    return
+                eff_row = self._hover_row if self._hover_row >= 0 else self._current_row
+                if self.model() is None or eff_row < 0:
+                    return
+                try:
+                    idx_left = self.model().index(eff_row, 0)
+                    rect_left = self.frozen_column_view.visualRect(idx_left)
+                    if not rect_left.isValid():
+                        return
+                    pen2 = QPen(self._crosshair_color)
+                    pen2.setWidth(self._crosshair_width)
+                    p.setPen(pen2)
+                    y_left = rect_left.top()
+                    p.drawLine(0, y_left, self.frozen_column_view.viewport().width(), y_left)
+                except Exception:
+                    pass
+
+            def draw_frozen_row_overlay(p: QPainter):
+                if not self._show_crosshair_guides:
+                    return
+                eff_col = self._hover_col if self._hover_col >= 0 else self._current_col
+                if self.model() is None or eff_col < 0:
+                    return
+                try:
+                    idx_top = self.model().index(0, eff_col)
+                    rect_top = self.frozen_row_view.visualRect(idx_top)
+                    if not rect_top.isValid():
+                        return
+                    pen3 = QPen(self._crosshair_color)
+                    pen3.setWidth(self._crosshair_width)
+                    p.setPen(pen3)
+                    x_top = rect_top.left()
+                    p.drawLine(x_top, 0, x_top, self.frozen_row_view.viewport().height())
+                except Exception:
+                    pass
+
+            self.frozen_column_view.setOverlayCallback(draw_frozen_col_overlay)
+            self.frozen_row_view.setOverlayCallback(draw_frozen_row_overlay)
 
     def set_first_column_frozen(self, frozen: bool):
         if self.model() is None or self.model().columnCount() == 0:
@@ -434,38 +496,7 @@ class CleanTableView(QTableView):
                 p.drawLine(0, y, self.viewport().width(), y)
                 p.end()
 
-            # Also draw into frozen views so lines span full table including frozen panes
-            # 1) Horizontal line in frozen column view
-            if self.frozen_column_view.isVisible():
-                try:
-                    idx_left = model.index(eff_row, 0)
-                    rect_left = self.frozen_column_view.visualRect(idx_left)
-                    if rect_left.isValid():
-                        p2 = QPainter(self.frozen_column_view.viewport())
-                        pen2 = QPen(self._crosshair_color)
-                        pen2.setWidth(self._crosshair_width)
-                        p2.setPen(pen2)
-                        y_left = rect_left.top()
-                        p2.drawLine(0, y_left, self.frozen_column_view.viewport().width(), y_left)
-                        p2.end()
-                except Exception:
-                    pass
-
-            # 2) Vertical line in frozen row view
-            if self.frozen_row_view.isVisible():
-                try:
-                    idx_top = model.index(0, eff_col)
-                    rect_top = self.frozen_row_view.visualRect(idx_top)
-                    if rect_top.isValid():
-                        p3 = QPainter(self.frozen_row_view.viewport())
-                        pen3 = QPen(self._crosshair_color)
-                        pen3.setWidth(self._crosshair_width)
-                        p3.setPen(pen3)
-                        x_top = rect_top.left()
-                        p3.drawLine(x_top, 0, x_top, self.frozen_row_view.viewport().height())
-                        p3.end()
-                except Exception:
-                    pass
+            # Frozen overlays are handled by OverlayTableView callbacks
 
             # 3) Extend crosshair into headers
             try:
