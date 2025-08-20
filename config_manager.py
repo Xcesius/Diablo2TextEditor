@@ -22,6 +22,12 @@ class ConfigManager:
         settings.setdefault("debug_mode_enabled", False)
         # Add the new setting for the frozen column's header
         settings.setdefault("show_row_numbers_on_frozen_column", False)
+        # Undo/Redo depth configuration
+        settings.setdefault("undo_stack_max_size", 10)
+        # Crosshair guides configuration
+        settings.setdefault("crosshair_enabled", True)
+        settings.setdefault("crosshair_thickness", 1)
+        settings.setdefault("crosshair_hover_enabled", True)
         # Add the new setting for freezing the first row
         #settings.setdefault("freeze_first_row_enabled", False)
         config["settings"] = settings

@@ -228,10 +228,14 @@ excel/
 backups/
 data/
 .venv/
+node_modules/
 
 
-# Extracted data files (can be regenerated)
-extracted_data/*.json
+# Extracted/derived data (can be regenerated)
+extracted_data/
+
+# Analysis/report outputs
+diff_reports/
 
 # Test output files
 test_output/
@@ -239,3 +243,8 @@ test_results/
 
 # Backup directory (already moved files there)
 # backups/ 
+
+# Ignore top-level Markdown and text payloads not meant for version control
+# Keep docs/*.md and tests fixtures tracked; only ignore root-level files
+/AGENTS.md
+/*.txt
