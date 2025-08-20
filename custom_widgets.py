@@ -1,8 +1,9 @@
-from PyQt6.QtWidgets import (QTableView, QStyledItemDelegate, QMenu, QApplication, 
-                             QHeaderView, QStyle, QAbstractItemView)
-from PyQt6.QtCore import (Qt, pyqtSignal, QItemSelection, QItemSelectionModel, 
+from PyQt6.QtWidgets import (QTableView, QStyledItemDelegate, QMenu, QApplication,
+                             QHeaderView, QStyle, QAbstractItemView, QInputDialog, QMessageBox)
+from PyQt6.QtCore import (Qt, pyqtSignal, QItemSelection, QItemSelectionModel,
                           QTimer)
-from PyQt6.QtGui import QAction, QKeySequence, QStandardItemModel, QStandardItem
+from PyQt6.QtGui import (QAction, QKeySequence, QStandardItemModel, QStandardItem,
+                         QPainter, QPen, QColor)
 
 class CustomHeaderView(QHeaderView):
     rightClicked = pyqtSignal(int)
@@ -13,6 +14,12 @@ class CustomHeaderView(QHeaderView):
         self.customContextMenuRequested.connect(self.show_context_menu)
         self._is_selecting = False
         self._start_section = -1
+        # Crosshair highlighting for active section
+        self._highlighted_section = -1
+        self._show_crosshair_guides = True
+        self._crosshair_color = QColor(0, 120, 215, 60)  # light accent fill
+        self._crosshair_border = QColor(0, 120, 215, 180)
+        self._crosshair_border_width = 1
 
     def show_context_menu(self, position):
         logical_index = self.logicalIndexAt(position)
@@ -62,6 +69,43 @@ class CustomHeaderView(QHeaderView):
             return
         super().mouseReleaseEvent(event)
 
+    # --- Crosshair helpers ---
+    def setCrosshairGuidesEnabled(self, enabled: bool):
+        self._show_crosshair_guides = bool(enabled)
+        self.viewport().update()
+
+    def setHighlightedSection(self, section_index: int):
+        self._highlighted_section = section_index if section_index is not None else -1
+        self.viewport().update()
+
+    def setCrosshairStyle(self, fill_color: QColor = None, border_color: QColor = None, border_width: int = None):
+        if fill_color is not None:
+            self._crosshair_color = fill_color
+        if border_color is not None:
+            self._crosshair_border = border_color
+        if border_width is not None:
+            self._crosshair_border_width = int(border_width)
+        self.viewport().update()
+
+    def paintSection(self, painter, rect, logicalIndex):
+        super().paintSection(painter, rect, logicalIndex)
+        if not self._show_crosshair_guides:
+            return
+        if logicalIndex != self._highlighted_section or not rect.isValid():
+            return
+        # Light fill to make the active column/row name pop
+        painter.save()
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(self._crosshair_color)
+        painter.drawRect(rect)
+        # Subtle border to increase contrast
+        pen = QPen(self._crosshair_border)
+        pen.setWidth(self._crosshair_border_width)
+        painter.setPen(pen)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawRect(rect.adjusted(0, 0, -1, -1))
+        painter.restore()
+
 class NoHoverDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         opt = option
@@ -82,11 +126,16 @@ class CleanTableView(QTableView):
     select_all_requested = pyqtSignal()
     insert_row_above_requested = pyqtSignal()
     insert_row_below_requested = pyqtSignal()
+    insert_rows_above_requested = pyqtSignal(int)
+    insert_rows_below_requested = pyqtSignal(int)
     delete_row_requested = pyqtSignal()
     insert_column_left_requested = pyqtSignal()
     insert_column_right_requested = pyqtSignal()
+    insert_columns_left_requested = pyqtSignal(int)
+    insert_columns_right_requested = pyqtSignal(int)
     delete_column_requested = pyqtSignal()
     math_action_requested = pyqtSignal(str)
+    conditional_math_requested = pyqtSignal(object)
     select_column_requested = pyqtSignal(int)
     select_row_requested = pyqtSignal(int)
 
@@ -94,6 +143,15 @@ class CleanTableView(QTableView):
         super().__init__(parent)
         self.config_manager = ConfigManager()
         self.setItemDelegate(NoHoverDelegate())
+        # Improve edit UX: double-click or edit key starts edit, Enter commits
+        self.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked | QAbstractItemView.EditTrigger.EditKeyPressed)
+
+        # Crosshair guides settings
+        self._show_crosshair_guides = True
+        self._crosshair_color = QColor(0, 120, 215, 180)  # Windows accent-like
+        self._crosshair_width = 1
+        self._current_row = -1
+        self._current_col = -1
 
         # --- Frozen Column View Setup ---
         self.frozen_column_view = QTableView(self)
@@ -144,10 +202,14 @@ class CleanTableView(QTableView):
         
         self.setSelectionBehavior(QTableView.SelectionBehavior.SelectItems)
         self.setSelectionMode(QTableView.SelectionMode.ExtendedSelection)
-        
+
         # Connect signals for column/row selection
         self.select_column_requested.connect(self.select_column)
         self.select_row_requested.connect(self.select_row)
+
+        # Track current cell for crosshair guides
+        # Will be fully connected when a model is set
+        self._selection_conn_made = False
 
     def setModel(self, model):
         super().setModel(model)
@@ -156,6 +218,13 @@ class CleanTableView(QTableView):
             self.frozen_column_view.setSelectionModel(self.selectionModel())
             self.frozen_row_view.setModel(model)
             self.frozen_row_view.setSelectionModel(self.selectionModel())
+            # Hook current index changes for crosshair
+            if not self._selection_conn_made:
+                try:
+                    self.selectionModel().currentChanged.connect(self._on_current_changed)
+                    self._selection_conn_made = True
+                except Exception:
+                    pass
 
     def set_first_column_frozen(self, frozen: bool):
         if self.model() is None or self.model().columnCount() == 0:
@@ -191,6 +260,88 @@ class CleanTableView(QTableView):
             for row in range(1, self.model().rowCount()):
                 self.frozen_row_view.setRowHidden(row, True)
             self.frozen_row_view.setRowHidden(0, False)
+
+    # --- Crosshair guides public API ---
+    def setCrosshairGuidesEnabled(self, enabled: bool):
+        self._show_crosshair_guides = bool(enabled)
+        # Propagate to headers
+        for hv in (self.horizontalHeader(), self.verticalHeader(),
+                   getattr(self.frozen_column_view, 'horizontalHeader', lambda: None)() or None,
+                   getattr(self.frozen_row_view, 'horizontalHeader', lambda: None)() or None):
+            if isinstance(hv, CustomHeaderView):
+                hv.setCrosshairGuidesEnabled(self._show_crosshair_guides)
+        self.viewport().update()
+        self.frozen_column_view.viewport().update()
+        self.frozen_row_view.viewport().update()
+
+    def crosshairGuidesEnabled(self) -> bool:
+        return self._show_crosshair_guides
+
+    def setCrosshairColor(self, color: QColor):
+        self._crosshair_color = color
+        self.viewport().update()
+        self.frozen_column_view.viewport().update()
+        self.frozen_row_view.viewport().update()
+
+    def setCrosshairWidth(self, width: int):
+        self._crosshair_width = max(1, int(width))
+        self.viewport().update()
+        self.frozen_column_view.viewport().update()
+        self.frozen_row_view.viewport().update()
+
+    # --- Crosshair core logic ---
+    def _on_current_changed(self, current, previous):
+        if not current or not current.isValid():
+            self._current_row = -1
+            self._current_col = -1
+        else:
+            self._current_row = current.row()
+            self._current_col = current.column()
+        # Update header highlights
+        try:
+            if isinstance(self.horizontalHeader(), CustomHeaderView):
+                self.horizontalHeader().setHighlightedSection(self._current_col)
+            if isinstance(self.verticalHeader(), CustomHeaderView):
+                self.verticalHeader().setHighlightedSection(self._current_row)
+            # Frozen mirrors
+            h_frozen = self.frozen_column_view.horizontalHeader()
+            if isinstance(h_frozen, CustomHeaderView):
+                h_frozen.setHighlightedSection(self._current_col)
+            h_frozen_row = self.frozen_row_view.horizontalHeader()
+            if isinstance(h_frozen_row, CustomHeaderView):
+                h_frozen_row.setHighlightedSection(self._current_col)
+        except Exception:
+            pass
+        # Repaint overlays
+        self.viewport().update()
+        self.frozen_column_view.viewport().update()
+        self.frozen_row_view.viewport().update()
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        if not self._show_crosshair_guides:
+            return
+        if self.model() is None or self._current_row < 0 or self._current_col < 0:
+            return
+        # Draw crosshair lines aligned to the active cell
+        try:
+            idx = self.model().index(self._current_row, self._current_col)
+            rect = self.visualRect(idx)
+            if not rect.isValid():
+                return
+            painter = QPainter(self.viewport())
+            pen = QPen(self._crosshair_color)
+            pen.setWidth(self._crosshair_width)
+            painter.setPen(pen)
+            # Vertical line across visible table area (not headers)
+            x = rect.left()
+            painter.drawLine(x, 0, x, self.viewport().height())
+            # Horizontal line across visible table area (not headers)
+            y = rect.top()
+            painter.drawLine(0, y, self.viewport().width(), y)
+            painter.end()
+        except Exception:
+            pass
             # Initial sync of row height and all column widths
             self.frozen_row_view.setRowHeight(0, self.rowHeight(0))
             for col in range(self.model().columnCount()):
@@ -288,6 +439,15 @@ class CleanTableView(QTableView):
                 self.selectionModel().select(selection, QItemSelectionModel.SelectionFlag.Select)
 
     def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+            # Commit current editor if any
+            if self.state() == QAbstractItemView.State.EditingState:
+                self.closePersistentEditor(self.currentIndex())
+            # Move down to mimic spreadsheet feel (optional)
+            current = self.currentIndex()
+            if current.isValid() and current.row() + 1 < (self.model().rowCount() if self.model() else 0):
+                self.setCurrentIndex(self.model().index(current.row() + 1, current.column()))
+            return
         if event.key() == Qt.Key.Key_R and (event.modifiers() & Qt.KeyboardModifier.ControlModifier):
             current_index = self.currentIndex()
             if current_index.isValid():
@@ -348,6 +508,10 @@ class CleanTableView(QTableView):
         decrement_action = QAction("Decrement by 1", self)
         decrement_action.triggered.connect(lambda: self.math_action_requested.emit("decrement"))
         math_menu.addAction(decrement_action)
+        math_menu.addSeparator()
+        conditional_action = QAction("Conditional…", self)
+        conditional_action.triggered.connect(self._prompt_conditional_math)
+        math_menu.addAction(conditional_action)
         menu.addSeparator()
         insert_row_above_action = QAction("Insert Row &Above", self)
         insert_row_above_action.triggered.connect(self.insert_row_above_requested.emit)
@@ -355,6 +519,12 @@ class CleanTableView(QTableView):
         insert_row_below_action = QAction("Insert Row &Below", self)
         insert_row_below_action.triggered.connect(self.insert_row_below_requested.emit)
         menu.addAction(insert_row_below_action)
+        insert_rows_above_action = QAction("Insert &Rows Above…", self)
+        insert_rows_above_action.triggered.connect(lambda: self._prompt_insert_rows(True))
+        menu.addAction(insert_rows_above_action)
+        insert_rows_below_action = QAction("Insert R&ows Below…", self)
+        insert_rows_below_action.triggered.connect(lambda: self._prompt_insert_rows(False))
+        menu.addAction(insert_rows_below_action)
         delete_row_action = QAction("&Delete Row", self)
         delete_row_action.triggered.connect(self.delete_row_requested.emit)
         menu.addAction(delete_row_action)
@@ -365,6 +535,12 @@ class CleanTableView(QTableView):
         insert_column_right_action = QAction("Insert Column &Right", self)
         insert_column_right_action.triggered.connect(self.insert_column_right_requested.emit)
         menu.addAction(insert_column_right_action)
+        insert_columns_left_action = QAction("Insert C&olumns Left…", self)
+        insert_columns_left_action.triggered.connect(lambda: self._prompt_insert_columns(True))
+        menu.addAction(insert_columns_left_action)
+        insert_columns_right_action = QAction("Insert Co&lumns Right…", self)
+        insert_columns_right_action.triggered.connect(lambda: self._prompt_insert_columns(False))
+        menu.addAction(insert_columns_right_action)
         delete_column_action = QAction("Delete &Column", self)
         delete_column_action.triggered.connect(self.delete_column_requested.emit)
         menu.addAction(delete_column_action)
@@ -386,14 +562,115 @@ class CleanTableView(QTableView):
                     except (ValueError, TypeError):
                         can_do_math = False
                         break
-        math_menu.setEnabled(can_do_math)
+        # Enable/disable only simple math actions based on numeric selection; keep Conditional always enabled
+        multiply_action.setEnabled(can_do_math)
+        divide_action.setEnabled(can_do_math)
+        add_action.setEnabled(can_do_math)
+        subtract_action.setEnabled(can_do_math)
+        increment_action.setEnabled(can_do_math)
+        decrement_action.setEnabled(can_do_math)
         has_valid_selection = index.isValid()
         select_row_action.setEnabled(has_valid_selection)
         select_column_action.setEnabled(has_valid_selection)
         insert_row_above_action.setEnabled(has_valid_selection)
         insert_row_below_action.setEnabled(has_valid_selection)
+        insert_rows_above_action.setEnabled(has_valid_selection)
+        insert_rows_below_action.setEnabled(has_valid_selection)
         delete_row_action.setEnabled(has_valid_selection)
         insert_column_left_action.setEnabled(has_valid_selection)
         insert_column_right_action.setEnabled(has_valid_selection)
+        insert_columns_left_action.setEnabled(has_valid_selection)
+        insert_columns_right_action.setEnabled(has_valid_selection)
         delete_column_action.setEnabled(has_valid_selection)
         menu.exec(self.mapToGlobal(position))
+
+    def _prompt_insert_rows(self, above: bool):
+        count, ok = QInputDialog.getInt(self, "Insert Rows", "Number of rows:", 5, 1, 10000, 1)
+        if not ok:
+            return
+        if above:
+            self.insert_rows_above_requested.emit(count)
+        else:
+            self.insert_rows_below_requested.emit(count)
+
+    def _prompt_insert_columns(self, left: bool):
+        count, ok = QInputDialog.getInt(self, "Insert Columns", "Number of columns:", 2, 1, 500, 1)
+        if not ok:
+            return
+        if left:
+            self.insert_columns_left_requested.emit(count)
+        else:
+            self.insert_columns_right_requested.emit(count)
+
+    def _prompt_conditional_math(self):
+        # 1) Condition input
+        text, ok = QInputDialog.getText(self, "Conditional Math", "Condition (e.g., primeevil == 1):")
+        if not ok or not text.strip():
+            return
+        condition_str = text.strip()
+
+        # 2) Operation choice
+        operations = ["multiply", "divide", "add", "subtract", "increment", "decrement"]
+        op, ok = QInputDialog.getItem(self, "Operation", "Choose operation:", operations, 0, False)
+        if not ok:
+            return
+
+        operand = None
+        if op not in ("increment", "decrement"):
+            val, ok = QInputDialog.getDouble(self, op.capitalize(), f"Enter value to {op}:")
+            if not ok:
+                return
+            operand = val
+
+        # 3) Target columns
+        selected_cols = sorted({idx.column() for idx in self.selectedIndexes()})
+        use_sel = False
+        if selected_cols:
+            reply = QMessageBox.question(self, "Target Columns", "Apply to currently selected columns?",
+                                         QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                         QMessageBox.StandardButton.Yes)
+            use_sel = reply == QMessageBox.StandardButton.Yes
+
+        target_columns = []
+        if use_sel:
+            target_columns = selected_cols
+        else:
+            # Build comma-separated prompt of columns
+            model = self.model()
+            # Prefer header items; fallback to headerData with DisplayRole
+            headers = []
+            for c in range(model.columnCount()):
+                header_item = model.horizontalHeaderItem(c)
+                if header_item is not None and header_item.text() is not None:
+                    headers.append(header_item.text())
+                else:
+                    try:
+                        headers.append(str(model.headerData(c, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole)))
+                    except Exception:
+                        headers.append(str(c))
+            default_cols = ", ".join([h for h in headers if isinstance(h, str)][:2])
+            cols_str, ok = QInputDialog.getText(self, "Target Columns", "Column names (comma separated):", text=default_cols)
+            if not ok or not cols_str.strip():
+                return
+            requested = [c.strip() for c in cols_str.split(',') if c.strip()]
+            name_to_index = {str(headers[i]): i for i in range(len(headers))}
+            missing = [c for c in requested if c not in name_to_index]
+            if missing:
+                QMessageBox.warning(self, "Unknown Columns", f"Columns not found: {', '.join(missing)}")
+                return
+            target_columns = [name_to_index[c] for c in requested]
+
+        payload = {
+            "condition": condition_str,
+            "operation": op,
+            "operand": operand,
+            "target_columns": target_columns,
+        }
+        # Minimal debug output to help trace selection -> payload mapping
+        try:
+            from config_manager import ConfigManager as _Cfg
+            if _Cfg().get_setting("debug_mode_enabled", False):
+                print("[DEBUG] Conditional prompt payload:", payload)
+        except Exception:
+            pass
+        self.conditional_math_requested.emit(payload)

@@ -11,6 +11,7 @@ import os
 import shutil
 from datetime import datetime
 import json
+import re
 
 class ComboBoxDelegate(QStyledItemDelegate):
     def __init__(self, parent=None, items=None):
@@ -409,6 +410,20 @@ class SettingsDialog(QDialog):
         self.debug_mode_checkbox.setChecked(self.config_manager.get_setting("debug_mode_enabled", False))
         layout.addWidget(self.debug_mode_checkbox)
 
+        # Crosshair guides settings
+        self.crosshair_enabled_checkbox = QCheckBox("Enable crosshair guides (row/column lines)")
+        self.crosshair_enabled_checkbox.setChecked(self.config_manager.get_setting("crosshair_enabled", True))
+        layout.addWidget(self.crosshair_enabled_checkbox)
+
+        crosshair_row = QHBoxLayout()
+        crosshair_row.addWidget(QLabel("Crosshair thickness (px):"))
+        self.crosshair_thickness_input = QLineEdit(str(self.config_manager.get_setting("crosshair_thickness", 1)))
+        self.crosshair_thickness_input.setPlaceholderText("e.g. 1-6")
+        self.crosshair_thickness_input.setMaximumWidth(80)
+        crosshair_row.addWidget(self.crosshair_thickness_input)
+        crosshair_row.addStretch(1)
+        layout.addLayout(crosshair_row)
+
         button_layout = QHBoxLayout()
         self.save_button = QPushButton("Save")
         self.save_button.clicked.connect(self.save_settings)
@@ -429,6 +444,14 @@ class SettingsDialog(QDialog):
         # Save the new setting
         #self.config_manager.set_setting("freeze_first_row_enabled", self.freeze_first_row_checkbox.isChecked())
         self.config_manager.set_setting("debug_mode_enabled", self.debug_mode_checkbox.isChecked())
+        # Crosshair settings
+        self.config_manager.set_setting("crosshair_enabled", self.crosshair_enabled_checkbox.isChecked())
+        try:
+            thickness = int(self.crosshair_thickness_input.text())
+        except Exception:
+            thickness = 1
+        thickness = max(1, min(6, thickness))
+        self.config_manager.set_setting("crosshair_thickness", thickness)
         self.accept()
 
 class EditorWindow(QMainWindow, Ui_MainWindow):
@@ -446,6 +469,20 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         self.create_menus()
         self.apply_initial_settings()
         self.update_window_title()
+        # Honour configurable undo depth
+        try:
+            self.undo_stack.max_size = int(self.config_manager.get_setting("undo_stack_max_size", 10) or 10)
+        except Exception:
+            self.undo_stack.max_size = 10
+        # Enable drag-and-drop opening of .txt files
+        self.setAcceptDrops(True)
+
+    def debug_print(self, *args):
+        try:
+            if self.config_manager.get_setting("debug_mode_enabled", False):
+                print("[DEBUG]", *args)
+        except Exception:
+            pass
 
     def create_menus(self):
         # File Menu
@@ -533,6 +570,25 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         #self.freeze_row_action.setChecked(freeze_row)
         #self.tableView.set_first_row_frozen(freeze_row)
 
+        # Crosshair guides
+        crosshair_enabled = self.config_manager.get_setting("crosshair_enabled", True)
+        self.tableView.setCrosshairGuidesEnabled(bool(crosshair_enabled))
+        try:
+            crosshair_width = int(self.config_manager.get_setting("crosshair_thickness", 1) or 1)
+        except Exception:
+            crosshair_width = 1
+        self.tableView.setCrosshairWidth(max(1, min(6, crosshair_width)))
+        # Also sync header outline thickness on custom headers
+        try:
+            hh = self.tableView.horizontalHeader()
+            vh = self.tableView.verticalHeader()
+            if hasattr(hh, 'setCrosshairStyle'):
+                hh.setCrosshairStyle(border_width=max(1, min(6, crosshair_width)))
+            if hasattr(vh, 'setCrosshairStyle'):
+                vh.setCrosshairStyle(border_width=max(1, min(6, crosshair_width)))
+        except Exception:
+            pass
+
     def toggle_freeze_first_column(self, frozen):
         """Handles the 'Freeze First Column' menu action."""
         if self.data_frame is None or self.data_frame.shape[1] == 0:
@@ -557,45 +613,66 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Open .txt file", "", "Text Files (*.txt)")
         if file_path:
-           
-            # Auto-detect file type and encoding silently
-            file_type, confidence, binding_key = detect_file_type(file_path)
-            detected_encoding = auto_detect_encoding(file_path)
-            
-            # Try to find and apply binding if detected  
-            binding_manager = get_binding_manager()
-            
-            # Force refresh if no bindings loaded (happens after directory reorganization)
-            if len(binding_manager.get_all_bindings()) == 0:
-                print("  No metadata loaded, forcing refresh...")
-                binding_manager.refresh_bindings()
-            
-            applied_binding = None
-            
-            if binding_key and confidence in ['high', 'medium']:
-                # Create dynamic binding for the detected file type and current file
-                applied_binding = binding_manager.create_dynamic_binding(binding_key, file_path)
-            
-            # Print detection results to console for debugging
-            print(f"Auto-detection results:")
-            print(f"  File: {os.path.basename(file_path)}")
-            print(f"  Type: {file_type} (confidence: {confidence})")
-            print(f"  Encoding: {detected_encoding}")
-            if applied_binding:
-                print(f"  Applied binding: {applied_binding.base_name}")
-            
-            # Load the file directly
-            self.current_file_path = file_path
-            self.current_binding = applied_binding
-            
-            data = open_txt_file(file_path)
-            if data is not None:
-                print(f"File loaded successfully! Type: {file_type}, Encoding: {detected_encoding}")
-                self.data_frame = data
-                self.display_data_in_table()
-                self.update_window_title()
-            else:
-                QMessageBox.warning(self, "Load Error", "Failed to load file!")
+            self._load_file_path(file_path)
+
+    def _load_file_path(self, file_path: str):
+        """Load a specific .txt file path using standard detection and binding logic."""
+        if not file_path:
+            return
+        # Auto-detect file type and encoding silently
+        file_type, confidence, binding_key = detect_file_type(file_path)
+        detected_encoding = auto_detect_encoding(file_path)
+        # Try to find and apply binding if detected
+        binding_manager = get_binding_manager()
+        # Force refresh if no bindings loaded (happens after directory reorganization)
+        if len(binding_manager.get_all_bindings()) == 0:
+            print("  No metadata loaded, forcing refresh...")
+            binding_manager.refresh_bindings()
+        applied_binding = None
+        if binding_key and confidence in ['high', 'medium']:
+            applied_binding = binding_manager.create_dynamic_binding(binding_key, file_path)
+        # Print detection results to console for debugging
+        print("Auto-detection results:")
+        print(f"  File: {os.path.basename(file_path)}")
+        print(f"  Type: {file_type} (confidence: {confidence})")
+        print(f"  Encoding: {detected_encoding}")
+        if applied_binding:
+            print(f"  Applied binding: {applied_binding.base_name}")
+        # Load the file directly
+        self.current_file_path = file_path
+        self.current_binding = applied_binding
+        data = open_txt_file(file_path)
+        if data is not None:
+            print(f"File loaded successfully! Type: {file_type}, Encoding: {detected_encoding}")
+            self.data_frame = data
+            self.display_data_in_table()
+            self.update_window_title()
+        else:
+            QMessageBox.warning(self, "Load Error", "Failed to load file!")
+
+    # Drag-and-drop support
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            # Accept if any of the URLs is a .txt file
+            for url in event.mimeData().urls():
+                if url.isLocalFile() and url.toLocalFile().lower().endswith('.txt'):
+                    event.acceptProposedAction()
+                    return
+        event.ignore()
+
+    def dropEvent(self, event):
+        handled = False
+        for url in event.mimeData().urls():
+            local = url.toLocalFile()
+            if url.isLocalFile() and local.lower().endswith('.txt'):
+                self._load_file_path(local)
+                handled = True
+                # Load only first file for now
+                break
+        if handled:
+            event.acceptProposedAction()
+        else:
+            event.ignore()
     
     def show_binding_info(self, binding):
         print(f"Applied binding: {binding.base_name}")
@@ -838,11 +915,16 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         self.tableView.select_all_requested.connect(self.select_all)
         self.tableView.insert_row_above_requested.connect(self.insert_row_above)
         self.tableView.insert_row_below_requested.connect(self.insert_row_below)
+        self.tableView.insert_rows_above_requested.connect(self.insert_rows_above)
+        self.tableView.insert_rows_below_requested.connect(self.insert_rows_below)
         self.tableView.delete_row_requested.connect(self.delete_row)
         self.tableView.insert_column_left_requested.connect(self.insert_column_left)
         self.tableView.insert_column_right_requested.connect(self.insert_column_right)
+        self.tableView.insert_columns_left_requested.connect(self.insert_columns_left)
+        self.tableView.insert_columns_right_requested.connect(self.insert_columns_right)
         self.tableView.delete_column_requested.connect(self.delete_column)
         self.tableView.math_action_requested.connect(self.handle_math_action)
+        self.tableView.conditional_math_requested.connect(self.handle_conditional_math)
         self.tableView.select_column_requested.connect(self.select_column)
 
     def copy_selection(self):
@@ -994,6 +1076,24 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                 after = self.data_frame.iloc[row_position:]
                 self.data_frame = pd.concat([before, new_df_row, after], ignore_index=True)
         print(f"Inserted new row at position {row_position}")
+
+    def insert_rows_above(self, count: int):
+        current_index = self.tableView.currentIndex()
+        if not current_index.isValid():
+            return
+        target_row = current_index.row()
+        for i in range(count):
+            self._insert_row_at_position(target_row)
+        print(f"Inserted {count} rows above {target_row}")
+
+    def insert_rows_below(self, count: int):
+        current_index = self.tableView.currentIndex()
+        if not current_index.isValid():
+            return
+        start = current_index.row() + 1
+        for i in range(count):
+            self._insert_row_at_position(start + i)
+        print(f"Inserted {count} rows below {current_index.row()}")
         
     def delete_row(self):
         selection = self.tableView.selectionModel().selectedIndexes()
@@ -1068,6 +1168,50 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                     new_data[col_name] = self.data_frame[old_col_name]
             self.data_frame = pd.DataFrame(new_data)
         print(f"Inserted new column '{column_name}' at position {col_position}")
+
+    def _insert_n_columns(self, col_position: int, count: int):
+        for i in range(count):
+            # Auto-name columns; user can rename later
+            from PyQt6.QtWidgets import QInputDialog
+            column_name = f"NewColumn{col_position + i}"
+            model = self.tableView.model()
+            if not model:
+                return
+            model.insertColumn(col_position + i)
+            model.setHorizontalHeaderItem(col_position + i, QStandardItem(column_name))
+            for row in range(model.rowCount()):
+                model.setItem(row, col_position + i, QStandardItem(""))
+            if self.data_frame is not None:
+                import pandas as pd
+                columns = list(self.data_frame.columns)
+                columns.insert(col_position + i, column_name)
+                new_data = {}
+                for j, col_name in enumerate(columns):
+                    if j < col_position + i:
+                        old_col_name = list(self.data_frame.columns)[j]
+                        new_data[col_name] = self.data_frame[old_col_name]
+                    elif j == col_position + i:
+                        new_data[col_name] = [None] * len(self.data_frame)
+                    else:
+                        old_col_name = list(self.data_frame.columns)[j - 1]
+                        new_data[col_name] = self.data_frame[old_col_name]
+                self.data_frame = pd.DataFrame(new_data)
+
+    def insert_columns_left(self, count: int):
+        current_index = self.tableView.currentIndex()
+        if not current_index.isValid():
+            return
+        target_col = current_index.column()
+        self._insert_n_columns(target_col, count)
+        print(f"Inserted {count} columns left of {target_col}")
+
+    def insert_columns_right(self, count: int):
+        current_index = self.tableView.currentIndex()
+        if not current_index.isValid():
+            return
+        target_col = current_index.column() + 1
+        self._insert_n_columns(target_col, count)
+        print(f"Inserted {count} columns right of {current_index.column()}")
         
     def delete_column(self):
         current_index = self.tableView.currentIndex()
@@ -1136,3 +1280,130 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                             pass
             finally:
                 self._tracking_changes = True
+
+    def handle_conditional_math(self, payload):
+        condition_str = payload.get("condition", "").strip()
+        operation = payload.get("operation")
+        operand = payload.get("operand")
+        target_columns = payload.get("target_columns", [])
+
+        if self.data_frame is None or not condition_str or not operation:
+            return
+
+        df = self.data_frame
+        self.debug_print("Conditional math invoked:", {
+            "condition": condition_str,
+            "operation": operation,
+            "operand": operand,
+            "target_columns_indices": target_columns,
+            "target_columns_names": [df.columns[i] for i in target_columns if i < len(df.columns)],
+        })
+        # Build a boolean mask like "primeevil == 1" ensuring a proper boolean Series aligned to df
+        try:
+            maybe_mask = df.eval(condition_str)
+            if isinstance(maybe_mask, pd.Series) and maybe_mask.dtype == bool and maybe_mask.index.equals(df.index):
+                mask = maybe_mask
+            else:
+                # Try query; convert resulting index to aligned boolean Series
+                queried = df.query(condition_str)
+                mask = df.index.isin(queried.index)
+        except Exception:
+            QMessageBox.warning(self, "Invalid Condition", f"Could not evaluate condition: {condition_str}")
+            return
+
+        if not isinstance(mask, (pd.Series, pd.Index)):
+            QMessageBox.warning(self, "Invalid Condition", "Condition did not produce a boolean mask.")
+            return
+        if isinstance(mask, pd.Index):
+            mask = df.index.isin(mask)
+        mask = pd.Series(mask, index=df.index).fillna(False)
+        self.debug_print("Mask computed:", {
+            "dtype": str(mask.dtype),
+            "true_count": int(mask.sum()),
+            "total_rows": int(len(mask)),
+        })
+
+        # If no rows matched, try numeric coercion of referenced columns as a fallback
+        if int(mask.sum()) == 0:
+            tokens = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", condition_str)
+            referenced_cols = [t for t in tokens if t in df.columns]
+            local_coerced = {name: pd.to_numeric(df[name], errors='coerce') for name in referenced_cols}
+            try:
+                coerced_mask = pd.eval(condition_str, engine='python', local_dict=local_coerced)
+                if isinstance(coerced_mask, (pd.Series, list)):
+                    coerced_mask = pd.Series(coerced_mask, index=df.index)
+                coerced_mask = coerced_mask.astype(bool).fillna(False)
+                self.debug_print("Coerced mask computed:", {
+                    "referenced_cols": referenced_cols,
+                    "true_count": int(coerced_mask.sum()),
+                })
+                mask = coerced_mask
+            except Exception as e:
+                self.debug_print("Coerced evaluation failed:", str(e))
+
+        if not target_columns:
+            return
+
+        # For each target column, coerce numeric and apply
+        self._tracking_changes = False
+        try:
+            for col_idx in target_columns:
+                if col_idx >= len(df.columns):
+                    continue
+                col_name = df.columns[col_idx]
+                # Operate only on numeric values; non-numeric remain unchanged
+                numeric_series = pd.to_numeric(df[col_name], errors='coerce')
+                sel = mask.fillna(False)
+                current_values = numeric_series.where(sel)
+                self.debug_print(f"Applying '{operation}' to column", {
+                    "column_index": int(col_idx),
+                    "column_name": str(col_name),
+                    "selected_non_na": int(current_values.notna().sum()),
+                })
+
+                if operation == "increment":
+                    new_values = current_values + 1
+                elif operation == "decrement":
+                    new_values = current_values - 1
+                elif operation == "add":
+                    new_values = current_values + float(operand)
+                elif operation == "subtract":
+                    new_values = current_values - float(operand)
+                elif operation == "multiply":
+                    new_values = current_values * float(operand)
+                elif operation == "divide":
+                    try:
+                        val = float(operand)
+                    except Exception:
+                        QMessageBox.warning(self, "Invalid Operand", "Operand must be numeric.")
+                        return
+                    if val == 0:
+                        QMessageBox.warning(self, "Invalid Operand", "Cannot divide by zero.")
+                        return
+                    new_values = current_values / val
+                else:
+                    continue
+
+                # Round to nearest integer like other math ops
+                new_values = new_values.round().astype('Int64')
+                df.loc[sel, col_name] = new_values.astype(object)
+                self.debug_print("Applied operation stats:", {
+                    "updated_rows": int(sel.sum()),
+                    "example_before_after": str(list(zip(
+                        current_values.dropna().head(3).astype(int).tolist(),
+                        new_values.dropna().head(3).astype(int).tolist()
+                    )))
+                })
+
+                # Reflect changes in the view model
+                model = self.tableView.model()
+                for row_idx in df.index[sel]:
+                    model_item = model.item(int(row_idx), int(col_idx))
+                    if model_item is not None:
+                        val = df.at[row_idx, col_name]
+                        try:
+                            model_item.setText(str(int(val)))
+                        except Exception:
+                            model_item.setText(str(val))
+        finally:
+            self._tracking_changes = True
