@@ -4,6 +4,7 @@ from PyQt6.QtCore import (Qt, pyqtSignal, QItemSelection, QItemSelectionModel,
                           QTimer, QEvent)
 from PyQt6.QtGui import (QAction, QKeySequence, QStandardItemModel, QStandardItem,
                          QPainter, QPen, QColor)
+from config_manager import ConfigManager as AppConfigManager
 
 class CustomHeaderView(QHeaderView):
     rightClicked = pyqtSignal(int)
@@ -113,10 +114,6 @@ class NoHoverDelegate(QStyledItemDelegate):
             opt.state &= ~QStyle.StateFlag.State_MouseOver
         super().paint(painter, opt, index)
 
-class ConfigManager:
-    def get_setting(self, key, default):
-        return default
-
 class OverlayTableView(QTableView):
     """Lightweight QTableView that allows drawing an overlay after normal paint.
     Used for frozen panes so crosshair lines render reliably on top.
@@ -162,7 +159,7 @@ class CleanTableView(QTableView):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.config_manager = ConfigManager()
+        self.config_manager = AppConfigManager()
         self.setItemDelegate(NoHoverDelegate())
         # Improve edit UX: double-click or edit key starts edit, Enter commits
         self.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked | QAbstractItemView.EditTrigger.EditKeyPressed)
