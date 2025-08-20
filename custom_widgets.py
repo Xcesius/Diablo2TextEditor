@@ -154,6 +154,7 @@ class CleanTableView(QTableView):
         self._current_col = -1
         self._hover_row = -1
         self._hover_col = -1
+        self._hover_enabled = True
 
         # --- Frozen Column View Setup ---
         self.frozen_column_view = QTableView(self)
@@ -309,6 +310,18 @@ class CleanTableView(QTableView):
         self.frozen_column_view.viewport().update()
         self.frozen_row_view.viewport().update()
 
+    def setCrosshairHoverEnabled(self, enabled: bool):
+        self._hover_enabled = bool(enabled)
+        if not self._hover_enabled:
+            self._hover_row = -1
+            self._hover_col = -1
+            self._on_current_changed(self.currentIndex(), None)
+        else:
+            # Trigger a repaint to pick up the current hover if any
+            self.viewport().update()
+            self.frozen_column_view.viewport().update()
+            self.frozen_row_view.viewport().update()
+
     # --- Crosshair core logic ---
     def _on_current_changed(self, current, previous):
         if not current or not current.isValid():
@@ -340,7 +353,7 @@ class CleanTableView(QTableView):
         self.frozen_row_view.viewport().update()
 
     def eventFilter(self, obj, event):
-        if event.type() == QEvent.Type.MouseMove and self._show_crosshair_guides:
+        if event.type() == QEvent.Type.MouseMove and self._show_crosshair_guides and self._hover_enabled:
             try:
                 if obj is self.viewport():
                     idx = self.indexAt(event.pos())
@@ -453,6 +466,44 @@ class CleanTableView(QTableView):
                         p3.end()
                 except Exception:
                     pass
+
+            # 3) Extend crosshair into headers
+            try:
+                # Horizontal header (column names) - draw vertical line at column
+                hh = self.horizontalHeader()
+                if hh and hh.isVisible():
+                    xh = hh.sectionViewportPosition(eff_col)
+                    if xh >= 0:
+                        ph = QPainter(hh.viewport())
+                        penh = QPen(self._crosshair_color)
+                        penh.setWidth(self._crosshair_width)
+                        ph.setPen(penh)
+                        ph.drawLine(xh, 0, xh, hh.viewport().height())
+                        ph.end()
+                # Vertical header (row numbers) - draw horizontal line at row
+                vh = self.verticalHeader()
+                if vh and vh.isVisible():
+                    yv = vh.sectionViewportPosition(eff_row)
+                    if yv >= 0:
+                        pv = QPainter(vh.viewport())
+                        penv = QPen(self._crosshair_color)
+                        penv.setWidth(self._crosshair_width)
+                        pv.setPen(penv)
+                        pv.drawLine(0, yv, vh.viewport().width(), yv)
+                        pv.end()
+                # Frozen row view header (top header for all columns) - vertical line
+                fr_hh = self.frozen_row_view.horizontalHeader()
+                if fr_hh and fr_hh.isVisible():
+                    xfh = fr_hh.sectionViewportPosition(eff_col)
+                    if xfh >= 0:
+                        pfh = QPainter(fr_hh.viewport())
+                        penfh = QPen(self._crosshair_color)
+                        penfh.setWidth(self._crosshair_width)
+                        pfh.setPen(penfh)
+                        pfh.drawLine(xfh, 0, xfh, fr_hh.viewport().height())
+                        pfh.end()
+            except Exception:
+                pass
         except Exception:
             pass
             # Initial sync of row height and all column widths

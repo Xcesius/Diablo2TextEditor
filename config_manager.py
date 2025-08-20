@@ -27,6 +27,7 @@ class ConfigManager:
         # Crosshair guides configuration
         settings.setdefault("crosshair_enabled", True)
         settings.setdefault("crosshair_thickness", 1)
+        settings.setdefault("crosshair_hover_enabled", True)
         # Add the new setting for freezing the first row
         #settings.setdefault("freeze_first_row_enabled", False)
         config["settings"] = settings

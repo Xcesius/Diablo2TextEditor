@@ -415,6 +415,10 @@ class SettingsDialog(QDialog):
         self.crosshair_enabled_checkbox.setChecked(self.config_manager.get_setting("crosshair_enabled", True))
         layout.addWidget(self.crosshair_enabled_checkbox)
 
+        self.crosshair_hover_checkbox = QCheckBox("Crosshair follows mouse hover")
+        self.crosshair_hover_checkbox.setChecked(self.config_manager.get_setting("crosshair_hover_enabled", True))
+        layout.addWidget(self.crosshair_hover_checkbox)
+
         crosshair_row = QHBoxLayout()
         crosshair_row.addWidget(QLabel("Crosshair thickness (px):"))
         self.crosshair_thickness_input = QLineEdit(str(self.config_manager.get_setting("crosshair_thickness", 1)))
@@ -446,6 +450,7 @@ class SettingsDialog(QDialog):
         self.config_manager.set_setting("debug_mode_enabled", self.debug_mode_checkbox.isChecked())
         # Crosshair settings
         self.config_manager.set_setting("crosshair_enabled", self.crosshair_enabled_checkbox.isChecked())
+        self.config_manager.set_setting("crosshair_hover_enabled", self.crosshair_hover_checkbox.isChecked())
         try:
             thickness = int(self.crosshair_thickness_input.text())
         except Exception:
@@ -573,6 +578,11 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         # Crosshair guides
         crosshair_enabled = self.config_manager.get_setting("crosshair_enabled", True)
         self.tableView.setCrosshairGuidesEnabled(bool(crosshair_enabled))
+        crosshair_hover = self.config_manager.get_setting("crosshair_hover_enabled", True)
+        try:
+            self.tableView.setCrosshairHoverEnabled(bool(crosshair_hover))
+        except Exception:
+            pass
         try:
             crosshair_width = int(self.config_manager.get_setting("crosshair_thickness", 1) or 1)
         except Exception:
