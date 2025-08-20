@@ -230,8 +230,11 @@ data/
 .venv/
 
 
-# Extracted data files (can be regenerated)
-extracted_data/*.json
+# Extracted/derived data (can be regenerated)
+extracted_data/
+
+# Analysis/report outputs
+diff_reports/
 
 # Test output files
 test_output/
