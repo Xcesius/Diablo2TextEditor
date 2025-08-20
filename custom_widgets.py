@@ -325,21 +325,55 @@ class CleanTableView(QTableView):
             return
         # Draw crosshair lines aligned to the active cell
         try:
-            idx = self.model().index(self._current_row, self._current_col)
+            model = self.model()
+            # Main view overlay
+            idx = model.index(self._current_row, self._current_col)
             rect = self.visualRect(idx)
-            if not rect.isValid():
-                return
-            painter = QPainter(self.viewport())
-            pen = QPen(self._crosshair_color)
-            pen.setWidth(self._crosshair_width)
-            painter.setPen(pen)
-            # Vertical line across visible table area (not headers)
-            x = rect.left()
-            painter.drawLine(x, 0, x, self.viewport().height())
-            # Horizontal line across visible table area (not headers)
-            y = rect.top()
-            painter.drawLine(0, y, self.viewport().width(), y)
-            painter.end()
+            if rect.isValid():
+                p = QPainter(self.viewport())
+                pen = QPen(self._crosshair_color)
+                pen.setWidth(self._crosshair_width)
+                p.setPen(pen)
+                # Vertical line across main viewport
+                x = rect.left()
+                p.drawLine(x, 0, x, self.viewport().height())
+                # Horizontal line across main viewport
+                y = rect.top()
+                p.drawLine(0, y, self.viewport().width(), y)
+                p.end()
+
+            # Also draw into frozen views so lines span full table including frozen panes
+            # 1) Horizontal line in frozen column view
+            if self.frozen_column_view.isVisible():
+                try:
+                    idx_left = model.index(self._current_row, 0)
+                    rect_left = self.frozen_column_view.visualRect(idx_left)
+                    if rect_left.isValid():
+                        p2 = QPainter(self.frozen_column_view.viewport())
+                        pen2 = QPen(self._crosshair_color)
+                        pen2.setWidth(self._crosshair_width)
+                        p2.setPen(pen2)
+                        y_left = rect_left.top()
+                        p2.drawLine(0, y_left, self.frozen_column_view.viewport().width(), y_left)
+                        p2.end()
+                except Exception:
+                    pass
+
+            # 2) Vertical line in frozen row view
+            if self.frozen_row_view.isVisible():
+                try:
+                    idx_top = model.index(0, self._current_col)
+                    rect_top = self.frozen_row_view.visualRect(idx_top)
+                    if rect_top.isValid():
+                        p3 = QPainter(self.frozen_row_view.viewport())
+                        pen3 = QPen(self._crosshair_color)
+                        pen3.setWidth(self._crosshair_width)
+                        p3.setPen(pen3)
+                        x_top = rect_top.left()
+                        p3.drawLine(x_top, 0, x_top, self.frozen_row_view.viewport().height())
+                        p3.end()
+                except Exception:
+                    pass
         except Exception:
             pass
             # Initial sync of row height and all column widths
