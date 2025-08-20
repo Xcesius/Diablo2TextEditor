@@ -228,6 +228,7 @@ excel/
 backups/
 data/
 .venv/
+node_modules/
 
 
 # Extracted/derived data (can be regenerated)
