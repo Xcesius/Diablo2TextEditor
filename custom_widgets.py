@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (QTableView, QStyledItemDelegate, QMenu, QApplication,
                              QHeaderView, QStyle, QAbstractItemView, QInputDialog, QMessageBox)
 from PyQt6.QtCore import (Qt, pyqtSignal, QItemSelection, QItemSelectionModel,
-                          QTimer)
+                          QTimer, QEvent)
 from PyQt6.QtGui import (QAction, QKeySequence, QStandardItemModel, QStandardItem,
                          QPainter, QPen, QColor)
 
@@ -152,6 +152,8 @@ class CleanTableView(QTableView):
         self._crosshair_width = 1
         self._current_row = -1
         self._current_col = -1
+        self._hover_row = -1
+        self._hover_col = -1
 
         # --- Frozen Column View Setup ---
         self.frozen_column_view = QTableView(self)
@@ -211,6 +213,13 @@ class CleanTableView(QTableView):
         # Will be fully connected when a model is set
         self._selection_conn_made = False
 
+        # Enable hover tracking across all viewports
+        try:
+            self.viewport().setMouseTracking(True)
+            self.viewport().installEventFilter(self)
+        except Exception:
+            pass
+
     def setModel(self, model):
         super().setModel(model)
         if model:
@@ -225,6 +234,17 @@ class CleanTableView(QTableView):
                     self._selection_conn_made = True
                 except Exception:
                     pass
+            # Ensure hover tracking is set for frozen views
+            try:
+                self.frozen_column_view.viewport().setMouseTracking(True)
+                self.frozen_column_view.viewport().installEventFilter(self)
+            except Exception:
+                pass
+            try:
+                self.frozen_row_view.viewport().setMouseTracking(True)
+                self.frozen_row_view.viewport().installEventFilter(self)
+            except Exception:
+                pass
 
     def set_first_column_frozen(self, frozen: bool):
         if self.model() is None or self.model().columnCount() == 0:
@@ -299,17 +319,19 @@ class CleanTableView(QTableView):
             self._current_col = current.column()
         # Update header highlights
         try:
+            eff_col = self._hover_col if self._hover_col >= 0 else self._current_col
+            eff_row = self._hover_row if self._hover_row >= 0 else self._current_row
             if isinstance(self.horizontalHeader(), CustomHeaderView):
-                self.horizontalHeader().setHighlightedSection(self._current_col)
+                self.horizontalHeader().setHighlightedSection(eff_col)
             if isinstance(self.verticalHeader(), CustomHeaderView):
-                self.verticalHeader().setHighlightedSection(self._current_row)
+                self.verticalHeader().setHighlightedSection(eff_row)
             # Frozen mirrors
             h_frozen = self.frozen_column_view.horizontalHeader()
             if isinstance(h_frozen, CustomHeaderView):
-                h_frozen.setHighlightedSection(self._current_col)
+                h_frozen.setHighlightedSection(eff_col)
             h_frozen_row = self.frozen_row_view.horizontalHeader()
             if isinstance(h_frozen_row, CustomHeaderView):
-                h_frozen_row.setHighlightedSection(self._current_col)
+                h_frozen_row.setHighlightedSection(eff_col)
         except Exception:
             pass
         # Repaint overlays
@@ -317,17 +339,74 @@ class CleanTableView(QTableView):
         self.frozen_column_view.viewport().update()
         self.frozen_row_view.viewport().update()
 
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.MouseMove and self._show_crosshair_guides:
+            try:
+                if obj is self.viewport():
+                    idx = self.indexAt(event.pos())
+                elif obj is self.frozen_column_view.viewport():
+                    idx = self.frozen_column_view.indexAt(event.pos())
+                elif obj is self.frozen_row_view.viewport():
+                    idx = self.frozen_row_view.indexAt(event.pos())
+                else:
+                    return super().eventFilter(obj, event)
+
+                if idx and idx.isValid():
+                    # Determine effective hover row/col per source viewport
+                    if obj is self.viewport():
+                        row = idx.row()
+                        col = idx.column()
+                    elif obj is self.frozen_column_view.viewport():
+                        row = idx.row()
+                        # Column is first frozen column (0)
+                        col = 0
+                    else:  # frozen_row_view
+                        # Row is first frozen row (0); take actual column
+                        row = 0
+                        col = idx.column()
+                    self._hover_row = row
+                    self._hover_col = col
+                    # Update headers to reflect hover
+                    try:
+                        if isinstance(self.horizontalHeader(), CustomHeaderView):
+                            self.horizontalHeader().setHighlightedSection(self._hover_col)
+                        if isinstance(self.verticalHeader(), CustomHeaderView):
+                            self.verticalHeader().setHighlightedSection(self._hover_row)
+                        hf = self.frozen_column_view.horizontalHeader()
+                        if isinstance(hf, CustomHeaderView):
+                            hf.setHighlightedSection(self._hover_col)
+                        hfr = self.frozen_row_view.horizontalHeader()
+                        if isinstance(hfr, CustomHeaderView):
+                            hfr.setHighlightedSection(self._hover_col)
+                    except Exception:
+                        pass
+                    # Repaint
+                    self.viewport().update()
+                    self.frozen_column_view.viewport().update()
+                    self.frozen_row_view.viewport().update()
+            except Exception:
+                pass
+        elif event.type() == QEvent.Type.Leave:
+            # Clear hover; fall back to current selection
+            self._hover_row = -1
+            self._hover_col = -1
+            self._on_current_changed(self.currentIndex(), None)
+        return super().eventFilter(obj, event)
+
     def paintEvent(self, event):
         super().paintEvent(event)
         if not self._show_crosshair_guides:
             return
-        if self.model() is None or self._current_row < 0 or self._current_col < 0:
+        # Determine effective row/col from hover if available, else current selection
+        eff_row = self._hover_row if self._hover_row >= 0 else self._current_row
+        eff_col = self._hover_col if self._hover_col >= 0 else self._current_col
+        if self.model() is None or eff_row < 0 or eff_col < 0:
             return
         # Draw crosshair lines aligned to the active cell
         try:
             model = self.model()
             # Main view overlay
-            idx = model.index(self._current_row, self._current_col)
+            idx = model.index(eff_row, eff_col)
             rect = self.visualRect(idx)
             if rect.isValid():
                 p = QPainter(self.viewport())
@@ -346,7 +425,7 @@ class CleanTableView(QTableView):
             # 1) Horizontal line in frozen column view
             if self.frozen_column_view.isVisible():
                 try:
-                    idx_left = model.index(self._current_row, 0)
+                    idx_left = model.index(eff_row, 0)
                     rect_left = self.frozen_column_view.visualRect(idx_left)
                     if rect_left.isValid():
                         p2 = QPainter(self.frozen_column_view.viewport())
@@ -362,7 +441,7 @@ class CleanTableView(QTableView):
             # 2) Vertical line in frozen row view
             if self.frozen_row_view.isVisible():
                 try:
-                    idx_top = model.index(0, self._current_col)
+                    idx_top = model.index(0, eff_col)
                     rect_top = self.frozen_row_view.visualRect(idx_top)
                     if rect_top.isValid():
                         p3 = QPainter(self.frozen_row_view.viewport())
