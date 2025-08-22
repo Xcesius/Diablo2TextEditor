@@ -17,7 +17,8 @@ class DataFileBinding:
     
     def __init__(self, json_path: str, txt_path: str = None, metadata: Dict = None):
         self.json_path = json_path
-        self.txt_path = txt_path
+        # Use an empty string for unbound txt paths so os.path functions don't error.
+        self.txt_path = txt_path or ""
         self.metadata = metadata or {}
         self.base_name = Path(json_path).stem
         
@@ -33,7 +34,7 @@ class DataFileBinding:
     
     def load_data(self):
         """Load the actual data from the .txt file."""
-        if self.txt_path is None:
+        if not self.txt_path:
             raise ValueError("No txt file path set for this binding. Use create_dynamic_binding() first.")
         return open_txt_file(self.txt_path)
     

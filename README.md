@@ -48,6 +48,7 @@ Diablo2TextEditor/
 - **UI Editor**: Full-featured graphical interface for editing game data
 - **Format Validation**: Comprehensive file format verification
 - **PDF Extraction**: Tools for extracting data from PDF documentation
+- **Drag-and-Drop Loading**: Open any supported `.txt` file by simply dropping it onto the editor window
 
 ## Installation
 
