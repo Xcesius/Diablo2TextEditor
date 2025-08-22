@@ -662,25 +662,25 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
 
     # Drag-and-drop support
     def dragEnterEvent(self, event):
+        """Allow drag if payload contains at least one local .txt file."""
         if event.mimeData().hasUrls():
-            # Accept if any of the URLs is a .txt file
-            for url in event.mimeData().urls():
-                if url.isLocalFile() and url.toLocalFile().lower().endswith('.txt'):
-                    event.acceptProposedAction()
-                    return
+            urls = event.mimeData().urls()
+            if any(u.isLocalFile() and u.toLocalFile().lower().endswith(".txt") for u in urls):
+                event.acceptProposedAction()
+                return
         event.ignore()
 
+    def dragMoveEvent(self, event):
+        """Continuously accept drags containing valid .txt files."""
+        self.dragEnterEvent(event)
+
     def dropEvent(self, event):
-        handled = False
+        """Open the first dropped .txt file."""
         for url in event.mimeData().urls():
-            local = url.toLocalFile()
-            if url.isLocalFile() and local.lower().endswith('.txt'):
-                self._load_file_path(local)
-                handled = True
-                # Load only first file for now
+            if url.isLocalFile() and url.toLocalFile().lower().endswith(".txt"):
+                self._load_file_path(url.toLocalFile())
+                event.acceptProposedAction()
                 break
-        if handled:
-            event.acceptProposedAction()
         else:
             event.ignore()
     
