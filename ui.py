@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenuBar, QFileDialog, QAbstractItemView, QMessageBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QCheckBox, QGridLayout, QListWidget, QListWidgetItem, QTextEdit, QSplitter, QComboBox, QStyledItemDelegate, QInputDialog
+from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenuBar, QFileDialog, QAbstractItemView, QMessageBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QCheckBox, QGridLayout, QListWidget, QListWidgetItem, QTextEdit, QSplitter, QComboBox, QStyledItemDelegate, QInputDialog, QTreeWidget, QTreeWidgetItem, QTabWidget, QAbstractItemDelegate, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit
 from PyQt6.QtGui import QAction, QStandardItemModel, QStandardItem, QKeySequence
-from PyQt6.QtCore import Qt, QItemSelection
+from PyQt6.QtCore import Qt, QItemSelection, QByteArray, QEvent, QPersistentModelIndex
 from file_parser import open_txt_file, detect_file_type, auto_detect_encoding, save_txt_file, check_for_working_version
 import pandas as pd
 from custom_widgets import CleanTableView
@@ -12,6 +12,7 @@ import shutil
 from datetime import datetime
 import json
 import re
+from workspace_manager import WorkspaceManager
 
 class ComboBoxDelegate(QStyledItemDelegate):
     def __init__(self, parent=None, items=None):
@@ -19,9 +20,46 @@ class ComboBoxDelegate(QStyledItemDelegate):
         self.items = items or []
 
     def createEditor(self, parent, option, index):
-        editor = QComboBox(parent)
+        # Parent the editor to the view's viewport to satisfy QAbstractItemView ownership checks
+        v = self.parent()
+        try:
+            parent_to_use = v.viewport() if (v is not None and hasattr(v, 'viewport')) else parent
+        except Exception:
+            parent_to_use = parent
+        editor = QComboBox(parent_to_use)
         editor.addItems(self.items)
         editor.setEditable(True)
+        # Tag with persistent index for reliable manual commit
+        try:
+            editor.setProperty("_d2te_index", QPersistentModelIndex(index))
+        except Exception:
+            pass
+        # Debug info: name the editor for easier tracing
+        try:
+            # Get view ID if available for better tracking
+            view_id = getattr(v, '_view_id', 'unknown') if v else 'noview'
+            editor.setObjectName(f"ComboEditor_{view_id}_r{index.row()}_c{index.column()}")
+            
+            cfg = getattr(v, 'config_manager', None)
+            debug_on = False
+            try:
+                debug_on = cfg.get_setting("debug_mode_enabled", False)
+            except Exception:
+                debug_on = False
+            if debug_on:
+                pname = parent_to_use.__class__.__name__
+                vname = getattr(v, 'objectName', lambda: '')() or repr(v)
+                # Also log the immediate parent chain for verification
+                chain = []
+                p = editor.parent()
+                steps = 0
+                while p is not None and steps < 6:
+                    chain.append(p.__class__.__name__)
+                    p = p.parent()
+                    steps += 1
+                print(f"[DEBUG] createEditor -> {editor.objectName()} for view {vname} (parent widget={pname}); parent_chain={' > '.join(chain) if chain else 'None'}")
+        except Exception:
+            pass
         return editor
 
     def setEditorData(self, editor, index):
@@ -253,10 +291,32 @@ class Ui_MainWindow(object):
         self.verticalLayout = QVBoxLayout(self.centralWidget)
         self.verticalLayout.setObjectName("verticalLayout")
         
-        self.tableView = CleanTableView(self.centralWidget)
-        self.tableView.setObjectName("tableView")
-        self.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
-        self.verticalLayout.addWidget(self.tableView)
+        # Workspace splitter: left tree, right editor table
+        self.workspaceSplitter = QSplitter(Qt.Orientation.Horizontal, self.centralWidget)
+        self.workspaceSplitter.setObjectName("workspaceSplitter")
+        self.workspaceSplitter.setChildrenCollapsible(True)
+
+        self.workspaceTree = QTreeWidget(self.workspaceSplitter)
+        self.workspaceTree.setObjectName("workspaceTree")
+        self.workspaceTree.setHeaderLabel("Workspace")
+        self.workspaceTree.setRootIsDecorated(False)
+        self.workspaceTree.setAcceptDrops(True)
+        self.workspaceTree.viewport().setAcceptDrops(True)
+        self.workspaceTree.setDropIndicatorShown(True)
+        self.workspaceTree.setDragDropMode(QAbstractItemView.DragDropMode.DropOnly)
+
+        # Right side: tabbed editor area
+        self.editorTabs = QTabWidget(self.workspaceSplitter)
+        self.editorTabs.setObjectName("editorTabs")
+        self.editorTabs.setTabsClosable(True)
+        self.editorTabs.setMovable(True)
+
+        # Make editor stretch and set initial sizes
+        self.workspaceSplitter.setStretchFactor(0, 0)
+        self.workspaceSplitter.setStretchFactor(1, 1)
+        self.workspaceSplitter.setSizes([220, 780])
+
+        self.verticalLayout.addWidget(self.workspaceSplitter)
         
         MainWindow.setCentralWidget(self.centralWidget)
         
@@ -470,10 +530,36 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         self._tracking_changes = True
         self.config_manager = ConfigManager()
         self.unique_column_values = {}
+        # Persisted workspace file list
+        try:
+            self.workspace_files = list(self.config_manager.get_setting("workspace_files", []))
+        except Exception:
+            self.workspace_files = []
+        # Open files tracking: map file path -> DataFileBinding
+        self.open_files = {}
+        # Optional in-memory cache of dataframes to avoid re-reading from disk
+        self._file_data_cache = {}
         self.load_unique_column_values()
         self.create_menus()
         self.apply_initial_settings()
         self.update_window_title()
+        self.workspace_manager = WorkspaceManager()
+        # Tab management
+        self._tabs = {}  # path -> CleanTableView
+        self._current_tab_index = -1
+        self.editorTabs.currentChanged.connect(self.on_tab_changed)
+        self.editorTabs.tabCloseRequested.connect(self.on_tab_close)
+        try:
+            self.editorTabs.tabBar().tabBarClicked.connect(self.on_tab_bar_clicked)
+        except Exception:
+            pass
+        # Populate workspace panel and hook activation
+        try:
+            self.populate_workspace_tree()
+            self.workspaceTree.itemActivated.connect(self.load_workspace_item)
+            self.workspaceTree.installEventFilter(self)
+        except Exception:
+            pass
         # Honour configurable undo depth
         try:
             self.undo_stack.max_size = int(self.config_manager.get_setting("undo_stack_max_size", 10) or 10)
@@ -563,8 +649,37 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         settings_action.triggered.connect(self.show_settings)
         settings_menu.addAction(settings_action)
 
+        # Workspace Menu
+        workspace_menu = self.menubar.addMenu("&Workspace")
+        ws_save_action = QAction("&Save Workspace...", self)
+        ws_save_action.setShortcut(QKeySequence("Ctrl+Shift+S"))
+        ws_save_action.triggered.connect(self.action_save_workspace)
+        workspace_menu.addAction(ws_save_action)
+
+        ws_load_action = QAction("&Load Workspace...", self)
+        ws_load_action.setShortcut(QKeySequence("Ctrl+Shift+O"))
+        ws_load_action.triggered.connect(self.action_load_workspace)
+        workspace_menu.addAction(ws_load_action)
+
+        ws_delete_action = QAction("&Delete Workspace...", self)
+        ws_delete_action.triggered.connect(self.action_delete_workspace)
+        workspace_menu.addAction(ws_delete_action)
+
+        workspace_menu.addSeparator()
+        ws_add_file_action = QAction("&Add File to Panel...", self)
+        ws_add_file_action.setShortcut(QKeySequence("Ctrl+Shift+A"))
+        ws_add_file_action.triggered.connect(self.add_file_to_workspace_panel)
+        workspace_menu.addAction(ws_add_file_action)
+
+        ws_remove_file_action = QAction("&Remove Selected from Panel", self)
+        ws_remove_file_action.setShortcut(QKeySequence("Del"))
+        ws_remove_file_action.triggered.connect(self.remove_selected_from_workspace_panel)
+        workspace_menu.addAction(ws_remove_file_action)
+
     def apply_initial_settings(self):
         """Loads and applies settings from the config manager on startup."""
+        if not hasattr(self, 'tableView') or self.tableView is None:
+            return
         # Freeze Column Setting
         freeze_col = self.config_manager.get_setting("freeze_first_column_enabled", False)
         self.freeze_col_action.setChecked(freeze_col)
@@ -620,10 +735,388 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         #self.config_manager.set_setting("freeze_first_row_enabled", frozen)
         #print(f"Freeze first row {'enabled' if frozen else 'disabled'}.")
 
+    # --- Workspace helpers ---
+    def _capture_table_state(self):
+        tv = getattr(self, 'tableView', None)
+        if not tv:
+            return {}
+        # Column widths
+        widths = []
+        try:
+            header = tv.horizontalHeader()
+            for i in range(tv.model().columnCount() if tv.model() else 0):
+                widths.append(header.sectionSize(i))
+        except Exception:
+            widths = []
+        # Scroll positions and current index
+        try:
+            h_scroll = tv.horizontalScrollBar().value()
+            v_scroll = tv.verticalScrollBar().value()
+        except Exception:
+            h_scroll = v_scroll = 0
+        try:
+            idx = tv.currentIndex()
+            current = {"row": idx.row(), "col": idx.column()} if idx.isValid() else None
+        except Exception:
+            current = None
+        return {
+            "column_widths": widths,
+            "h_scroll": h_scroll,
+            "v_scroll": v_scroll,
+            "current_index": current,
+        }
+
+    def _restore_table_state(self, state: dict):
+        if not state:
+            return
+        tv = getattr(self, 'tableView', None)
+        if not tv or not tv.model():
+            return
+        try:
+            header = tv.horizontalHeader()
+            widths = state.get("column_widths", [])
+            for i, w in enumerate(widths):
+                try:
+                    header.resizeSection(i, int(w))
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        try:
+            tv.horizontalScrollBar().setValue(int(state.get("h_scroll", 0)))
+            tv.verticalScrollBar().setValue(int(state.get("v_scroll", 0)))
+        except Exception:
+            pass
+        current = state.get("current_index")
+        if current and 0 <= current.get("row", -1) and 0 <= current.get("col", -1):
+            try:
+                idx = tv.model().index(current["row"], current["col"])
+                tv.setCurrentIndex(idx)
+                tv.scrollTo(idx)
+            except Exception:
+                pass
+
+    def _build_workspace_snapshot(self) -> dict:
+        geometry_b64 = str(self.saveGeometry().toBase64(), "utf-8")
+        state_b64 = str(self.saveState().toBase64(), "utf-8")
+        view_settings = {
+            "freeze_first_column_enabled": bool(self.config_manager.get_setting("freeze_first_column_enabled", False)),
+            "crosshair_enabled": bool(self.config_manager.get_setting("crosshair_enabled", True)),
+            "crosshair_hover_enabled": bool(self.config_manager.get_setting("crosshair_hover_enabled", True)),
+            "crosshair_thickness": int(self.config_manager.get_setting("crosshair_thickness", 1) or 1),
+        }
+        open_files = [self.current_file_path] if self.current_file_path else []
+        return {
+            "version": 1,
+            "geometry": geometry_b64,
+            "window_state": state_b64,
+            "open_files": open_files,
+            "active_file": self.current_file_path,
+            "table": self._capture_table_state(),
+            "view_settings": view_settings,
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+        }
+
+    def _apply_workspace_snapshot(self, snap: dict):
+        if not isinstance(snap, dict):
+            return
+        # Restore geometry/state first
+        try:
+            geom = QByteArray.fromBase64(bytes(snap.get("geometry", ""), "utf-8"))
+            if not geom.isEmpty():
+                self.restoreGeometry(geom)
+        except Exception:
+            pass
+        try:
+            wstate = QByteArray.fromBase64(bytes(snap.get("window_state", ""), "utf-8"))
+            if not wstate.isEmpty():
+                self.restoreState(wstate)
+        except Exception:
+            pass
+        # Apply view settings into config, then re-apply
+        for k, v in (snap.get("view_settings") or {}).items():
+            try:
+                self.config_manager.set_setting(k, v)
+            except Exception:
+                pass
+        self.apply_initial_settings()
+        # Load active file if present
+        active = snap.get("active_file")
+        if active and os.path.exists(active):
+            self._load_file_path(active)
+        # Finally, restore table state (after model is set)
+        self._restore_table_state(snap.get("table") or {})
+
+    # --- Tabbed editor helpers ---
+    def _get_tab_index_for_path(self, path: str) -> int:
+        view = self._tabs.get(path)
+        if not view:
+            return -1
+        for i in range(self.editorTabs.count()):
+            if self.editorTabs.widget(i) is view:
+                return i
+        return -1
+
+    def _open_in_tab(self, file_path: str, binding, df):
+        # Make sure any active inline editors are closed before switching views
+        self._close_all_active_editors()
+        # Reuse existing tab if present
+        idx = self._get_tab_index_for_path(file_path)
+        if idx >= 0:
+            self.editorTabs.setCurrentIndex(idx)
+            self.current_file_path = file_path
+            self.current_binding = binding or self.open_files.get(file_path)
+            cached = self._file_data_cache.get(file_path)
+            self.data_frame = cached if cached is not None else df
+            self.tableView = self.editorTabs.widget(idx)
+            self.update_window_title()
+            return
+        # Create a new view for this tab
+        view = CleanTableView(self.editorTabs)
+        view.setObjectName(f"tableView_{os.path.basename(file_path)}")
+        view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
+        # Set current context to this view and data then render
+        self.tableView = view
+        self.current_file_path = file_path
+        self.current_binding = binding
+        self.data_frame = df
+        self.display_data_in_table()
+        # Connect per-view context menu signals once
+        self.connect_context_menu_signals()
+        # Track tab mapping and add tab
+        self._tabs[file_path] = view
+        tab_label = os.path.basename(file_path)
+        self.editorTabs.addTab(view, tab_label)
+        self.editorTabs.setCurrentWidget(view)
+        # Suppress accidental double-click editing right after opening via workspace double-click
+        try:
+            view.temporarily_disable_editing(400)
+        except Exception:
+            pass
+        self.update_window_title()
+
+    def on_tab_changed(self, index: int):
+        if index < 0 or index >= self.editorTabs.count():
+            return
+        # Close any active editors across all views to avoid cross-view commit
+        self._close_all_active_editors()
+        self._current_tab_index = index
+        view = self.editorTabs.widget(index)
+        # Find path for this view
+        path = None
+        for p, v in self._tabs.items():
+            if v is view:
+                path = p
+                break
+        if not path:
+            return
+        self.tableView = view
+        self.current_file_path = path
+        self.current_binding = self.open_files.get(path)
+        # Prefer cached dataframe
+        df = self._file_data_cache.get(path)
+        if df is not None:
+            self.data_frame = df
+        else:
+            # Derive from current model
+            df2 = self.get_data_from_table()
+            if df2 is not None:
+                self.data_frame = df2
+        self.apply_initial_settings()
+        self.update_window_title()
+
+    def on_tab_bar_clicked(self, index: int):
+        # Try to finalize edits in the current tab before switching
+        self._close_all_active_editors()
+
+    def _close_all_active_editors(self):
+        try:
+            from PyQt6.QtWidgets import QApplication
+            # Prefer closing the currently focused inline editor only; this avoids cross-view commits
+            fw = QApplication.focusWidget()
+            if fw is not None:
+                # Find owning QTableView and top-level editor widget
+                from PyQt6.QtWidgets import QTableView, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit
+                editor_types = (QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit)
+                # Ascend from focus widget to find top-level editor
+                ed = fw
+                top_editor = None
+                depth = 0
+                while ed is not None and depth < 10:  # Increased depth
+                    if isinstance(ed, editor_types):
+                        top_editor = ed
+                    ed = ed.parent()
+                    depth += 1
+                # If focus was inside editable combobox, use the combobox itself
+                if isinstance(top_editor, QLineEdit) and isinstance(top_editor.parent(), QComboBox):
+                    top_editor = top_editor.parent()
+                    
+                # More thorough search for owning view - check all known table views
+                owner_view = None
+                all_views = list(self._tabs.values())
+                if hasattr(self, 'tableView') and self.tableView is not None:
+                    all_views.append(self.tableView)
+                    
+                for view in all_views:
+                    if view is None:
+                        continue
+                    # Check if editor belongs to this view
+                    p = top_editor if top_editor else fw
+                    depth = 0
+                    while p is not None and depth < 12:
+                        if p is view or (hasattr(view, 'viewport') and p is view.viewport()):
+                            owner_view = view
+                            break
+                        # Also check frozen views
+                        if hasattr(view, 'frozen_column_view') and (p is view.frozen_column_view or (hasattr(view.frozen_column_view, 'viewport') and p is view.frozen_column_view.viewport())):
+                            owner_view = view
+                            break
+                        if hasattr(view, 'frozen_row_view') and (p is view.frozen_row_view or (hasattr(view.frozen_row_view, 'viewport') and p is view.frozen_row_view.viewport())):
+                            owner_view = view
+                            break
+                        p = p.parent()
+                        depth += 1
+                    if owner_view:
+                        break
+                        
+                if owner_view is not None and top_editor is not None:
+                    self.debug_print(f"[Editors] Closing focused editor {top_editor.__class__.__name__} in view {getattr(owner_view, 'objectName', lambda: '')() or repr(owner_view)}")
+                    try:
+                        # Use SubmitModelCache to ensure data is committed before closing
+                        owner_view.closeEditor(top_editor, QAbstractItemDelegate.EndEditHint.SubmitModelCache)
+                    except Exception as e:
+                        self.debug_print(f"[Editors] closeEditor on focused editor raised: {e}; trying NoHint")
+                        try:
+                            owner_view.closeEditor(top_editor, QAbstractItemDelegate.EndEditHint.NoHint)
+                        except Exception:
+                            pass
+                    return
+
+            # Fallback: scan views but be more conservative and precise
+            views = list(self._tabs.values())
+            if hasattr(self, 'tableView') and self.tableView is not None and self.tableView not in views:
+                views.append(self.tableView)
+            for v in views:
+                if v is None:
+                    continue
+                self.debug_print(f"[Editors] Scanning view {getattr(v, 'objectName', lambda: '')() or repr(v)} for active editors")
+                # Only attempt to close editors that are truly owned by this view
+                try:
+                    # Check if view is currently in edit state
+                    if hasattr(v, 'state') and v.state() == QAbstractItemView.State.EditingState:
+                        # Find the current editor more precisely
+                        current_index = v.currentIndex()
+                        if current_index.isValid():
+                            # Try to get the editor widget for the current index
+                            for cls in (QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit):
+                                editors = v.findChildren(cls)
+                                for ed in editors:
+                                    # Verify this editor really belongs to this view
+                                    pr = ed.parent()
+                                    depth = 0
+                                    is_owned = False
+                                    while pr is not None and depth < 8:
+                                        if pr is v or (hasattr(v, 'viewport') and pr is v.viewport()):
+                                            is_owned = True
+                                            break
+                                        pr = pr.parent()
+                                        depth += 1
+                                    if is_owned:
+                                        try:
+                                            self.debug_print(f"[Editors] Closing editor {ed.__class__.__name__} from view {getattr(v, 'objectName', lambda: '')()}")
+                                            v.closeEditor(ed, QAbstractItemDelegate.EndEditHint.SubmitModelCache)
+                                        except Exception:
+                                            try:
+                                                v.closeEditor(ed, QAbstractItemDelegate.EndEditHint.NoHint)
+                                            except Exception:
+                                                pass
+                except Exception:
+                    pass
+        except Exception as e:
+            self.debug_print(f"[Editors] Exception in _close_all_active_editors: {e}; continuing")
+
+    def on_tab_close(self, index: int):
+        if index < 0 or index >= self.editorTabs.count():
+            return
+        view = self.editorTabs.widget(index)
+        # Determine path for this tab
+        path = None
+        for p, v in list(self._tabs.items()):
+            if v is view:
+                path = p
+                del self._tabs[p]
+                break
+        # Cache latest data before closing
+        try:
+            if path:
+                df = self.get_data_from_table()
+                if df is not None:
+                    self._file_data_cache[path] = df
+        except Exception:
+            pass
+        self.editorTabs.removeTab(index)
+        # If no tabs remain, clear references
+        if self.editorTabs.count() == 0:
+            self.tableView = None
+            self.current_file_path = None
+            self.current_binding = None
+            self.data_frame = None
+            self.update_window_title()
+
+    def action_save_workspace(self):
+        name, ok = QInputDialog.getText(self, "Save Workspace", "Name:")
+        if not ok or not name.strip():
+            return
+        snap = self._build_workspace_snapshot()
+        self.workspace_manager.save(name.strip(), snap)
+        QMessageBox.information(self, "Workspace", f"Saved workspace '{name.strip()}'.")
+
+    def action_load_workspace(self):
+        names = self.workspace_manager.list_names()
+        if not names:
+            QMessageBox.information(self, "Workspace", "No workspaces saved yet.")
+            return
+        # Simple chooser using input dialog with comma-separated suggestion
+        default = names[0]
+        name, ok = QInputDialog.getItem(self, "Load Workspace", "Select:", names, editable=False)
+        if not ok:
+            return
+        snap = self.workspace_manager.get(name)
+        if not snap:
+            QMessageBox.warning(self, "Workspace", f"Workspace '{name}' not found.")
+            return
+        self._apply_workspace_snapshot(snap)
+        QMessageBox.information(self, "Workspace", f"Loaded workspace '{name}'.")
+
+    def action_delete_workspace(self):
+        names = self.workspace_manager.list_names()
+        if not names:
+            QMessageBox.information(self, "Workspace", "No workspaces to delete.")
+            return
+        name, ok = QInputDialog.getItem(self, "Delete Workspace", "Select:", names, editable=False)
+        if not ok:
+            return
+        if self.workspace_manager.delete(name):
+            QMessageBox.information(self, "Workspace", f"Deleted workspace '{name}'.")
+        else:
+            QMessageBox.warning(self, "Workspace", f"Workspace '{name}' not found.")
+
     def open_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open .txt file", "", "Text Files (*.txt)")
-        if file_path:
-            self._load_file_path(file_path)
+        paths, _ = QFileDialog.getOpenFileNames(self, "Open .txt files", "", "Text Files (*.txt)")
+        if not paths:
+            return
+        # Add all selected to current workspace panel
+        changed = False
+        for p in paths:
+            abspath = os.path.abspath(p)
+            if abspath not in self.workspace_files:
+                self.workspace_files.append(abspath)
+                changed = True
+        if changed:
+            self.populate_workspace_tree()
+            self._persist_workspace_files()
+        # Load the first selected into the editor
+        self._load_file_path(paths[0])
 
     def _load_file_path(self, file_path: str):
         """Load a specific .txt file path using standard detection and binding logic."""
@@ -648,15 +1141,28 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         print(f"  Encoding: {detected_encoding}")
         if applied_binding:
             print(f"  Applied binding: {applied_binding.base_name}")
-        # Load the file directly
-        self.current_file_path = file_path
-        self.current_binding = applied_binding
+        # Load the file data
         data = open_txt_file(file_path)
         if data is not None:
             print(f"File loaded successfully! Type: {file_type}, Encoding: {detected_encoding}")
-            self.data_frame = data
-            self.display_data_in_table()
-            self.update_window_title()
+            # Cache opened file state
+            try:
+                if applied_binding is not None:
+                    self.open_files[file_path] = applied_binding
+                self._file_data_cache[file_path] = data.copy()
+            except Exception:
+                pass
+            # Ensure opened file is tracked in workspace list
+            try:
+                abspath = os.path.abspath(file_path)
+                if abspath not in self.workspace_files:
+                    self.workspace_files.append(abspath)
+                    self.populate_workspace_tree()
+                self._persist_workspace_files()
+            except Exception:
+                pass
+            # Open or focus in a tab
+            self._open_in_tab(file_path, applied_binding, data)
         else:
             QMessageBox.warning(self, "Load Error", "Failed to load file!")
 
@@ -692,14 +1198,24 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         dialog = BoundFileDialog(self)
         if dialog.exec() == QDialog.DialogCode.Accepted and dialog.selected_binding:
             binding = dialog.selected_binding
-            self.current_binding = binding
-            self.current_file_path = binding.txt_path
+            file_path = binding.txt_path
             data = binding.load_data()
             if data is not None:
                 print(f"Bound file loaded successfully: {binding.base_name}")
-                self.data_frame = data
-                self.display_data_in_table()
-                self.update_window_title()
+                # Track in workspace cache
+                try:
+                    self.open_files[file_path] = binding
+                    self._file_data_cache[file_path] = data.copy()
+                    # Ensure the bound file appears in the workspace panel
+                    abspath = os.path.abspath(file_path)
+                    if abspath not in self.workspace_files:
+                        self.workspace_files.append(abspath)
+                        self.populate_workspace_tree()
+                        self._persist_workspace_files()
+                except Exception:
+                    pass
+                # Open or focus in a tab
+                self._open_in_tab(file_path, binding, data)
             else:
                 QMessageBox.warning(self, "Load Error", f"Failed to load bound file: {binding.base_name}")
     
@@ -809,7 +1325,7 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             self.cleanup_old_backups(dir_path, name)
         except Exception as e:
             print(f"Failed to create backup: {e}")
-    
+        
     def cleanup_old_backups(self, dir_path, base_name):
         try:
             backup_files = []
@@ -1026,6 +1542,152 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         finally:
             self._tracking_changes = True
         print(f"Cleared {len(selection)} cells")
+
+    # --- Workspace panel population and switching ---
+    def populate_workspace_tree(self):
+        self.workspaceTree.clear()
+        seen = set()
+        for path in self.workspace_files:
+            if not path:
+                continue
+            abspath = os.path.abspath(path)
+            if abspath.lower() in seen:
+                continue
+            seen.add(abspath.lower())
+            label = os.path.basename(abspath)
+            item = QTreeWidgetItem([label])
+            item.setData(0, Qt.ItemDataRole.UserRole, abspath)
+            self.workspaceTree.addTopLevelItem(item)
+        self.workspaceTree.sortItems(0, Qt.SortOrder.AscendingOrder)
+
+    def _persist_workspace_files(self):
+        try:
+            self.config_manager.set_setting("workspace_files", list(self.workspace_files))
+        except Exception:
+            pass
+
+    def add_file_to_workspace_panel(self):
+        paths, _ = QFileDialog.getOpenFileNames(self, "Add .txt files to Workspace", "", "Text Files (*.txt)")
+        if not paths:
+            return
+        changed = False
+        for p in paths:
+            abspath = os.path.abspath(p)
+            if abspath not in self.workspace_files:
+                self.workspace_files.append(abspath)
+                changed = True
+        if changed:
+            self.populate_workspace_tree()
+            self._persist_workspace_files()
+
+    def remove_selected_from_workspace_panel(self):
+        items = self.workspaceTree.selectedItems()
+        if not items:
+            return
+        removed_any = False
+        for it in items:
+            path = it.data(0, Qt.ItemDataRole.UserRole)
+            try:
+                abspath = os.path.abspath(path)
+            except Exception:
+                abspath = path
+            if abspath in self.workspace_files:
+                self.workspace_files.remove(abspath)
+                removed_any = True
+        for it in items:
+            idx = self.workspaceTree.indexOfTopLevelItem(it)
+            if idx >= 0:
+                self.workspaceTree.takeTopLevelItem(idx)
+        if removed_any:
+            self._persist_workspace_files()
+
+    def closeEvent(self, event):
+        # On app close, ensure current file is persisted in workspace
+        try:
+            if getattr(self, 'current_file_path', None):
+                abspath = os.path.abspath(self.current_file_path)
+                if abspath not in self.workspace_files:
+                    self.workspace_files.append(abspath)
+            self._persist_workspace_files()
+        except Exception:
+            pass
+        super().closeEvent(event)
+
+    # Accept drag-and-drop into the workspace tree
+    def eventFilter(self, obj, event):
+        try:
+            if obj is self.workspaceTree:
+                if event.type() in (QEvent.Type.DragEnter, QEvent.Type.DragMove):
+                    md = event.mimeData()
+                    if md.hasUrls() and any(u.isLocalFile() and u.toLocalFile().lower().endswith('.txt') for u in md.urls()):
+                        event.acceptProposedAction()
+                        return True
+                if event.type() == QEvent.Type.Drop:
+                    md = event.mimeData()
+                    if md.hasUrls():
+                        changed = False
+                        for u in md.urls():
+                            if u.isLocalFile():
+                                p = u.toLocalFile()
+                                if p.lower().endswith('.txt'):
+                                    ap = os.path.abspath(p)
+                                    if ap not in self.workspace_files:
+                                        self.workspace_files.append(ap)
+                                        changed = True
+                        if changed:
+                            self.populate_workspace_tree()
+                            self._persist_workspace_files()
+                        event.acceptProposedAction()
+                        return True
+        except Exception:
+            pass
+        return super().eventFilter(obj, event)
+
+    def load_workspace_item(self, item, column):
+        try:
+            target_path = item.data(0, Qt.ItemDataRole.UserRole)
+        except Exception:
+            target_path = None
+        if not target_path:
+            return
+        # Save current edits to cache before switching
+        try:
+            if self.current_file_path:
+                current_df = self.get_data_from_table()
+                if current_df is not None:
+                    self._file_data_cache[self.current_file_path] = current_df
+        except Exception:
+            pass
+        # If already active, nothing to do
+        if self.current_file_path and os.path.abspath(self.current_file_path) == os.path.abspath(target_path):
+            return
+        # If we have an open binding, reuse it and cached data if available
+        if target_path in self.open_files:
+            binding = self.open_files[target_path]
+            self.current_binding = binding
+            self.current_file_path = target_path
+            # Use cached dataframe if any; else reload via binding
+            df = self._file_data_cache.get(target_path)
+            if df is None:
+                try:
+                    df = binding.load_data()
+                except Exception:
+                    df = None
+            if df is not None:
+                self.data_frame = df
+                self.display_data_in_table()
+                self.update_window_title()
+                self.undo_stack.clear()
+            else:
+                # Fallback to normal loader
+                self._load_file_path(target_path)
+                self.undo_stack.clear()
+            return
+        # Otherwise, load via normal path detection and track
+        self._load_file_path(target_path)
+        if self.current_binding is not None:
+            self.open_files[target_path] = self.current_binding
+        self.undo_stack.clear()
 
     def select_all(self):
         self.tableView.selectAll()

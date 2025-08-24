@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (QTableView, QStyledItemDelegate, QMenu, QApplication,
                              QHeaderView, QStyle, QAbstractItemView, QInputDialog, QMessageBox)
 from PyQt6.QtCore import (Qt, pyqtSignal, QItemSelection, QItemSelectionModel,
-                          QTimer, QEvent)
+                          QTimer, QEvent, QPersistentModelIndex)
 from PyQt6.QtGui import (QAction, QKeySequence, QStandardItemModel, QStandardItem,
                          QPainter, QPen, QColor)
 from config_manager import ConfigManager as AppConfigManager
@@ -114,6 +114,48 @@ class NoHoverDelegate(QStyledItemDelegate):
             opt.state &= ~QStyle.StateFlag.State_MouseOver
         super().paint(painter, opt, index)
 
+    def createEditor(self, parent, option, index):
+        # Ensure editors are parented to the view's viewport so commitData sees them as belonging to the view
+        try:
+            view = self.parent() if isinstance(self.parent(), QTableView) else None
+            parent_to_use = view.viewport() if (view is not None and hasattr(view, 'viewport')) else parent
+        except Exception:
+            view = None
+            parent_to_use = parent
+        editor = super().createEditor(parent_to_use, option, index)
+        # Tag the editor with a persistent index so we can commit manually without ambiguity
+        try:
+            editor.setProperty("_d2te_index", QPersistentModelIndex(index))
+        except Exception:
+            pass
+        # Name and debug-log the default editor to trace ownership
+        try:
+            # Get view ID if available for better tracking
+            view_id = getattr(view, '_view_id', 'unknown') if view else 'noview'
+            editor.setObjectName(f"DefaultEditor_{view_id}_r{index.row()}_c{index.column()}")
+            
+            vname = (view.objectName() if view else parent_to_use.objectName()) or repr(view or parent_to_use)
+            # Config may not be reachable; guard
+            debug_on = False
+            try:
+                cfg = getattr(view, 'config_manager', None)
+                if cfg:
+                    debug_on = cfg.get_setting("debug_mode_enabled", False)
+            except Exception:
+                debug_on = False
+            if debug_on:
+                chain = []
+                p = editor.parent()
+                steps = 0
+                while p is not None and steps < 6:
+                    chain.append(p.__class__.__name__)
+                    p = p.parent()
+                    steps += 1
+                print(f"[DEBUG] default createEditor -> {editor.objectName()} for view {vname}; parent_chain={' > '.join(chain) if chain else 'None'}")
+        except Exception:
+            pass
+        return editor
+
 class OverlayTableView(QTableView):
     """Lightweight QTableView that allows drawing an overlay after normal paint.
     Used for frozen panes so crosshair lines render reliably on top.
@@ -134,6 +176,34 @@ class OverlayTableView(QTableView):
                 painter.end()
             except Exception:
                 pass
+
+    # Guard against stray commitData for editors not owned by this mirror view
+    def commitData(self, editor):
+        try:
+            # Determine if the editor belongs to this view or its viewport
+            p = editor
+            owns = False
+            depth = 0
+            while p is not None and depth < 8:
+                if p is self or p is self.viewport():
+                    owns = True
+                    break
+                p = p.parent()
+                depth += 1
+            if not owns:
+                # Optional debug
+                try:
+                    cfg = getattr(self.parent(), 'config_manager', None) or getattr(self, 'config_manager', None)
+                    if cfg and cfg.get_setting("debug_mode_enabled", False):
+                        vname = self.objectName() or f"OverlayTableView@{id(self):x}"
+                        ename = editor.objectName() or editor.__class__.__name__
+                        print(f"[DEBUG] overlay.commitData ignored on {vname}: editor={ename} not owned by this view")
+                except Exception:
+                    pass
+                return
+        except Exception:
+            pass
+        super().commitData(editor)
 
 class CleanTableView(QTableView):
     # --- Signals remain unchanged ---
@@ -160,9 +230,18 @@ class CleanTableView(QTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.config_manager = AppConfigManager()
-        self.setItemDelegate(NoHoverDelegate())
+        # Generate unique identifier for this view instance
+        import time
+        self._view_id = f"ctv_{int(time.time() * 1000000) % 1000000}_{id(self) % 10000}"
+        # Use a stored base delegate so we can optionally introspect its signals during debugging
+        try:
+            self._base_delegate = NoHoverDelegate(self)
+        except Exception:
+            self._base_delegate = NoHoverDelegate()
+        self.setItemDelegate(self._base_delegate)
         # Improve edit UX: double-click or edit key starts edit, Enter commits
         self.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked | QAbstractItemView.EditTrigger.EditKeyPressed)
+        self._saved_edit_triggers = None
 
         # Crosshair guides settings
         self._show_crosshair_guides = True
@@ -178,6 +257,8 @@ class CleanTableView(QTableView):
         self.frozen_column_view = OverlayTableView(self)
         self.frozen_column_view.setItemDelegate(NoHoverDelegate())
         self.frozen_column_view.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        # Prevent any editing from occurring in the frozen column mirror view
+        self.frozen_column_view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.frozen_column_view.verticalHeader().hide()  # Hide vertical header; main view's suffices
         self.frozen_column_view.setHorizontalHeader(CustomHeaderView(Qt.Orientation.Horizontal, self.frozen_column_view))  # Use CustomHeaderView for consistency
         self.frozen_column_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)  # Fix: Set resize mode to Fixed for frozen header
@@ -189,6 +270,8 @@ class CleanTableView(QTableView):
         self.frozen_row_view = OverlayTableView(self)
         self.frozen_row_view.setItemDelegate(NoHoverDelegate())
         self.frozen_row_view.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        # Prevent any editing from occurring in the frozen row mirror view
+        self.frozen_row_view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.frozen_row_view.verticalHeader().hide()
         self.frozen_row_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.frozen_row_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -236,6 +319,15 @@ class CleanTableView(QTableView):
         try:
             self.viewport().setMouseTracking(True)
             self.viewport().installEventFilter(self)
+        except Exception:
+            pass
+        # Hook delegate signals for debug tracing if available
+        try:
+            self._base_delegate.commitData.connect(self._on_delegate_commit)
+        except Exception:
+            pass
+        try:
+            self._base_delegate.closeEditor.connect(self._on_delegate_close)
         except Exception:
             pass
 
@@ -480,17 +572,18 @@ class CleanTableView(QTableView):
             # Main view overlay
             idx = model.index(eff_row, eff_col)
             rect = self.visualRect(idx)
-            if rect.isValid():
+            if rect.isValid() and self.viewport().isVisible():
                 p = QPainter(self.viewport())
-                pen = QPen(self._crosshair_color)
-                pen.setWidth(self._crosshair_width)
-                p.setPen(pen)
-                # Vertical line across main viewport
-                x = rect.left()
-                p.drawLine(x, 0, x, self.viewport().height())
-                # Horizontal line across main viewport
-                y = rect.top()
-                p.drawLine(0, y, self.viewport().width(), y)
+                if p.isActive():  # Check if painter is valid
+                    pen = QPen(self._crosshair_color)
+                    pen.setWidth(self._crosshair_width)
+                    p.setPen(pen)
+                    # Vertical line across main viewport
+                    x = rect.left()
+                    p.drawLine(x, 0, x, self.viewport().height())
+                    # Horizontal line across main viewport
+                    y = rect.top()
+                    p.drawLine(0, y, self.viewport().width(), y)
                 p.end()
 
             # Frozen overlays are handled by OverlayTableView callbacks
@@ -499,36 +592,39 @@ class CleanTableView(QTableView):
             try:
                 # Horizontal header (column names) - draw vertical line at column
                 hh = self.horizontalHeader()
-                if hh and hh.isVisible():
+                if hh and hh.isVisible() and hh.viewport().isVisible():
                     xh = hh.sectionViewportPosition(eff_col)
                     if xh >= 0:
                         ph = QPainter(hh.viewport())
-                        penh = QPen(self._crosshair_color)
-                        penh.setWidth(self._crosshair_width)
-                        ph.setPen(penh)
-                        ph.drawLine(xh, 0, xh, hh.viewport().height())
+                        if ph.isActive():  # Check if painter is valid
+                            penh = QPen(self._crosshair_color)
+                            penh.setWidth(self._crosshair_width)
+                            ph.setPen(penh)
+                            ph.drawLine(xh, 0, xh, hh.viewport().height())
                         ph.end()
                 # Vertical header (row numbers) - draw horizontal line at row
                 vh = self.verticalHeader()
-                if vh and vh.isVisible():
+                if vh and vh.isVisible() and vh.viewport().isVisible():
                     yv = vh.sectionViewportPosition(eff_row)
                     if yv >= 0:
                         pv = QPainter(vh.viewport())
-                        penv = QPen(self._crosshair_color)
-                        penv.setWidth(self._crosshair_width)
-                        pv.setPen(penv)
-                        pv.drawLine(0, yv, vh.viewport().width(), yv)
+                        if pv.isActive():  # Check if painter is valid
+                            penv = QPen(self._crosshair_color)
+                            penv.setWidth(self._crosshair_width)
+                            pv.setPen(penv)
+                            pv.drawLine(0, yv, vh.viewport().width(), yv)
                         pv.end()
                 # Frozen row view header (top header for all columns) - vertical line
                 fr_hh = self.frozen_row_view.horizontalHeader()
-                if fr_hh and fr_hh.isVisible():
+                if fr_hh and fr_hh.isVisible() and fr_hh.viewport().isVisible():
                     xfh = fr_hh.sectionViewportPosition(eff_col)
                     if xfh >= 0:
                         pfh = QPainter(fr_hh.viewport())
-                        penfh = QPen(self._crosshair_color)
-                        penfh.setWidth(self._crosshair_width)
-                        pfh.setPen(penfh)
-                        pfh.drawLine(xfh, 0, xfh, fr_hh.viewport().height())
+                        if pfh.isActive():  # Check if painter is valid
+                            penfh = QPen(self._crosshair_color)
+                            penfh.setWidth(self._crosshair_width)
+                            pfh.setPen(penfh)
+                            pfh.drawLine(xfh, 0, xfh, fr_hh.viewport().height())
                         pfh.end()
             except Exception:
                 pass
@@ -634,7 +730,10 @@ class CleanTableView(QTableView):
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
             # Commit current editor if any
             if self.state() == QAbstractItemView.State.EditingState:
-                self.closePersistentEditor(self.currentIndex())
+                try:
+                    self._close_current_inline_editor()
+                except Exception:
+                    pass
             # Move down to mimic spreadsheet feel (optional)
             current = self.currentIndex()
             if current.isValid() and current.row() + 1 < (self.model().rowCount() if self.model() else 0):
@@ -646,6 +745,245 @@ class CleanTableView(QTableView):
                 self.select_column_requested.emit(current_index.column())
         else:
             super().keyPressEvent(event)
+
+    # --- Debug helpers ---
+    def closeEditor(self, editor, hint):
+        try:
+            cfg = getattr(self, 'config_manager', None)
+            debug_on = False
+            try:
+                debug_on = cfg.get_setting("debug_mode_enabled", False)
+            except Exception:
+                debug_on = False
+            if debug_on:
+                vname = self.objectName() or f"CleanTableView@{id(self):x}"
+                ename = editor.objectName() or editor.__class__.__name__
+                p = editor.parent()
+                chain = []
+                steps = 0
+                while p is not None and steps < 4:
+                    chain.append(p.__class__.__name__ + ("[viewport]" if hasattr(self, 'viewport') and p is self.viewport() else ""))
+                    p = p.parent()
+                    steps += 1
+                print(f"[DEBUG] closeEditor called on {vname}: editor={ename} ({editor.__class__.__name__}), parent_chain={' > '.join(chain) if chain else 'None'}, hint={int(hint)}")
+        except Exception:
+            pass
+        super().closeEditor(editor, hint)
+
+    def commitData(self, editor):
+        # Intercept commitData to avoid warnings for editors that do not belong to this view
+        try:
+            debug_on = False
+            try:
+                debug_on = self.config_manager.get_setting("debug_mode_enabled", False)
+            except Exception:
+                debug_on = False
+            
+            vname = self.objectName() or f"CleanTableView@{id(self):x}"
+            ename = editor.objectName() or editor.__class__.__name__
+            view_id = getattr(self, '_view_id', 'no_id')
+            
+            if debug_on:
+                print(f"[DEBUG] commitData called on view {vname} (view_id={view_id}) for editor {ename}")
+            
+            # Ensure the editor lives under this view's viewport
+            try:
+                current_parent = editor.parent()
+                expected_parent = self.viewport()
+                if current_parent is not expected_parent and expected_parent is not None:
+                    if debug_on:
+                        print(f"[DEBUG] Reparenting editor {ename} from {current_parent.__class__.__name__ if current_parent else 'None'} to {expected_parent.__class__.__name__}")
+                    editor.setParent(expected_parent)
+            except Exception as commit_ex:
+                if debug_on:
+                    print(f"[DEBUG] Exception ensuring editor parent: {commit_ex}")
+            
+            # Manual commit path to avoid Qt's internal warning. Resolve the target index robustly.
+            idx = None
+            try:
+                pidx = editor.property("_d2te_index")
+                if pidx is not None:
+                    # Guard against stale indices
+                    row = int(pidx.row())
+                    col = int(pidx.column())
+                    if self.model() and 0 <= row < self.model().rowCount() and 0 <= col < self.model().columnCount():
+                        idx = self.model().index(row, col)
+            except Exception:
+                idx = None
+            if (idx is None) or (not getattr(idx, 'isValid', lambda: False)()):
+                try:
+                    ci = self.currentIndex()
+                    if ci and ci.isValid():
+                        idx = ci
+                except Exception:
+                    idx = None
+            if (idx is None) or (not getattr(idx, 'isValid', lambda: False)()):
+                # Best-effort: map editor geometry to an index
+                try:
+                    center = editor.geometry().center()
+                    idx = self.indexAt(center)
+                except Exception:
+                    idx = None
+            
+            if idx and idx.isValid():
+                # Use the effective delegate for this index (column-specific or base)
+                delegate = None
+                try:
+                    delegate = self.itemDelegateForColumn(idx.column())
+                except Exception:
+                    delegate = None
+                if delegate is None:
+                    try:
+                        delegate = self.itemDelegateForRow(idx.row())
+                    except Exception:
+                        pass
+                if delegate is None:
+                    try:
+                        # Some bindings support itemDelegate(QModelIndex); ignore if not
+                        delegate = self.itemDelegate(idx)
+                    except Exception:
+                        pass
+                if delegate is None:
+                    try:
+                        delegate = self.itemDelegate()
+                    except Exception:
+                        delegate = None
+                if delegate is None:
+                    # Fallback to our base delegate or a vanilla one
+                    delegate = getattr(self, "_base_delegate", None) or QStyledItemDelegate(self)
+                try:
+                    delegate.setModelData(editor, self.model(), idx)
+                except Exception as e_set:
+                    if debug_on:
+                        print(f"[DEBUG] Manual setModelData failed: {e_set}")
+            else:
+                if debug_on:
+                    print("[DEBUG] Could not resolve a valid index for manual commit; skipping setModelData")
+            
+            if debug_on:
+                print(f"[DEBUG] Successfully committed editor {ename} on view {vname} (manual path)")
+            return
+                    
+        except Exception as e:
+            # Log the exception if debug is enabled
+            try:
+                if self.config_manager.get_setting("debug_mode_enabled", False):
+                    vname = self.objectName() or f"CleanTableView@{id(self):x}"
+                    print(f"[DEBUG] Exception in commitData ownership check on {vname}: {e}")
+            except Exception:
+                pass
+
+    # --- Editing suppression helpers ---
+    def temporarily_disable_editing(self, ms: int = 350):
+        try:
+            if self._saved_edit_triggers is None:
+                self._saved_edit_triggers = self.editTriggers()
+                self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+                QTimer.singleShot(int(ms), self._restore_edit_triggers)
+        except Exception:
+            pass
+
+    def _restore_edit_triggers(self):
+        try:
+            if self._saved_edit_triggers is not None:
+                self.setEditTriggers(self._saved_edit_triggers)
+                self._saved_edit_triggers = None
+        except Exception:
+            pass
+
+    def _on_delegate_commit(self, editor):
+        # Owning view check
+        try:
+            p = editor
+            owns = False
+            depth = 0
+            while p is not None and depth < 8:
+                if p is self or p is self.viewport():
+                    owns = True
+                    break
+                p = p.parent()
+                depth += 1
+            if not owns:
+                return
+        except Exception:
+            return
+        
+        try:
+            debug_on = False
+            try:
+                debug_on = self.config_manager.get_setting("debug_mode_enabled", False)
+            except Exception:
+                debug_on = False
+            if debug_on:
+                vname = self.objectName() or f"CleanTableView@{id(self):x}"
+                ename = editor.objectName() or editor.__class__.__name__
+                print(f"[DEBUG] delegate.commitData on {vname}: editor={ename} ({editor.__class__.__name__})")
+        except Exception:
+            pass
+
+    def _on_delegate_close(self, editor, hint):
+        try:
+            debug_on = False
+            try:
+                debug_on = self.config_manager.get_setting("debug_mode_enabled", False)
+            except Exception:
+                debug_on = False
+            if debug_on:
+                vname = self.objectName() or f"CleanTableView@{id(self):x}"
+                ename = editor.objectName() or editor.__class__.__name__
+                print(f"[DEBUG] delegate.closeEditor on {vname}: editor={ename} ({editor.__class__.__name__}), hint={int(hint)}")
+        except Exception:
+            pass
+
+    # --- Internal helpers ---
+    def _close_current_inline_editor(self):
+        from PyQt6.QtWidgets import QApplication, QWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit
+        editor_classes = (QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit)
+        fw = QApplication.focusWidget()
+        if fw is None:
+            return
+        # Ascend to find the top-level editor widget
+        ed = fw
+        top = None
+        depth = 0
+        while ed is not None and depth < 6:
+            if isinstance(ed, editor_classes):
+                top = ed
+            ed = ed.parent()
+            depth += 1
+        if top is None:
+            return
+        # If inside an editable QComboBox, prefer the combobox as the editor
+        if isinstance(top, QLineEdit):
+            p = top.parent()
+            if isinstance(p, QComboBox):
+                top = p
+
+        # Find the view that owns the editor
+        owner_view = None
+        for view in [self, self.frozen_column_view, self.frozen_row_view]:
+            if view is None:
+                continue
+            
+            p = top.parent()
+            depth = 0
+            is_owned = False
+            while p is not None and depth < 8:
+                if p is view or (hasattr(view, 'viewport') and p is view.viewport()):
+                    is_owned = True
+                    break
+                p = p.parent()
+                depth += 1
+            
+            if is_owned:
+                owner_view = view
+                break
+        
+        if owner_view:
+            try:
+                owner_view.closeEditor(top, QStyledItemDelegate.EndEditHint.SubmitModelCache)
+            except Exception:
+                pass
 
     def show_context_menu(self, position):
         # This method is unchanged
