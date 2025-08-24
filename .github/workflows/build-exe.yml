@@ -22,14 +22,14 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller
-        # If you have a requirements.txt file, uncomment the following line
-        # pip install -r requirements.txt
+        # I'm retarded
+        pip install -r requirements.txt
 
     - name: Build executable
       run: pyinstaller --onefile --windowed main_v2.py
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Diablo2TextEditor-executable
-        path: dist/Diablo2TextEditor.exe
+        path: dist/main_v2.exe
