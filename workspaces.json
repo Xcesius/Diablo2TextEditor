@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "workspaces": {
+    "a": {
+      "version": 1,
+      "geometry": "AdnQywADAAAAAABkAAAARQAABRMAAAODAAAAZAAAAGQAAAUTAAADgwAAAAAAAAAACgAAAABkAAAAZAAABRMAAAOD",
+      "window_state": "AAAA/wAAAAD9AAAAAAAABLAAAAL/AAAABAAAAAQAAAAIAAAACPwAAAAA",
+      "open_files": [],
+      "active_file": null,
+      "table": {
+        "column_widths": [],
+        "h_scroll": 0,
+        "v_scroll": 0,
+        "current_index": null
+      },
+      "view_settings": {
+        "freeze_first_column_enabled": true,
+        "crosshair_enabled": true,
+        "crosshair_hover_enabled": false,
+        "crosshair_thickness": 5
+      },
+      "timestamp": "2025-08-24T19:03:25.945013Z"
+    },
+    "test": {
+      "version": 1,
+      "geometry": "AdnQywADAAAAAABkAAAARQAABRMAAAODAAAAZAAAAGQAAAUTAAADgwAAAAAAAAAACgAAAABkAAAAZAAABRMAAAOD",
+      "window_state": "AAAA/wAAAAD9AAAAAAAABLAAAAL/AAAABAAAAAQAAAAIAAAACPwAAAAA",
+      "open_files": [
+        "F:\\ProjectsNew\\Diablo2TextEditor\\CubeMainNotWorking.txt"
+      ],
+      "active_file": "F:\\ProjectsNew\\Diablo2TextEditor\\CubeMainNotWorking.txt",
+      "table": {
+        "column_widths": { "repeat": 100, "count": 106 },
+        "h_scroll": 0,
+        "v_scroll": 0,
+        "current_index": {
+          "row": 2,
+          "col": 5
+        }
+      },
+      "view_settings": {
+        "freeze_first_column_enabled": false,
+        "crosshair_enabled": true,
+        "crosshair_hover_enabled": false,
+        "crosshair_thickness": 5
+      },
+      "timestamp": "2025-08-24T19:35:01.758986Z"
+    }
+  }
+}

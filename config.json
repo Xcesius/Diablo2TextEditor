@@ -2,6 +2,17 @@
     "settings": {
         "multi_column_selection_enabled": true,
         "ignore_empty_cells_on_column_select": true,
-        "debug_mode_enabled": true
+        "debug_mode_enabled": true,
+        "show_row_numbers_on_frozen_column": false,
+        "undo_stack_max_size": 10,
+        "crosshair_enabled": true,
+        "crosshair_thickness": 5,
+        "crosshair_hover_enabled": false,
+        "freeze_first_column_enabled": true,
+        "multi_column_select_all_enabled": false,
+        "workspace_files": [
+            "F:\\ProjectsNew\\Diablo2TextEditor\\CubeMainWorking.txt",
+            "F:\\ProjectsNew\\Diablo2TextEditor\\CubeMainNotWorking.txt"
+        ]
     }
 }
