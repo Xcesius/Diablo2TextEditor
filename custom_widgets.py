@@ -48,8 +48,14 @@ class CustomHeaderView(QHeaderView):
                 table = self.parent()
                 try:
                     multi_enabled = table.config_manager.get_setting("multi_column_selection_enabled", True) if self.orientation() == Qt.Orientation.Horizontal else table.config_manager.get_setting("multi_row_selection_enabled", True)
-                except AttributeError:
+                except AttributeError as e:
+                    import logging
+                    logging.debug(f"Config manager not available for multi-selection: {e}")
                     multi_enabled = True # Default fallback
+                except Exception as e:
+                    import logging
+                    logging.warning(f"Unexpected error accessing multi-selection setting: {e}")
+                    multi_enabled = True
                 if multi_enabled:
                     min_sec = min(self._start_section, index)
                     max_sec = max(self._start_section, index)
@@ -119,15 +125,26 @@ class NoHoverDelegate(QStyledItemDelegate):
         try:
             view = self.parent() if isinstance(self.parent(), QTableView) else None
             parent_to_use = view.viewport() if (view is not None and hasattr(view, 'viewport')) else parent
-        except Exception:
+        except (AttributeError, TypeError) as e:
+            import logging
+            logging.debug(f"Error setting up editor parent: {e}")
+            view = None
+            parent_to_use = parent
+        except Exception as e:
+            import logging
+            logging.warning(f"Unexpected error in createEditor parent setup: {e}")
             view = None
             parent_to_use = parent
         editor = super().createEditor(parent_to_use, option, index)
         # Tag the editor with a persistent index so we can commit manually without ambiguity
         try:
             editor.setProperty("_d2te_index", QPersistentModelIndex(index))
-        except Exception:
-            pass
+        except (AttributeError, TypeError) as e:
+            import logging
+            logging.debug(f"Could not set _d2te_index property on editor: {e}")
+        except Exception as e:
+            import logging
+            logging.warning(f"Unexpected error setting editor property: {e}")
         # Name and debug-log the default editor to trace ownership
         try:
             # Get view ID if available for better tracking
@@ -152,8 +169,12 @@ class NoHoverDelegate(QStyledItemDelegate):
                     p = p.parent()
                     steps += 1
                 print(f"[DEBUG] default createEditor -> {editor.objectName()} for view {vname}; parent_chain={' > '.join(chain) if chain else 'None'}")
-        except Exception:
-            pass
+        except (AttributeError, TypeError, ValueError) as e:
+            import logging
+            logging.debug(f"Error in editor debug setup: {e}")
+        except Exception as e:
+            import logging
+            logging.warning(f"Unexpected error in createEditor debug setup: {e}")
         return editor
 
 class OverlayTableView(QTableView):
@@ -174,8 +195,12 @@ class OverlayTableView(QTableView):
                 painter = QPainter(self.viewport())
                 self._overlay_callback(painter)
                 painter.end()
-            except Exception:
-                pass
+            except (RuntimeError, AttributeError) as e:
+                import logging
+                logging.debug(f"Error in overlay painting: {e}")
+            except Exception as e:
+                import logging
+                logging.warning(f"Unexpected error in paintEvent overlay: {e}")
 
     # Guard against stray commitData for editors not owned by this mirror view
     def commitData(self, editor):
@@ -198,8 +223,12 @@ class OverlayTableView(QTableView):
                         vname = self.objectName() or f"OverlayTableView@{id(self):x}"
                         ename = editor.objectName() or editor.__class__.__name__
                         print(f"[DEBUG] overlay.commitData ignored on {vname}: editor={ename} not owned by this view")
-                except Exception:
-                    pass
+                except (AttributeError, TypeError) as e:
+                    import logging
+                    logging.debug(f"Error in overlay commitData debug: {e}")
+                except Exception as e:
+                    import logging
+                    logging.warning(f"Unexpected error in overlay commitData: {e}")
                 return
         except Exception:
             pass
@@ -726,6 +755,13 @@ class CleanTableView(QTableView):
                 selection = QItemSelection(start, end)
                 self.selectionModel().select(selection, QItemSelectionModel.SelectionFlag.Select)
 
+    def _is_debug_enabled(self):
+        """Helper method to check if debug mode is enabled"""
+        try:
+            return self.config_manager.get_setting("debug_mode_enabled", False)
+        except Exception:
+            return False
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
             # Commit current editor if any
@@ -749,12 +785,7 @@ class CleanTableView(QTableView):
     # --- Debug helpers ---
     def closeEditor(self, editor, hint):
         try:
-            cfg = getattr(self, 'config_manager', None)
-            debug_on = False
-            try:
-                debug_on = cfg.get_setting("debug_mode_enabled", False)
-            except Exception:
-                debug_on = False
+            debug_on = self._is_debug_enabled()
             if debug_on:
                 vname = self.objectName() or f"CleanTableView@{id(self):x}"
                 ename = editor.objectName() or editor.__class__.__name__
@@ -773,11 +804,7 @@ class CleanTableView(QTableView):
     def commitData(self, editor):
         # Intercept commitData to avoid warnings for editors that do not belong to this view
         try:
-            debug_on = False
-            try:
-                debug_on = self.config_manager.get_setting("debug_mode_enabled", False)
-            except Exception:
-                debug_on = False
+            debug_on = self._is_debug_enabled()
             
             vname = self.objectName() or f"CleanTableView@{id(self):x}"
             ename = editor.objectName() or editor.__class__.__name__

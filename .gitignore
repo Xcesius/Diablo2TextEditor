@@ -248,3 +248,6 @@ test_results/
 # Keep docs/*.md and tests fixtures tracked; only ignore root-level files
 /AGENTS.md
 /*.txt
+
+# User-specific workspace configurations
+workspaces.json

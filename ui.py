@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenuBar, QFileDialog, QAbstractItemView, QMessageBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QCheckBox, QGridLayout, QListWidget, QListWidgetItem, QTextEdit, QSplitter, QComboBox, QStyledItemDelegate, QInputDialog, QTreeWidget, QTreeWidgetItem, QTabWidget, QAbstractItemDelegate, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit
+from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenuBar, QFileDialog, QAbstractItemView, QMessageBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QCheckBox, QGridLayout, QListWidget, QListWidgetItem, QTextEdit, QSplitter, QComboBox, QStyledItemDelegate, QInputDialog, QTreeWidget, QTreeWidgetItem, QTabWidget, QAbstractItemDelegate, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit, QApplication, QTableView
 from PyQt6.QtGui import QAction, QStandardItemModel, QStandardItem, QKeySequence
 from PyQt6.QtCore import Qt, QItemSelection, QByteArray, QEvent, QPersistentModelIndex
 from file_parser import open_txt_file, detect_file_type, auto_detect_encoding, save_txt_file, check_for_working_version
@@ -12,7 +12,11 @@ import shutil
 from datetime import datetime
 import json
 import re
+import logging
 from workspace_manager import WorkspaceManager
+
+# Editor widget types for caching and performance optimization
+EDITOR_WIDGET_TYPES = (QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit)
 
 class ComboBoxDelegate(QStyledItemDelegate):
     def __init__(self, parent=None, items=None):
@@ -24,7 +28,8 @@ class ComboBoxDelegate(QStyledItemDelegate):
         v = self.parent()
         try:
             parent_to_use = v.viewport() if (v is not None and hasattr(v, 'viewport')) else parent
-        except Exception:
+        except Exception as e:
+            logging.exception("Failed to set parent_to_use in ComboBoxDelegate.createEditor")
             parent_to_use = parent
         editor = QComboBox(parent_to_use)
         editor.addItems(self.items)
@@ -32,8 +37,8 @@ class ComboBoxDelegate(QStyledItemDelegate):
         # Tag with persistent index for reliable manual commit
         try:
             editor.setProperty("_d2te_index", QPersistentModelIndex(index))
-        except Exception:
-            pass
+        except Exception as e:
+            logging.exception("Failed to set _d2te_index property on editor in ComboBoxDelegate.createEditor")
         # Debug info: name the editor for easier tracing
         try:
             # Get view ID if available for better tracking
@@ -547,6 +552,8 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         # Tab management
         self._tabs = {}  # path -> CleanTableView
         self._current_tab_index = -1
+        # View caching for performance optimization
+        self._all_views_cache = []
         self.editorTabs.currentChanged.connect(self.on_tab_changed)
         self.editorTabs.tabCloseRequested.connect(self.on_tab_close)
         try:
@@ -740,14 +747,61 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         tv = getattr(self, 'tableView', None)
         if not tv:
             return {}
-        # Column widths
-        widths = []
+        # Column widths - use compact representation when possible
         try:
             header = tv.horizontalHeader()
-            for i in range(tv.model().columnCount() if tv.model() else 0):
-                widths.append(header.sectionSize(i))
-        except Exception:
-            widths = []
+            col_count = tv.model().columnCount() if tv.model() else 0
+            
+            # First, collect all widths
+            raw_widths = []
+            for i in range(col_count):
+                raw_widths.append(header.sectionSize(i))
+                
+            # Check if we can use a compact representation
+            if len(raw_widths) > 3:
+                # Group by width for compression
+                width_groups = {}
+                for i, width in enumerate(raw_widths):
+                    if width not in width_groups:
+                        width_groups[width] = []
+                    width_groups[width].append(i)
+                
+                # If we have large groups of the same width, use compact format
+                if len(width_groups) <= len(raw_widths) // 3:
+                    compact_widths = []
+                    for width, indices in width_groups.items():
+                        # Sort indices to identify consecutive ranges
+                        indices.sort()
+                        start = indices[0]
+                        current_range = [start]
+                        
+                        for i in range(1, len(indices)):
+                            if indices[i] == indices[i-1] + 1:
+                                # Continue the current range
+                                pass
+                            else:
+                                # End previous range and start new one
+                                current_range.append(indices[i-1])
+                                compact_widths.append({"width": width, "start": start, "end": current_range[-1]})
+                                start = indices[i]
+                                current_range = [start]
+                        
+                        # Add the final range
+                        current_range.append(indices[-1])
+                        compact_widths.append({"width": width, "start": start, "end": current_range[-1]})
+                    
+                    # Use the compact representation
+                    widths = {"format": "compact", "ranges": compact_widths}
+                else:
+                    # Use the raw format as fallback
+                    widths = {"format": "raw", "values": raw_widths}
+            else:
+                # Small number of columns, just use raw format
+                widths = {"format": "raw", "values": raw_widths}
+        except Exception as e:
+            print(f"Error capturing column widths: {e}")
+            widths = {"format": "raw", "values": []}
+            
         # Scroll positions and current index
         try:
             h_scroll = tv.horizontalScrollBar().value()
@@ -774,14 +828,44 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             return
         try:
             header = tv.horizontalHeader()
-            widths = state.get("column_widths", [])
-            for i, w in enumerate(widths):
-                try:
-                    header.resizeSection(i, int(w))
-                except Exception:
-                    pass
-        except Exception:
-            pass
+            width_data = state.get("column_widths", {"format": "raw", "values": []})
+            
+            # Handle both compact and raw formats
+            if isinstance(width_data, dict):
+                format_type = width_data.get("format", "raw")
+                
+                if format_type == "compact":
+                    # Apply widths from ranges
+                    for range_info in width_data.get("ranges", []):
+                        try:
+                            width = int(range_info.get("width", 100))
+                            start = int(range_info.get("start", 0))
+                            end = int(range_info.get("end", start))
+                            
+                            for i in range(start, end + 1):
+                                if i < tv.model().columnCount():
+                                    header.resizeSection(i, width)
+                        except Exception as e:
+                            print(f"Error restoring column width range: {e}")
+                else:  # raw format
+                    # Apply individual widths
+                    raw_widths = width_data.get("values", [])
+                    for i, w in enumerate(raw_widths):
+                        try:
+                            if i < tv.model().columnCount():
+                                header.resizeSection(i, int(w))
+                        except Exception as e:
+                            print(f"Error restoring column width: {e}")
+            else:
+                # Legacy format (direct list)
+                for i, w in enumerate(width_data):
+                    try:
+                        if i < tv.model().columnCount():
+                            header.resizeSection(i, int(w))
+                    except Exception:
+                        pass
+        except Exception as e:
+            print(f"Error restoring table state: {e}")
         try:
             tv.horizontalScrollBar().setValue(int(state.get("h_scroll", 0)))
             tv.verticalScrollBar().setValue(int(state.get("v_scroll", 0)))
@@ -895,6 +979,13 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             pass
         self.update_window_title()
 
+    def _update_all_views_cache(self):
+        """Update cached views after tab change for performance"""
+        self._all_views_cache = list(self._tabs.values())
+        if hasattr(self, 'tableView') and self.tableView is not None:
+            if self.tableView not in self._all_views_cache:
+                self._all_views_cache.append(self.tableView)
+
     def on_tab_changed(self, index: int):
         if index < 0 or index >= self.editorTabs.count():
             return
@@ -924,6 +1015,8 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                 self.data_frame = df2
         self.apply_initial_settings()
         self.update_window_title()
+        # Update cached views after tab change
+        self._update_all_views_cache()
 
     def on_tab_bar_clicked(self, index: int):
         # Try to finalize edits in the current tab before switching
@@ -931,19 +1024,16 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
 
     def _close_all_active_editors(self):
         try:
-            from PyQt6.QtWidgets import QApplication
             # Prefer closing the currently focused inline editor only; this avoids cross-view commits
             fw = QApplication.focusWidget()
             if fw is not None:
                 # Find owning QTableView and top-level editor widget
-                from PyQt6.QtWidgets import QTableView, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit
-                editor_types = (QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit)
                 # Ascend from focus widget to find top-level editor
                 ed = fw
                 top_editor = None
                 depth = 0
                 while ed is not None and depth < 10:  # Increased depth
-                    if isinstance(ed, editor_types):
+                    if isinstance(ed, EDITOR_WIDGET_TYPES):
                         top_editor = ed
                     ed = ed.parent()
                     depth += 1
@@ -953,9 +1043,7 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                     
                 # More thorough search for owning view - check all known table views
                 owner_view = None
-                all_views = list(self._tabs.values())
-                if hasattr(self, 'tableView') and self.tableView is not None:
-                    all_views.append(self.tableView)
+                all_views = getattr(self, '_all_views_cache', list(self._tabs.values()))
                     
                 for view in all_views:
                     if view is None:
@@ -993,9 +1081,7 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                     return
 
             # Fallback: scan views but be more conservative and precise
-            views = list(self._tabs.values())
-            if hasattr(self, 'tableView') and self.tableView is not None and self.tableView not in views:
-                views.append(self.tableView)
+            views = getattr(self, '_all_views_cache', list(self._tabs.values()))
             for v in views:
                 if v is None:
                     continue
@@ -1008,7 +1094,7 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                         current_index = v.currentIndex()
                         if current_index.isValid():
                             # Try to get the editor widget for the current index
-                            for cls in (QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit):
+                            for cls in EDITOR_WIDGET_TYPES:
                                 editors = v.findChildren(cls)
                                 for ed in editors:
                                     # Verify this editor really belongs to this view
@@ -1115,8 +1201,9 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         if changed:
             self.populate_workspace_tree()
             self._persist_workspace_files()
-        # Load the first selected into the editor
-        self._load_file_path(paths[0])
+        # Load all selected files in tabs
+        for file_path in paths:
+            self._load_file_path(file_path)
 
     def _load_file_path(self, file_path: str):
         """Load a specific .txt file path using standard detection and binding logic."""
