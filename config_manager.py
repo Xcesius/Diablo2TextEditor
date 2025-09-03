@@ -28,6 +28,10 @@ class ConfigManager:
         settings.setdefault("crosshair_enabled", True)
         settings.setdefault("crosshair_thickness", 1)
         settings.setdefault("crosshair_hover_enabled", True)
+        # Column color feature configuration
+        settings.setdefault("enable_column_colors", True)
+        settings.setdefault("column_color_overrides", {})
+        settings.setdefault("custom_column_color_palette", [])
         # Add the new setting for freezing the first row
         #settings.setdefault("freeze_first_row_enabled", False)
         config["settings"] = settings

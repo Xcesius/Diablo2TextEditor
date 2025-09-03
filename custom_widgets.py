@@ -1,10 +1,11 @@
 from PyQt6.QtWidgets import (QTableView, QStyledItemDelegate, QMenu, QApplication,
-                             QHeaderView, QStyle, QAbstractItemView, QInputDialog, QMessageBox)
+                             QHeaderView, QStyle, QAbstractItemView, QInputDialog, QMessageBox, QColorDialog)
 from PyQt6.QtCore import (Qt, pyqtSignal, QItemSelection, QItemSelectionModel,
                           QTimer, QEvent, QPersistentModelIndex)
 from PyQt6.QtGui import (QAction, QKeySequence, QStandardItemModel, QStandardItem,
-                         QPainter, QPen, QColor)
+                         QPainter, QPen, QColor, QFont, QIcon, QPixmap, QPalette)
 from config_manager import ConfigManager as AppConfigManager
+from column_letters import index_to_column_letters
 
 class CustomHeaderView(QHeaderView):
     rightClicked = pyqtSignal(int)
@@ -96,6 +97,156 @@ class CustomHeaderView(QHeaderView):
 
     def paintSection(self, painter, rect, logicalIndex):
         super().paintSection(painter, rect, logicalIndex)
+
+        # Header background color based on column mapping (applies to horizontal headers)
+        try:
+            if self.orientation() == Qt.Orientation.Horizontal and rect.isValid():
+                # Find owning CleanTableView to access the column color map
+                owner = self.parent()
+                hops = 0
+                while owner is not None and hops < 4 and not hasattr(owner, '_column_color_map'):
+                    owner = owner.parent() if hasattr(owner, 'parent') else None
+                    hops += 1
+                color_map = getattr(owner, '_column_color_map', None)
+                if isinstance(color_map, dict):
+                    qcol = color_map.get(int(logicalIndex))
+                    if qcol is not None and isinstance(qcol, QColor) and qcol.isValid():
+                        # Fill the header background with the column color
+                        painter.save()
+                        painter.fillRect(rect, qcol)
+                        painter.restore()
+                        # Re-draw the header label text on top using a high-contrast color
+                        try:
+                            # Resolve header text from the model
+                            header_text = None
+                            model = getattr(owner, 'model', lambda: None)()
+                            if model is not None:
+                                try:
+                                    header_item = model.horizontalHeaderItem(int(logicalIndex)) if hasattr(model, 'horizontalHeaderItem') else None
+                                    if header_item is not None and header_item.text() is not None:
+                                        header_text = header_item.text()
+                                except Exception:
+                                    pass
+                                if not header_text:
+                                    try:
+                                        header_text = str(model.headerData(int(logicalIndex), Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole))
+                                    except Exception:
+                                        header_text = None
+                            if header_text:
+                                painter.save()
+                                # Determine text color: explicit override > high-contrast (global) > theme default
+                                text_qcol = None
+                                try:
+                                    tmap = getattr(owner, '_column_text_color_map', {})
+                                    if isinstance(tmap, dict):
+                                        tc = tmap.get(int(logicalIndex))
+                                        if isinstance(tc, QColor) and tc.isValid():
+                                            text_qcol = tc
+                                except Exception:
+                                    pass
+                                if text_qcol is None:
+                                    try:
+                                        hc = bool(getattr(owner, '_high_contrast_column_text', False))
+                                    except Exception:
+                                        hc = False
+                                    if hc:
+                                        r, g, b = qcol.red(), qcol.green(), qcol.blue()
+                                        lum = 0.299 * r + 0.587 * g + 0.114 * b
+                                        text_qcol = QColor("#000000") if lum > 186 else QColor("#ffffff")
+                                if text_qcol is None:
+                                    try:
+                                        text_qcol = owner.palette().color(QPalette.ColorRole.ButtonText)
+                                    except Exception:
+                                        text_qcol = QColor("#000000")
+                                painter.setPen(QPen(text_qcol))
+                                # Compute text rect; avoid overlap with the column letters badge if enabled
+                                text_rect = rect.adjusted(6, 0, -6, 0)
+                                try:
+                                    cfg = None
+                                    p = owner
+                                    hops2 = 0
+                                    while p is not None and hops2 < 4 and cfg is None:
+                                        cfg = getattr(p, 'config_manager', None)
+                                        p = getattr(p, 'parent', lambda: None)()
+                                        hops2 += 1
+                                    show_letters = bool(cfg.get_setting("show_column_letters_enabled", False)) if cfg else False
+                                except Exception:
+                                    show_letters = False
+                                if show_letters:
+                                    try:
+                                        letters = index_to_column_letters(int(logicalIndex))
+                                        # Use current painter font for badge metrics (same as overlay code)
+                                        fm = painter.fontMetrics()
+                                        text_w = fm.horizontalAdvance(letters)
+                                        badge_w = text_w + 8
+                                        badge_margin_x = 4
+                                        left_inset = badge_margin_x + badge_w + 4  # add small gap after badge
+                                        text_rect = rect.adjusted(left_inset, 0, -6, 0)
+                                    except Exception:
+                                        pass
+                                # Elide if not enough width
+                                try:
+                                    fm2 = painter.fontMetrics()
+                                    elided = fm2.elidedText(header_text, Qt.TextElideMode.ElideRight, max(0, text_rect.width()))
+                                except Exception:
+                                    elided = header_text
+                                painter.drawText(text_rect, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, elided)
+                                painter.restore()
+                        except Exception:
+                            pass
+        except Exception:
+            pass
+
+        # Overlay column letters on horizontal headers when enabled in settings
+        try:
+            if self.orientation() == Qt.Orientation.Horizontal and rect.isValid():
+                # Try to access config manager from the parent chain
+                cfg = None
+                p = self.parent()
+                hops = 0
+                while p is not None and hops < 4 and cfg is None:
+                    cfg = getattr(p, 'config_manager', None)
+                    p = getattr(p, 'parent', lambda: None)()
+                    hops += 1
+                show_letters = bool(cfg.get_setting("show_column_letters_enabled", False)) if cfg else False
+                if show_letters:
+                    letters = index_to_column_letters(int(logicalIndex))
+                    painter.save()
+                    # Badge layout
+                    badge_margin_x = 4
+                    badge_margin_y = 3
+                    badge_h = max(14, min(rect.height() - 4, 18))
+                    # Font setup
+                    font = QFont(painter.font())
+                    try:
+                        base_pt = font.pointSize()
+                        font.setPointSize(max(8, base_pt - 1 if base_pt > 0 else 10))
+                    except Exception:
+                        pass
+                    font.setBold(True)
+                    painter.setFont(font)
+                    fm = painter.fontMetrics()
+                    text_w = fm.horizontalAdvance(letters)
+                    badge_w = text_w + 8
+                    # Background
+                    bx = rect.left() + badge_margin_x
+                    by = rect.top() + badge_margin_y
+                    painter.setPen(Qt.PenStyle.NoPen)
+                    painter.setBrush(QColor(230, 230, 230))
+                    painter.drawRoundedRect(bx, by, badge_w, badge_h, 3, 3)
+                    # Border
+                    painter.setBrush(Qt.BrushStyle.NoBrush)
+                    painter.setPen(QPen(QColor(200, 200, 200)))
+                    painter.drawRoundedRect(bx, by, badge_w, badge_h, 3, 3)
+                    # Text
+                    painter.setPen(QPen(QColor(60, 60, 60)))
+                    text_x = bx + (badge_w - text_w) // 2
+                    text_y = by + (badge_h + fm.ascent() - fm.descent()) // 2 - 1
+                    painter.drawText(text_x, text_y, letters)
+                    painter.restore()
+        except Exception:
+            # Fail-safe: ignore overlay errors
+            pass
         if not self._show_crosshair_guides:
             return
         if logicalIndex != self._highlighted_section or not rect.isValid():
@@ -118,6 +269,49 @@ class NoHoverDelegate(QStyledItemDelegate):
         opt = option
         if opt.state & QStyle.StateFlag.State_MouseOver:
             opt.state &= ~QStyle.StateFlag.State_MouseOver
+        # Column color background fill (drawn beneath selection/text) and optional text color override
+        qcol = None
+        owner = None
+        try:
+            # Find owning CleanTableView to access color maps
+            owner = self.parent()
+            hops = 0
+            while owner is not None and hops < 4 and not hasattr(owner, '_column_color_map'):
+                owner = owner.parent() if hasattr(owner, 'parent') else None
+                hops += 1
+            color_map = getattr(owner, '_column_color_map', None)
+            if isinstance(color_map, dict):
+                qcol = color_map.get(int(index.column()))
+                if qcol is not None and isinstance(qcol, QColor) and qcol.isValid():
+                    painter.save()
+                    painter.fillRect(option.rect, qcol)
+                    painter.restore()
+        except Exception:
+            pass
+        # Apply text color override if present
+        try:
+            # Prefer explicit per-column text color; else use high-contrast if enabled and background exists
+            text_map = getattr(owner, '_column_text_color_map', {}) if owner is not None else {}
+            desired = None
+            if isinstance(text_map, dict):
+                desired = text_map.get(int(index.column()))
+            if (desired is None or not isinstance(desired, QColor) or not desired.isValid()):
+                hc = bool(getattr(owner, '_high_contrast_column_text', False)) if owner is not None else False
+                if hc and isinstance(qcol, QColor) and qcol.isValid():
+                    r, g, b = qcol.red(), qcol.green(), qcol.blue()
+                    lum = 0.299 * r + 0.587 * g + 0.114 * b
+                    desired = QColor("#000000") if lum > 186 else QColor("#ffffff")
+            if desired is not None and isinstance(desired, QColor) and desired.isValid():
+                try:
+                    opt.palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Text, desired)
+                    opt.palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Text, desired)
+                    # Also adjust highlighted text for selection state
+                    opt.palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText, desired)
+                    opt.palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.HighlightedText, desired)
+                except Exception:
+                    pass
+        except Exception:
+            pass
         super().paint(painter, opt, index)
 
     def createEditor(self, parent, option, index):
@@ -259,6 +453,12 @@ class CleanTableView(QTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.config_manager = AppConfigManager()
+        # Column color map: col_index -> QColor (rebuilt per model)
+        self._column_color_map = {}
+        # Column text color map: col_index -> QColor (explicit text overrides)
+        self._column_text_color_map = {}
+        # Global flag: when True, use high-contrast (black/white) text over colored backgrounds
+        self._high_contrast_column_text = True
         # Generate unique identifier for this view instance
         import time
         self._view_id = f"ctv_{int(time.time() * 1000000) % 1000000}_{id(self) % 10000}"
@@ -284,7 +484,7 @@ class CleanTableView(QTableView):
 
         # --- Frozen Column View Setup ---
         self.frozen_column_view = OverlayTableView(self)
-        self.frozen_column_view.setItemDelegate(NoHoverDelegate())
+        self.frozen_column_view.setItemDelegate(NoHoverDelegate(self))
         self.frozen_column_view.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         # Prevent any editing from occurring in the frozen column mirror view
         self.frozen_column_view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -297,7 +497,7 @@ class CleanTableView(QTableView):
 
         # --- Frozen Row View Setup ---
         self.frozen_row_view = OverlayTableView(self)
-        self.frozen_row_view.setItemDelegate(NoHoverDelegate())
+        self.frozen_row_view.setItemDelegate(NoHoverDelegate(self))
         self.frozen_row_view.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         # Prevent any editing from occurring in the frozen row mirror view
         self.frozen_row_view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -367,6 +567,11 @@ class CleanTableView(QTableView):
             self.frozen_column_view.setSelectionModel(self.selectionModel())
             self.frozen_row_view.setModel(model)
             self.frozen_row_view.setSelectionModel(self.selectionModel())
+            # Rebuild column color mapping for the new model
+            try:
+                self.rebuild_column_color_map_from_config()
+            except Exception:
+                pass
             # Hook current index changes for crosshair
             if not self._selection_conn_made:
                 try:
@@ -426,6 +631,197 @@ class CleanTableView(QTableView):
 
             self.frozen_column_view.setOverlayCallback(draw_frozen_col_overlay)
             self.frozen_row_view.setOverlayCallback(draw_frozen_row_overlay)
+
+    def rebuild_column_color_map_from_config(self):
+        """Build per-view column color and text color maps from global config overrides keyed by normalized column name."""
+        try:
+            enabled = bool(self.config_manager.get_setting("enable_column_colors", True))
+        except Exception:
+            enabled = True
+        # High-contrast text preference (global)
+        try:
+            self._high_contrast_column_text = bool(self.config_manager.get_setting("high_contrast_column_text_enabled", True))
+        except Exception:
+            self._high_contrast_column_text = True
+        self._column_color_map = {}
+        self._column_text_color_map = {}
+        try:
+            model = self.model()
+            if not model or not enabled:
+                self._update_all_viewports()
+                return
+            overrides = self.config_manager.get_setting("column_color_overrides", {}) or {}
+            for c in range(model.columnCount()):
+                # Get header text
+                header_item = model.horizontalHeaderItem(c) if hasattr(model, 'horizontalHeaderItem') else None
+                if header_item is not None and header_item.text() is not None:
+                    name = header_item.text()
+                else:
+                    try:
+                        name = str(model.headerData(c, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole))
+                    except Exception:
+                        name = None
+                norm = self._normalize_col_name(name) if name else None
+                hex_bg = None
+                hex_fg = None
+                if norm and isinstance(overrides, dict):
+                    entry = overrides.get(norm)
+                    if isinstance(entry, dict):
+                        hex_bg = entry.get("bg")
+                        hex_fg = entry.get("fg")
+                if hex_bg:
+                    try:
+                        qc = QColor(hex_bg)
+                        if qc.isValid():
+                            self._column_color_map[c] = qc
+                    except Exception:
+                        pass
+                if hex_fg:
+                    try:
+                        qf = QColor(hex_fg)
+                        if qf.isValid():
+                            self._column_text_color_map[c] = qf
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+        self._update_all_viewports()
+
+    def _normalize_col_name(self, name: str) -> str:
+        try:
+            return (name or "").strip().lower()
+        except Exception:
+            return str(name or "").lower()
+
+    def _get_header_text_for_column(self, col: int) -> str | None:
+        model = self.model()
+        if not model:
+            return None
+        try:
+            header_item = model.horizontalHeaderItem(col)
+            if header_item is not None and header_item.text() is not None:
+                return header_item.text()
+        except Exception:
+            pass
+        try:
+            return str(model.headerData(col, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole))
+        except Exception:
+            return None
+
+    def set_column_color_for_index(self, col: int, hex_color: str):
+        name = self._get_header_text_for_column(col)
+        if not name or not hex_color:
+            return
+        norm = self._normalize_col_name(name)
+        try:
+            overrides = dict(self.config_manager.get_setting("column_color_overrides", {}) or {})
+        except Exception:
+            overrides = {}
+        entry = overrides.get(norm) or {}
+        entry["bg"] = hex_color
+        overrides[norm] = entry
+        try:
+            self.config_manager.set_setting("column_color_overrides", overrides)
+        except Exception:
+            pass
+        self.rebuild_column_color_map_from_config()
+
+    def set_column_text_color_for_index(self, col: int, hex_color: str):
+        name = self._get_header_text_for_column(col)
+        if not name or not hex_color:
+            return
+        norm = self._normalize_col_name(name)
+        try:
+            overrides = dict(self.config_manager.get_setting("column_color_overrides", {}) or {})
+        except Exception:
+            overrides = {}
+        entry = overrides.get(norm) or {}
+        entry["fg"] = hex_color
+        overrides[norm] = entry
+        try:
+            self.config_manager.set_setting("column_color_overrides", overrides)
+        except Exception:
+            pass
+        self.rebuild_column_color_map_from_config()
+
+    def clear_column_color_for_index(self, col: int):
+        name = self._get_header_text_for_column(col)
+        if not name:
+            return
+        norm = self._normalize_col_name(name)
+        try:
+            overrides = dict(self.config_manager.get_setting("column_color_overrides", {}) or {})
+            if norm in overrides:
+                del overrides[norm]
+                self.config_manager.set_setting("column_color_overrides", overrides)
+        except Exception:
+            pass
+        self.rebuild_column_color_map_from_config()
+
+    def clear_column_text_color_for_index(self, col: int):
+        name = self._get_header_text_for_column(col)
+        if not name:
+            return
+        norm = self._normalize_col_name(name)
+        try:
+            overrides = dict(self.config_manager.get_setting("column_color_overrides", {}) or {})
+        except Exception:
+            overrides = {}
+        entry = overrides.get(norm)
+        if isinstance(entry, dict) and "fg" in entry:
+            try:
+                del entry["fg"]
+            except Exception:
+                pass
+            overrides[norm] = entry
+            try:
+                self.config_manager.set_setting("column_color_overrides", overrides)
+            except Exception:
+                pass
+        self.rebuild_column_color_map_from_config()
+
+    def _add_custom_color_to_palette(self, hex_color: str, max_size: int = 12):
+        try:
+            palette = list(self.config_manager.get_setting("custom_column_color_palette", []) or [])
+        except Exception:
+            palette = []
+        # Move to front (MRU), dedupe
+        hex_color = str(hex_color).strip()
+        palette = [c for c in palette if c.lower() != hex_color.lower()]
+        palette.insert(0, hex_color)
+        if len(palette) > max_size:
+            palette = palette[:max_size]
+        try:
+            self.config_manager.set_setting("custom_column_color_palette", palette)
+        except Exception:
+            pass
+
+    def _update_all_viewports(self):
+        try:
+            self.viewport().update()
+        except Exception:
+            pass
+        try:
+            self.frozen_column_view.viewport().update()
+        except Exception:
+            pass
+        try:
+            self.frozen_row_view.viewport().update()
+        except Exception:
+            pass
+        # Also update headers to reflect background
+        try:
+            self.horizontalHeader().viewport().update()
+        except Exception:
+            pass
+        try:
+            self.frozen_column_view.horizontalHeader().viewport().update()
+        except Exception:
+            pass
+        try:
+            self.frozen_row_view.horizontalHeader().viewport().update()
+        except Exception:
+            pass
 
     def set_first_column_frozen(self, frozen: bool):
         if self.model() is None or self.model().columnCount() == 0:
@@ -1028,6 +1424,89 @@ class CleanTableView(QTableView):
         paste_action.setShortcut(QKeySequence.StandardKey.Paste)
         paste_action.triggered.connect(self.paste_requested.emit)
         menu.addAction(paste_action)
+
+        # Column Color submenu (only when a valid cell is under cursor)
+        if index.isValid():
+            try:
+                col_index = int(index.column())
+                color_menu = menu.addMenu("Column Color")
+                # Default palette + custom palette (MRU)
+                default_palette = [
+                    "#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#BBDEFB",
+                    "#B3E5FC", "#B2EBF2", "#C8E6C9", "#FFF9C4", "#FFE0B2",
+                ]
+                custom_palette = self.config_manager.get_setting("custom_column_color_palette", []) or []
+                # Show custom first, then defaults; dedupe while preserving order
+                seen = set()
+                palette_to_show = []
+                for c in list(custom_palette) + list(default_palette):
+                    lc = str(c).lower().strip()
+                    if lc and lc not in seen:
+                        seen.add(lc)
+                        palette_to_show.append(c)
+                # Build color actions
+                for hex_color in palette_to_show:
+                    try:
+                        icon = QIcon()
+                        pm = QPixmap(16, 16)
+                        pm.fill(QColor(hex_color))
+                        icon.addPixmap(pm)
+                        act = QAction(icon, hex_color, self)
+                        act.triggered.connect(lambda checked=False, cidx=col_index, h=hex_color: self.set_column_color_for_index(cidx, h))
+                        color_menu.addAction(act)
+                    except Exception:
+                        pass
+                color_menu.addSeparator()
+                # Custom color chooser
+                custom_act = QAction("Custom color…", self)
+                def _choose_color():
+                    try:
+                        col = QColorDialog.getColor(QColor("#ffffff"), self, "Choose Column Color")
+                        if col.isValid():
+                            hexc = col.name()  # #RRGGBB
+                            self._add_custom_color_to_palette(hexc)
+                            self.set_column_color_for_index(col_index, hexc)
+                    except Exception:
+                        pass
+                custom_act.triggered.connect(_choose_color)
+                color_menu.addAction(custom_act)
+                # Clear color
+                clear_col_act = QAction("Clear color", self)
+                clear_col_act.triggered.connect(lambda checked=False, cidx=col_index: self.clear_column_color_for_index(cidx))
+                color_menu.addAction(clear_col_act)
+
+                # Text Color submenu
+                text_menu = menu.addMenu("Text Color")
+                # Common choices
+                black_text_act = QAction("Black", self)
+                black_text_act.triggered.connect(lambda checked=False, cidx=col_index: self.set_column_text_color_for_index(cidx, "#000000"))
+                text_menu.addAction(black_text_act)
+                white_text_act = QAction("White", self)
+                white_text_act.triggered.connect(lambda checked=False, cidx=col_index: self.set_column_text_color_for_index(cidx, "#ffffff"))
+                text_menu.addAction(white_text_act)
+                # Custom text color chooser
+                custom_text_act = QAction("Custom text color…", self)
+                def _choose_text_color():
+                    try:
+                        col = QColorDialog.getColor(QColor("#000000"), self, "Choose Text Color")
+                        if col.isValid():
+                            hexc = col.name()
+                            self.set_column_text_color_for_index(col_index, hexc)
+                    except Exception:
+                        pass
+                custom_text_act.triggered.connect(_choose_text_color)
+                text_menu.addAction(custom_text_act)
+                text_menu.addSeparator()
+                # Auto/clear
+                auto_text_act = QAction("Auto (High contrast)", self)
+                auto_text_act.triggered.connect(lambda checked=False, cidx=col_index: self.clear_column_text_color_for_index(cidx))
+                text_menu.addAction(auto_text_act)
+                clear_text_act = QAction("Clear text color", self)
+                clear_text_act.triggered.connect(lambda checked=False, cidx=col_index: self.clear_column_text_color_for_index(cidx))
+                text_menu.addAction(clear_text_act)
+            except Exception:
+                pass
+
         menu.addSeparator()
         clear_action = QAction("&Clear Contents", self)
         clear_action.setShortcut(QKeySequence.StandardKey.Delete)

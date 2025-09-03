@@ -1,9 +1,10 @@
-from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenuBar, QFileDialog, QAbstractItemView, QMessageBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QCheckBox, QGridLayout, QListWidget, QListWidgetItem, QTextEdit, QSplitter, QComboBox, QStyledItemDelegate, QInputDialog, QTreeWidget, QTreeWidgetItem, QTabWidget, QAbstractItemDelegate, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit, QApplication, QTableView
-from PyQt6.QtGui import QAction, QStandardItemModel, QStandardItem, QKeySequence
+from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenuBar, QFileDialog, QAbstractItemView, QMessageBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QCheckBox, QGridLayout, QListWidget, QListWidgetItem, QTextEdit, QSplitter, QComboBox, QStyledItemDelegate, QInputDialog, QTreeWidget, QTreeWidgetItem, QTabWidget, QAbstractItemDelegate, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit, QApplication, QTableView, QColorDialog
+from PyQt6.QtGui import QAction, QStandardItemModel, QStandardItem, QKeySequence, QColor, QBrush
 from PyQt6.QtCore import Qt, QItemSelection, QByteArray, QEvent, QPersistentModelIndex
 from file_parser import open_txt_file, detect_file_type, auto_detect_encoding, save_txt_file, check_for_working_version
 import pandas as pd
 from custom_widgets import CleanTableView
+from column_letters import index_to_column_letters
 from column_descriptions import get_description
 from file_bindings import get_binding_manager, DataFileBinding
 import copy
@@ -493,6 +494,67 @@ class SettingsDialog(QDialog):
         crosshair_row.addStretch(1)
         layout.addLayout(crosshair_row)
 
+        # Column letters option
+        self.show_column_letters_checkbox = QCheckBox("Show column letters (A, B, C)")
+        self.show_column_letters_checkbox.setChecked(self.config_manager.get_setting("show_column_letters_enabled", True))
+        layout.addWidget(self.show_column_letters_checkbox)
+
+        # Header minimum width setting
+        header_min_row = QHBoxLayout()
+        header_min_row.addWidget(QLabel("Header minimum width (px):"))
+        try:
+            header_min = int(self.config_manager.get_setting("header_min_section_size", 40) or 40)
+        except Exception:
+            header_min = 40
+        self.header_min_width_input = QLineEdit(str(max(10, min(1000, header_min))))
+        self.header_min_width_input.setPlaceholderText("e.g. 20-1000")
+        self.header_min_width_input.setMaximumWidth(100)
+        header_min_row.addWidget(self.header_min_width_input)
+        header_min_row.addStretch(1)
+        layout.addLayout(header_min_row)
+
+        # Column colors feature controls
+        layout.addWidget(QLabel("Column colors"))
+        self.enable_column_colors_checkbox = QCheckBox("Enable column colors (global by column name)")
+        try:
+            self.enable_column_colors_checkbox.setChecked(bool(self.config_manager.get_setting("enable_column_colors", True)))
+        except Exception:
+            self.enable_column_colors_checkbox.setChecked(True)
+        layout.addWidget(self.enable_column_colors_checkbox)
+
+        # High contrast text option for colored columns
+        self.high_contrast_text_checkbox = QCheckBox("High-contrast text on colored columns")
+        try:
+            self.high_contrast_text_checkbox.setChecked(bool(self.config_manager.get_setting("high_contrast_column_text_enabled", True)))
+        except Exception:
+            self.high_contrast_text_checkbox.setChecked(True)
+        layout.addWidget(self.high_contrast_text_checkbox)
+
+        # Custom palette manager (MRU list of hex colors)
+        palette_row = QVBoxLayout()
+        palette_row.addWidget(QLabel("Custom palette (most recently used):"))
+        self.palette_list = QListWidget()
+        try:
+            self._palette = list(self.config_manager.get_setting("custom_column_color_palette", []) or [])
+        except Exception:
+            self._palette = []
+        self._update_palette_list()
+        palette_row.addWidget(self.palette_list)
+
+        palette_buttons = QHBoxLayout()
+        self.palette_add_btn = QPushButton("Add…")
+        self.palette_add_btn.clicked.connect(self._palette_add_clicked)
+        palette_buttons.addWidget(self.palette_add_btn)
+        self.palette_remove_btn = QPushButton("Remove")
+        self.palette_remove_btn.clicked.connect(self._palette_remove_clicked)
+        palette_buttons.addWidget(self.palette_remove_btn)
+        self.palette_reset_btn = QPushButton("Reset")
+        self.palette_reset_btn.clicked.connect(self._palette_reset_clicked)
+        palette_buttons.addWidget(self.palette_reset_btn)
+        palette_buttons.addStretch(1)
+        palette_row.addLayout(palette_buttons)
+        layout.addLayout(palette_row)
+
         button_layout = QHBoxLayout()
         self.save_button = QPushButton("Save")
         self.save_button.clicked.connect(self.save_settings)
@@ -522,7 +584,117 @@ class SettingsDialog(QDialog):
             thickness = 1
         thickness = max(1, min(6, thickness))
         self.config_manager.set_setting("crosshair_thickness", thickness)
+        # Column letters
+        self.config_manager.set_setting("show_column_letters_enabled", self.show_column_letters_checkbox.isChecked())
+        # Header min width
+        try:
+            header_min = int(self.header_min_width_input.text())
+        except Exception:
+            header_min = 40
+        header_min = max(10, min(1000, header_min))
+        try:
+            self.config_manager.set_setting("header_min_section_size", header_min)
+        except Exception:
+            pass
+        try:
+            self.config_manager.set_setting("enable_column_colors", bool(self.enable_column_colors_checkbox.isChecked()))
+        except Exception:
+            pass
+        try:
+            self.config_manager.set_setting("high_contrast_column_text_enabled", bool(self.high_contrast_text_checkbox.isChecked()))
+        except Exception:
+            pass
+        try:
+            # Persist MRU palette order
+            self.config_manager.set_setting("custom_column_color_palette", list(self._palette))
+        except Exception:
+            pass
+        # Apply to current view immediately if available
+        try:
+            parent = self.parent()
+            tv = getattr(parent, 'tableView', None)
+            if tv:
+                # Rebuild colors/text
+                if hasattr(tv, 'rebuild_column_color_map_from_config'):
+                    tv.rebuild_column_color_map_from_config()
+                # Apply header min width to all relevant headers
+                try:
+                    hh = tv.horizontalHeader()
+                    if hh:
+                        hh.setMinimumSectionSize(int(header_min))
+                except Exception:
+                    pass
+                try:
+                    fhh = getattr(tv.frozen_row_view, 'horizontalHeader', None)
+                    if callable(fhh):
+                        fhh().setMinimumSectionSize(int(header_min))
+                except Exception:
+                    pass
+        except Exception:
+            pass
         self.accept()
+
+    def _best_foreground_for_hex(self, hex_color: str) -> QColor:
+        try:
+            c = QColor(hex_color)
+            if not c.isValid():
+                return QColor("#000000")
+            # Perceived luminance
+            r, g, b = c.red(), c.green(), c.blue()
+            lum = 0.299 * r + 0.587 * g + 0.114 * b
+            return QColor("#000000") if lum > 186 else QColor("#ffffff")
+        except Exception:
+            return QColor("#000000")
+
+    def _update_palette_list(self):
+        try:
+            self.palette_list.clear()
+            for hexc in self._palette:
+                item = QListWidgetItem(str(hexc))
+                try:
+                    bg = QBrush(QColor(hexc))
+                    fg = QBrush(self._best_foreground_for_hex(hexc))
+                    item.setBackground(bg)
+                    item.setForeground(fg)
+                except Exception:
+                    pass
+                self.palette_list.addItem(item)
+        except Exception:
+            pass
+
+    def _palette_add_clicked(self):
+        try:
+            chosen = QColorDialog.getColor(QColor("#ffffff"), self, "Add Custom Color")
+            if chosen.isValid():
+                hexc = chosen.name()
+                # MRU insert
+                self._palette = [c for c in self._palette if str(c).lower() != hexc.lower()]
+                self._palette.insert(0, hexc)
+                # Cap list length
+                if len(self._palette) > 12:
+                    self._palette = self._palette[:12]
+                self._update_palette_list()
+        except Exception:
+            pass
+
+    def _palette_remove_clicked(self):
+        try:
+            rows = sorted({i.row() for i in self.palette_list.selectedIndexes()}, reverse=True)
+            if not rows:
+                return
+            for r in rows:
+                if 0 <= r < len(self._palette):
+                    del self._palette[r]
+            self._update_palette_list()
+        except Exception:
+            pass
+
+    def _palette_reset_clicked(self):
+        try:
+            self._palette = []
+            self._update_palette_list()
+        except Exception:
+            pass
 
 class EditorWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
@@ -645,6 +817,14 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         self.freeze_col_action = QAction("Freeze First Column", self, checkable=True)
         self.freeze_col_action.triggered.connect(self.toggle_freeze_first_column)
         view_menu.addAction(self.freeze_col_action)
+        # Show column letters toggle
+        self.show_letters_action = QAction("Show Column Letters (A, B, C)", self, checkable=True)
+        try:
+            self.show_letters_action.setChecked(bool(self.config_manager.get_setting("show_column_letters_enabled", True)))
+        except Exception:
+            self.show_letters_action.setChecked(True)
+        self.show_letters_action.triggered.connect(self.toggle_show_column_letters)
+        view_menu.addAction(self.show_letters_action)
         
         #self.freeze_row_action = QAction("Freeze First Row", self, checkable=True)
         #self.freeze_row_action.triggered.connect(self.toggle_freeze_first_row)
@@ -721,6 +901,38 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         except Exception:
             pass
 
+        # Column letters: trigger header repaint to reflect setting
+        try:
+            if hasattr(self, 'show_letters_action'):
+                self.show_letters_action.setChecked(bool(self.config_manager.get_setting("show_column_letters_enabled", True)))
+            # Current view header
+            self.tableView.horizontalHeader().viewport().update()
+            # Frozen column header if visible
+            fhh = getattr(self.tableView.frozen_column_view, 'horizontalHeader', None)
+            if callable(fhh):
+                fhh().viewport().update()
+        except Exception:
+            pass
+
+        # Header minimum width
+        try:
+            header_min = int(self.config_manager.get_setting("header_min_section_size", 40) or 40)
+        except Exception:
+            header_min = 40
+        header_min = max(10, min(1000, header_min))
+        try:
+            hh = self.tableView.horizontalHeader()
+            if hh:
+                hh.setMinimumSectionSize(int(header_min))
+        except Exception:
+            pass
+        try:
+            fhh2 = getattr(self.tableView.frozen_row_view, 'horizontalHeader', None)
+            if callable(fhh2):
+                fhh2().setMinimumSectionSize(int(header_min))
+        except Exception:
+            pass
+
     def toggle_freeze_first_column(self, frozen):
         """Handles the 'Freeze First Column' menu action."""
         if self.data_frame is None or self.data_frame.shape[1] == 0:
@@ -741,6 +953,21 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         #self.tableView.set_first_row_frozen(frozen)
         #self.config_manager.set_setting("freeze_first_row_enabled", frozen)
         #print(f"Freeze first row {'enabled' if frozen else 'disabled'}.")
+
+    def toggle_show_column_letters(self, enabled: bool):
+        try:
+            self.config_manager.set_setting("show_column_letters_enabled", bool(enabled))
+        except Exception:
+            pass
+        # Force header repaint on current view
+        try:
+            if hasattr(self, 'tableView') and self.tableView is not None:
+                self.tableView.horizontalHeader().viewport().update()
+                fhh = getattr(self.tableView.frozen_column_view, 'horizontalHeader', None)
+                if callable(fhh):
+                    fhh().viewport().update()
+        except Exception:
+            pass
 
     # --- Workspace helpers ---
     def _capture_table_state(self):
@@ -1014,6 +1241,12 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             if df2 is not None:
                 self.data_frame = df2
         self.apply_initial_settings()
+        # Re-apply global column colors for this view
+        try:
+            if hasattr(self.tableView, 'rebuild_column_color_map_from_config'):
+                self.tableView.rebuild_column_color_map_from_config()
+        except Exception:
+            pass
         self.update_window_title()
         # Update cached views after tab change
         self._update_all_views_cache()
@@ -1330,6 +1563,15 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         if self.data_frame is not None:
             model = QStandardItemModel(self.data_frame.shape[0], self.data_frame.shape[1])
             model.setHorizontalHeaderLabels(self.data_frame.columns)
+            # Add helpful tooltips with Excel-style column letters
+            try:
+                for col_idx, col_name in enumerate(self.data_frame.columns):
+                    header_item = model.horizontalHeaderItem(col_idx)
+                    if header_item is not None:
+                        letters = index_to_column_letters(col_idx)
+                        header_item.setToolTip(f"{letters}: {col_name}")
+            except Exception:
+                pass
 
             for row in range(self.data_frame.shape[0]):
                 for col in range(self.data_frame.shape[1]):
@@ -1349,6 +1591,12 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
             
             self.tableView.setModel(model)
             model.itemChanged.connect(self.on_item_changed)
+            # Apply global column colors after model is set
+            try:
+                if hasattr(self.tableView, 'rebuild_column_color_map_from_config'):
+                    self.tableView.rebuild_column_color_map_from_config()
+            except Exception:
+                pass
             
             header = self.tableView.horizontalHeader()
             header.sectionClicked.connect(self.tableView.select_column)
@@ -1748,11 +1996,9 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
         # If already active, nothing to do
         if self.current_file_path and os.path.abspath(self.current_file_path) == os.path.abspath(target_path):
             return
-        # If we have an open binding, reuse it and cached data if available
+        # If we have an open binding, open/focus tab and show data using the normal tab path
         if target_path in self.open_files:
             binding = self.open_files[target_path]
-            self.current_binding = binding
-            self.current_file_path = target_path
             # Use cached dataframe if any; else reload via binding
             df = self._file_data_cache.get(target_path)
             if df is None:
@@ -1761,14 +2007,12 @@ class EditorWindow(QMainWindow, Ui_MainWindow):
                 except Exception:
                     df = None
             if df is not None:
-                self.data_frame = df
-                self.display_data_in_table()
-                self.update_window_title()
-                self.undo_stack.clear()
+                # This will set current context, assign self.tableView, and display the data
+                self._open_in_tab(target_path, binding, df)
             else:
                 # Fallback to normal loader
                 self._load_file_path(target_path)
-                self.undo_stack.clear()
+            self.undo_stack.clear()
             return
         # Otherwise, load via normal path detection and track
         self._load_file_path(target_path)
