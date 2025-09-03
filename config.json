@@ -13,6 +13,17 @@
         "workspace_files": [
             "F:\\ProjectsNew\\Diablo2TextEditor\\CubeMainWorking.txt",
             "F:\\ProjectsNew\\Diablo2TextEditor\\CubeMainNotWorking.txt"
-        ]
+        ],
+        "enable_column_colors": true,
+        "column_color_overrides": {
+            "ladder": {
+                "bg": "#FFE0B2",
+                "fg": "#000000"
+            }
+        },
+        "custom_column_color_palette": [],
+        "show_column_letters_enabled": true,
+        "header_min_section_size": 130,
+        "high_contrast_column_text_enabled": true
     }
 }
